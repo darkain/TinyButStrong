@@ -10,6 +10,7 @@ and my aim is to fix this.
 Example:
 
 20140416 - will read as 2014y, 04m, 16d @ 00:00:00
+
 20142000 - will read as 1970y, 08m, 22d @ 03:00:00
 
 This inconsistancy is because the first is read as a ISO date
