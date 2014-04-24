@@ -3389,16 +3389,16 @@ function meth_Misc_Format(&$Value,&$PrmLst) {
 			$Value = $this->meth_Misc_ToStr($Value);
 			if ($Value==='') {
 				return $Frm[3]; // Null value
-			} else {
+			} else if (!ctype_digit($Value)) {
 				$t = strtotime($Value); // We look if it's a date
 				if (($t===-1) || ($t===false)) { // Date not recognized
 					return $Frm[1];
-				} elseif ($t===943916400) { // Date to zero
-					return $Frm[2];
 				} else { // It's a date
 					$Value = $t;
 					$FrmStr = &$Frm[0];
 				}
+			} else {
+				$FrmStr = &$Frm[0];
 			}
 		}
 
