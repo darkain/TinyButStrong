@@ -1274,6 +1274,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				} elseif ($ope==='lower') { $Loc->OpeAct[$i] = 16;
 				} elseif ($ope==='upper1') { $Loc->OpeAct[$i] = 17;
 				} elseif ($ope==='upperw') { $Loc->OpeAct[$i] = 18;
+				} elseif ($ope==='upperx') { $Loc->OpeAct[$i] = 19;
 				} else {
 					$x = substr($ope,0,4);
 					if ($x==='max:') {
@@ -1387,6 +1388,15 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			case 16: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_LOWER, 'UTF-8') : strtolower($CurrVal); break;
 			case 17: $CurrVal = ucfirst($CurrVal); break;
 			case 18: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_TITLE, 'UTF-8') : ucwords($CurrVal); break;
+			case 19:
+				$CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_LOWER, 'UTF-8') : strtolower($CurrVal);
+				$CurrVal = ucwords($CurrVal);
+				$CurrVal = str_replace(
+					[' A ', ' An ', ' At ', ' In ', ' With ', ' The ', ' And ', ' But ', ' Or ', ' Nor ', ' For ', ' So ', ' Yet ', ' To '],
+					[' a ', ' an ', ' at ', ' in ', ' with ', ' the ', ' and ', ' but ', ' or ', ' nor ', ' for ', ' so ', ' yet ', ' to '],
+					$CurrVal
+				);
+			break;
 			}
 		}
 	}
