@@ -42,6 +42,7 @@ class clsTbsLocator {
 	public $FirstMerge = true;
 	public $ConvProtect = true;
 	public $ConvStr = true;
+	public $ConvHex = false;
 	public $ConvMode = 1; // Normal
 	public $ConvBr = true;
 }
@@ -1403,8 +1404,12 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 
 	// String conversion or format
 	if ($Loc->ConvMode===1) { // Usual string conversion
-		$CurrVal = $this->meth_Misc_ToStr($CurrVal);
-		if ($Loc->ConvStr) $this->meth_Conv_Str($CurrVal,$Loc->ConvBr);
+		if ($Loc->ConvHex) {
+			$CurrVal = bin2hex($CurrVal);
+		} else {
+			$CurrVal = $this->meth_Misc_ToStr($CurrVal);
+			if ($Loc->ConvStr) $this->meth_Conv_Str($CurrVal,$Loc->ConvBr);
+		}
 	} elseif ($Loc->ConvMode===0) { // Format
 		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);
 	} elseif ($Loc->ConvMode===2) { // Special string conversion
@@ -2960,14 +2965,15 @@ function meth_Merge_AutoOn(&$Txt,$Name,$TplVar,$MergeVar) {
 function meth_Conv_Prepare(&$Loc, $StrConv) {
 	$x = strtolower($StrConv);
 	$x = '+'.str_replace(' ','',$x).'+';
-	if (strpos($x,'+esc+')!==false)  {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvEsc = true; }
-	if (strpos($x,'+wsp+')!==false)  {$this->f_Misc_ConvSpe($Loc); $Loc->ConvWS = true; }
-	if (strpos($x,'+js+')!==false)   {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvJS = true; }
-	if (strpos($x,'+url+')!==false)  {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUrl = true; }
-	if (strpos($x,'+utf8+')!==false)  {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUtf8 = true; }
-	if (strpos($x,'+no+')!==false)   $Loc->ConvStr = false;
-	if (strpos($x,'+yes+')!==false)  $Loc->ConvStr = true;
-	if (strpos($x,'+nobr+')!==false) {$Loc->ConvStr = true; $Loc->ConvBr = false; }
+	if (strpos($x,'+esc+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvEsc = true; }
+	if (strpos($x,'+wsp+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvWS = true; }
+	if (strpos($x,'+js+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvJS = true; }
+	if (strpos($x,'+url+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUrl = true; }
+	if (strpos($x,'+utf8+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUtf8 = true; }
+	if (strpos($x,'+no+')	!==false) $Loc->ConvStr = false;
+	if (strpos($x,'+yes+')	!==false) $Loc->ConvStr = true;
+	if (strpos($x,'+nobr+')	!==false) {$Loc->ConvStr = true; $Loc->ConvBr = false; }
+	if (strpos($x,'+hex+')	!==false) $Loc->ConvHex = true;
 }
 
 // Convert a string with charset or custom function
