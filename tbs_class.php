@@ -934,6 +934,10 @@ public function PlugIn($Prm1,$Prm2=0) {
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
+protected function meth_Custom_Format(&$text, $style) {}
+
+// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
 function meth_Locator_FindTbs(&$Txt,$Name,$Pos,$ChrSub) {
 // Find a TBS Locator
 
@@ -1292,6 +1296,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 					} elseif ($x==='mko:') {$Loc->OpeAct[$i] =10; $Loc->OpeMKO[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;
 					} elseif ($x==='nif:') {$Loc->OpeAct[$i] =12; $Loc->OpePrm[$i] = trim(substr($ope,4));
 					} elseif ($x==='msk:') {$Loc->OpeAct[$i] =13; $Loc->OpePrm[$i] = trim(substr($ope,4));
+					} elseif ($x==='cus:') {$Loc->OpeAct[$i] = 999999; $Loc->OpePrm[$i] = trim(substr($ope,4));
 					} elseif (isset($this->_piOnOperation)) {
 						$Loc->OpeAct[$i] = 0;
 						$Loc->OpePrm[$i] = $ope;
@@ -1398,6 +1403,8 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 					$CurrVal
 				);
 			break;
+
+			case 999999: $this->meth_Custom_Format($CurrVal, $Loc->OpePrm[$i]); break;
 			}
 		}
 	}
