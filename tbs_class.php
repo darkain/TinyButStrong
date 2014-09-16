@@ -1184,22 +1184,52 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				}
 			} elseif (is_object($Value)) {
 				$ArgLst = $this->f_Misc_CheckArgLst($x);
-				if (method_exists($Value,$x)) {
-					if ($this->MethodsAllowed || !in_array(strtok($Loc->FullName,'.'),array('onload','onshow','var')) ) {
+				if (method_exists($Value,$x)  &&  $this->MethodsAllowed) {
+					if (!in_array(strtok($Loc->FullName,'.'),array('onload','onshow','var')) ) {
 						$x = call_user_func_array(array(&$Value,$x),$ArgLst);
 					} else {
 						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'\''.$x.'\' is a method and the current TBS settings do not allow to call methods on automatic fields.',true);
 						$x = '';	
 					}
+
 				} elseif (property_exists($Value,$x)) {
-					$x = &$Value->$x;
+					$prop = new ReflectionProperty($Value,$x);
+					if ($prop->isStatic()) {
+						$x = &$Value::$$x;
+					} else {
+						$x = &$Value->$x;
+					}
+
 				} elseif (isset($Value->$x)) {
 					$x = $Value->$x; // useful for overloaded property
+
+				} elseif (method_exists($Value,$x)  &&  !$this->MethodsAllowed) {
+					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'\''.$x.'\' is a method and the current TBS settings do not allow to call methods on automatic fields.',true);
+					$x = '';	
+
 				} else {
 					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.get_class($Value).'\'.',true);
 					unset($Value); $Value = ''; break;
 				}
+
 				$Value = &$x; unset($x); $x = '';
+
+/*
+			} else if (class_exists($Value)) {
+				if (property_exists($Value,$x)) {
+					$prop = new ReflectionProperty($Value,$x);
+					if ($prop->isStatic()) {
+						$x = &$Value::$$x;
+					} else {
+						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a static method nor a static property in the class \''.$Value.'\'.',true);
+						unset($Value); $Value = ''; break;
+					}
+				} else {
+					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.$Value.'\'.',true);
+					unset($Value); $Value = ''; break;
+				}
+				$Value = &$x; unset($x); $x = '';
+*/
 			} else {
 				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item before \''.$x.'\' is neither an object nor an array. Its type is '.gettype($Value).'.',true);
 				unset($Value); $Value = ''; break;
