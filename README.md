@@ -4,7 +4,7 @@ TinyButStrong
 This is a fork of the TinyButStrong library in order to fix
 some issues with it, as well as optimize key areas of the library.
 
-Date formatting is not tell defined in the original TBS library,
+Date formatting is not well defined in the original TBS library,
 and my aim is to fix this.
 
 Example:
