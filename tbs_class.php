@@ -730,6 +730,7 @@ public function LoadTemplate($File,$Charset='') {
 			$this->meth_Misc_Charset($Charset);
 		}
 		// Automatic fields and blocks
+		$this->meth_Merge_AutoVar($this->Source,true);
 		if ($this->OnLoad) $this->meth_Merge_AutoOn($this->Source,'onload',true,true);
 	}
 	// Plug-ins
@@ -814,14 +815,12 @@ public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultP
 
 	foreach ($NameLst as $Name) {
 		$Name = trim($Name);
-		$Cont = false;
 		switch ($Name) {
-		case '': $Cont=true;break;
-		case 'onload': $this->meth_Merge_AutoOn($this->Source,'onload',true,true);$Cont=true;break;
-		case 'onshow': $this->meth_Merge_AutoOn($this->Source,'onshow',true,true);$Cont=true;break;
-		case 'var':	$this->meth_Merge_AutoVar($this->Source,true);$Cont=true;break;
+			case '':		continue;
+			case 'onload':	$this->meth_Merge_AutoOn( $this->Source, 'onload', true, true);	continue;
+			case 'onshow':	$this->meth_Merge_AutoOn( $this->Source, 'onshow', true, true);	continue;
+			case 'var':		$this->meth_Merge_AutoVar($this->Source, true);					continue;
 		}
-		if ($Cont) continue;
 		if ($PlugIn) $ArgPi[0] = $Name;
 		$PosBeg = 0;
 		// Initilize the user function (only once)
@@ -868,7 +867,7 @@ public function Show($Render=false) {
 	}
 	if ($Ok!==false) {
 		if ($this->OnShow) $this->meth_Merge_AutoOn($this->Source,'onshow',true,true);
-		$this->meth_Merge_AutoVar($this->Source,true);
+		//$this->meth_Merge_AutoVar($this->Source,true);  //moved to onload instead!
 	}
 	if ($this->_PlugIns_Ok && isset($ArgLst) && isset($this->_piAfterShow)) $this->meth_PlugIn_RunAll($this->_piAfterShow,$ArgLst);
 	if ($this->_ErrMsgName!=='') $this->MergeField($this->_ErrMsgName, $this->ErrMsg);
@@ -1475,11 +1474,11 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 		$z = false;
 		$i = 1;
 		while ($i!==false) {
-			if ($Loc->PrmIfVar[$i]) $Loc->PrmIfVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmIf[$i],true);
+			//if ($Loc->PrmIfVar[$i]) $Loc->PrmIfVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmIf[$i],true);
 			$x = str_replace($this->_ChrVal,$CurrVal,$Loc->PrmIf[$i]);
 			if ($this->f_Misc_CheckCondition($x)) {
 				if (isset($Loc->PrmThen[$i])) {
-					if ($Loc->PrmThenVar[$i]) $Loc->PrmThenVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmThen[$i],true);
+					//if ($Loc->PrmThenVar[$i]) $Loc->PrmThenVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmThen[$i],true);
 					$z = $Loc->PrmThen[$i];
 				}
 				$i = false;
@@ -1487,7 +1486,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				$i++;
 				if ($i>$Loc->PrmIfNbr) {
 					if (isset($Loc->PrmLst['else'])) {
-						if ($Loc->PrmElseVar) $Loc->PrmElseVar = $this->meth_Merge_AutoVar($Loc->PrmLst['else'],true);
+						//if ($Loc->PrmElseVar) $Loc->PrmElseVar = $this->meth_Merge_AutoVar($Loc->PrmLst['else'],true);
 						$z =$Loc->PrmLst['else'];
 					}
 					$i = false;
@@ -1506,11 +1505,12 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	if (isset($Loc->PrmLst['file'])) {
 		$x = $Loc->PrmLst['file'];
 		if ($x===true) $x = $CurrVal;
-		$this->meth_Merge_AutoVar($x,false);
+		//$this->meth_Merge_AutoVar($x,false);
 		$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
 		$CurrVal = '';
 		if ($x!=='') {
 			if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
+				$this->meth_Merge_AutoVar($CurrVal,true);
 				$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
 			} else {
 				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
@@ -1522,7 +1522,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	if (isset($Loc->PrmLst['script'])) {// Include external PHP script
 		$x = $Loc->PrmLst['script'];
 		if ($x===true) $x = $CurrVal;
-		$this->meth_Merge_AutoVar($x,false);
+		//$this->meth_Merge_AutoVar($x,false);
 		$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
 		if ($x!=='') {
 			$this->_Subscript = $x;
@@ -1876,7 +1876,7 @@ function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
 					$LocR->WhenNbr = 0;
 					$LocR->WhenLst = array();
 				}
-				$this->meth_Merge_AutoVar($Loc->PrmLst['when'],false);
+				//$this->meth_Merge_AutoVar($Loc->PrmLst['when'],false);
 				$BDef->WhenCond = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,$Loc->PrmLst['when'],array(),true);
 				$BDef->WhenBeforeNS = ($LocR->SectionNbr===0);
 				$i = ++$LocR->WhenNbr;
@@ -2904,7 +2904,7 @@ function meth_Merge_AutoOn(&$Txt,$Name,$TplVar,$MergeVar) {
 				if (isset($LocA->PrmLst['when'])) {
 					if (isset($LocA->PrmLst['several'])) $Exclusive=false;
 					$x = $LocA->PrmLst['when'];
-					$this->meth_Merge_AutoVar($x,false);
+					//$this->meth_Merge_AutoVar($x,false);
 					if ($this->f_Misc_CheckCondition($x)) {
 						$DelField = true;
 						$Displayed = true;
