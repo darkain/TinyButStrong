@@ -391,7 +391,7 @@ function meth_Locator_FindTbs(&$Txt,$Name,$Pos,$ChrSub) {
 			if ($ReadPrm) {
 				self::f_Loc_PrmRead($Txt,$PosX,false,'\'',$this->_ChrOpen,$this->_ChrClose,$Loc,$PosEnd);
 				if ($PosEnd===false) {
-					$this->meth_Misc_Alert('','can\'t found the end of the tag \''.substr($Txt,$Pos,$PosX-$Pos+10).'...\'.');
+					$this->meth_Misc_Alert('','can\'t found the end of the tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.');
 					$Pos++;
 				}
 			}
@@ -2354,12 +2354,12 @@ function meth_Conv_Prepare(&$Loc, $StrConv) {
 // Convert a string with charset or custom function
 function meth_Conv_Str(&$Txt,$ConvBr=true) {
 	if ($this->Charset==='') { // Html by default
-		$Txt = htmlspecialchars($Txt);
+		$Txt = htmlspecialchars($Txt, ENT_QUOTES);
 		if ($ConvBr) $Txt = nl2br($Txt);
 	} elseif ($this->_CharsetFct) {
 		$Txt = call_user_func($this->Charset,$Txt,$ConvBr);
 	} else {
-		$Txt = htmlspecialchars($Txt,ENT_COMPAT,$this->Charset);
+		$Txt = htmlspecialchars($Txt, ENT_QUOTES, $this->Charset);
 		if ($ConvBr) $Txt = nl2br($Txt);
 	}
 }
