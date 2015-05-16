@@ -20,9 +20,6 @@ define('TBS_NOTHING', 0);
 define('TBS_OUTPUT', 1);
 define('TBS_EXIT', 2);
 
-// Plug-ins actions
-define('TBS_INSTALL', -1);
-define('TBS_ISINSTALLED', -3);
 
 // *********************************************
 
@@ -177,11 +174,6 @@ public function DataOpen(&$Query,$QryPrms=false) {
 	$this->RecNumInit = 0;
 	$this->RecNum = 0;
 
-	if (isset($this->TBS->_piOnData)) {
-		$this->OnDataPi = true;
-		$this->OnDataPiRef = &$this->TBS->_piOnData;
-		$this->OnDataOk = true;
-	}
 	if ($this->OnDataOk) {
 		$this->OnDataArgs = array();
 		$this->OnDataArgs[0] = &$this->TBS->_CurrBlock;
@@ -417,7 +409,6 @@ public function DataFetch() {
 			if ($this->OnDataOk) {
 				$this->OnDataArgs[1] = &$this->CurrRec; // Reference has changed if ($this->SubType===2)
 				if ($this->OnDataPrm) call_user_func_array($this->OnDataPrmRef,$this->OnDataArgs);
-				if ($this->OnDataPi) $this->TBS->meth_PlugIn_RunAll($this->OnDataPiRef,$this->OnDataArgs);
 				if ($this->SubType!==2) $this->RecSet[$this->RecKey] = $this->CurrRec; // save modifications because array reading is done without reference :(
 			}
 		} else {
@@ -492,7 +483,6 @@ public function DataFetch() {
 		$this->RecNum++;
 		if ($this->OnDataOk) {
 			if ($this->OnDataPrm) call_user_func_array($this->OnDataPrmRef,$this->OnDataArgs);
-			if ($this->OnDataPi) $this->TBS->meth_PlugIn_RunAll($this->OnDataPiRef,$this->OnDataArgs);
 		}
 		if ($this->RecSaving) $this->RecBuffer[$this->RecKey] = $this->CurrRec;
 	}
@@ -562,9 +552,7 @@ public $_ChrOpen = '[';
 public $_ChrClose = ']';
 public $_ChrVal = '[val]';
 public $_ChrProtect = '&#91;';
-public $_PlugIns = array();
-public $_PlugIns_Ok = false;
-public $_piOnFrm_Ok = false;
+
 
 function __construct($Options=null,$VarPrefix='',$FctPrefix='') {
 
@@ -596,16 +584,13 @@ function __construct($Options=null,$VarPrefix='',$FctPrefix='') {
 	if (is_array($Options)) $this->SetOption($Options);
 
 	// Links to global variables (cannot be converted to static yet because of compatibility)
-	global $_TBS_FormatLst, $_TBS_UserFctLst, $_TBS_BlockAlias, $_TBS_AutoInstallPlugIns;
+	global $_TBS_FormatLst, $_TBS_UserFctLst, $_TBS_BlockAlias;
 	if (!isset($_TBS_FormatLst))  $_TBS_FormatLst  = array();
 	if (!isset($_TBS_UserFctLst)) $_TBS_UserFctLst = array();
 	if (!isset($_TBS_BlockAlias)) $_TBS_BlockAlias = array();
 	$this->_UserFctLst = &$_TBS_UserFctLst;
-
-	// Auto-installing plug-ins
-	if (isset($_TBS_AutoInstallPlugIns)) foreach ($_TBS_AutoInstallPlugIns as $pi) $this->PlugIn(TBS_INSTALL,$pi);
-
 }
+
 
 function __call($meth, $args) {
 	if (isset($this->ExtendedMethods[$meth])) {
@@ -703,39 +688,26 @@ public function LoadTemplate($File,$Charset='') {
 		$this->meth_Misc_Charset($Charset);
 		return true;
 	}
-	$Ok = true;
-	if ($this->_PlugIns_Ok) {
-		if (isset($this->_piBeforeLoadTemplate) || isset($this->_piAfterLoadTemplate)) {
-			// Plug-ins
-			$ArgLst = func_get_args();
-			$ArgLst[0] = &$File;
-			$ArgLst[1] = &$Charset;
-			if (isset($this->_piBeforeLoadTemplate)) $Ok = $this->meth_PlugIn_RunAll($this->_piBeforeLoadTemplate,$ArgLst);
+
+	if (!is_null($File)) {
+		$x = '';
+		if (!$this->f_Misc_GetFile($x, $File, $this->_LastFile, $this->IncludePath)) return $this->meth_Misc_Alert('with LoadTemplate() method','file \''.$File.'\' is not found or not readable.');
+		if ($Charset==='+') {
+			$this->Source .= $x;
+		} else {
+			$this->Source = $x;
 		}
 	}
-	// Load the file
-	if ($Ok!==false) {
-		if (!is_null($File)) {
-			$x = '';
-			if (!$this->f_Misc_GetFile($x, $File, $this->_LastFile, $this->IncludePath)) return $this->meth_Misc_Alert('with LoadTemplate() method','file \''.$File.'\' is not found or not readable.');
-			if ($Charset==='+') {
-				$this->Source .= $x;
-			} else {
-				$this->Source = $x;
-			}
-		}
-		if ($this->meth_Misc_IsMainTpl()) {
-			if (!is_null($File)) $this->_LastFile = $File;
-			if ($Charset!=='+') $this->TplVars = array();
-			$this->meth_Misc_Charset($Charset);
-		}
-		// Automatic fields and blocks
-		$this->meth_Merge_AutoVar($this->Source,true);
-		if ($this->OnLoad) $this->meth_Merge_AutoOn($this->Source,'onload',true,true);
+	if ($this->meth_Misc_IsMainTpl()) {
+		if (!is_null($File)) $this->_LastFile = $File;
+		if ($Charset!=='+') $this->TplVars = array();
+		$this->meth_Misc_Charset($Charset);
 	}
-	// Plug-ins
-	if ($this->_PlugIns_Ok && isset($ArgLst) && isset($this->_piAfterLoadTemplate)) $Ok = $this->meth_PlugIn_RunAll($this->_piAfterLoadTemplate,$ArgLst);
-	return $Ok;
+	// Automatic fields and blocks
+	$this->meth_Merge_AutoVar($this->Source,true);
+	if ($this->OnLoad) $this->meth_Merge_AutoOn($this->Source,'onload',true,true);
+
+	return true;
 }
 
 public function GetBlockSource($BlockName,$AsArray=false,$DefTags=true,$ReplaceWith=false) {
@@ -800,7 +772,6 @@ public function MergeBlock($BlockLst,$SrcId='assigned',$Query='',$QryPrms=false)
 public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultPrm=false) {
 
 	$FctCheck = $IsUserFct;
-	if ($PlugIn = isset($this->_piOnMergeField)) $ArgPi = array('','',&$Value,0,&$this->Source,0,0);
 	$SubStart = 0;
 	$Ok = true;
 	$Prm = is_array($DefaultPrm);
@@ -821,7 +792,6 @@ public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultP
 			case 'onshow':	$this->meth_Merge_AutoOn( $this->Source, 'onshow', true, true);	continue;
 			case 'var':		$this->meth_Merge_AutoVar($this->Source, true);					continue;
 		}
-		if ($PlugIn) $ArgPi[0] = $Name;
 		$PosBeg = 0;
 		// Initilize the user function (only once)
 		if ($FctCheck) {
@@ -839,11 +809,6 @@ public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultP
 				$FctArg[0] = &$Loc->SubName; $FctArg[1] = &$Loc->PrmLst;
 				$Value = call_user_func_array($FctInfo,$FctArg);
 			}
-			// Plug-ins
-			if ($PlugIn) {
-				$ArgPi[1] = $Loc->SubName; $ArgPi[3] = &$Loc->PrmLst; $ArgPi[5] = &$Loc->PosBeg; $ArgPi[6] = &$Loc->PosEnd;
-				$Ok = $this->meth_PlugIn_RunAll($this->_piOnMergeField,$ArgPi);
-			}
 			// Merge the field
 			if ($Ok) {
 				$PosBeg = $this->meth_Locator_Replace($this->Source,$Loc,$Value,$SubStart);
@@ -855,21 +820,8 @@ public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultP
 }
 
 public function Show($Render=false) {
-	$Ok = true;
 	if ($Render===false) $Render = $this->Render;
-	if ($this->_PlugIns_Ok) {
-		if (isset($this->_piBeforeShow) || isset($this->_piAfterShow)) {
-			// Plug-ins
-			$ArgLst = func_get_args();
-			$ArgLst[0] = &$Render;
-			if (isset($this->_piBeforeShow)) $Ok = $this->meth_PlugIn_RunAll($this->_piBeforeShow,$ArgLst);
-		}
-	}
-	if ($Ok!==false) {
-		if ($this->OnShow) $this->meth_Merge_AutoOn($this->Source,'onshow',true,true);
-		//$this->meth_Merge_AutoVar($this->Source,true);  //moved to onload instead!
-	}
-	if ($this->_PlugIns_Ok && isset($ArgLst) && isset($this->_piAfterShow)) $this->meth_PlugIn_RunAll($this->_piAfterShow,$ArgLst);
+	if ($this->OnShow) $this->meth_Merge_AutoOn($this->Source,'onshow',true,true);
 	if ($this->_ErrMsgName!=='') $this->MergeField($this->_ErrMsgName, $this->ErrMsg);
 	if ($this->meth_Misc_IsMainTpl()) {
 		if (($Render & TBS_OUTPUT)==TBS_OUTPUT) echo $this->Source;
@@ -877,58 +829,7 @@ public function Show($Render=false) {
 	} elseif ($this->OldSubTpl) {
 		if (($Render & TBS_OUTPUT)==TBS_OUTPUT) echo $this->Source;
 	}
-	return $Ok;
-}
-
-public function PlugIn($Prm1,$Prm2=0) {
-
-	if (is_numeric($Prm1)) {
-		switch ($Prm1) {
-		case TBS_INSTALL: // Try to install the plug-in
-			$PlugInId = $Prm2;
-			if (isset($this->_PlugIns[$PlugInId])) {
-				return $this->meth_Misc_Alert('with PlugIn() method','plug-in \''.$PlugInId.'\' is already installed.');
-			} else {
-				$ArgLst = func_get_args();
-				array_shift($ArgLst); array_shift($ArgLst);
-				return $this->meth_PlugIn_Install($PlugInId,$ArgLst,false);
-			}
-		case TBS_ISINSTALLED: // Check if the plug-in is installed
-			return isset($this->_PlugIns[$Prm2]);
-		case -4: // Deactivate special plug-ins
-			$this->_PlugIns_Ok_save = $this->_PlugIns_Ok;
-			$this->_PlugIns_Ok = false;
-			return true;
-		case -5: // Deactivate OnFormat
-			$this->_piOnFrm_Ok_save = $this->_piOnFrm_Ok;
-			$this->_piOnFrm_Ok = false;
-			return true;
-		case -10:  // Restore
-			if (isset($this->_PlugIns_Ok_save)) $this->_PlugIns_Ok = $this->_PlugIns_Ok_save;
-			if (isset($this->_piOnFrm_Ok_save)) $this->_piOnFrm_Ok = $this->_piOnFrm_Ok_save;
-			return true;
-		}
-
-	} elseif (is_string($Prm1)) {
-		// Plug-in's command
-		$p = strpos($Prm1,'.');
-		if ($p===false) {
-			$PlugInId = $Prm1;
-		} else {
-			$PlugInId = substr($Prm1,0,$p); // direct command
-		}
-		if (!isset($this->_PlugIns[$PlugInId])) {
-			if (!$this->meth_PlugIn_Install($PlugInId,array(),true)) return false;
-		}
-		if (!isset($this->_piOnCommand[$PlugInId])) return $this->meth_Misc_Alert('with PlugIn() method','plug-in \''.$PlugInId.'\' can\'t run any command because the OnCommand event is not defined or activated.');
-		$ArgLst = func_get_args();
-		if ($p===false) array_shift($ArgLst);
-		$Ok = call_user_func_array($this->_piOnCommand[$PlugInId],$ArgLst);
-		if (is_null($Ok)) $Ok = true;
-		return $Ok;
-	}
-	return $this->meth_Misc_Alert('with PlugIn() method','\''.$Prm1.'\' is an invalid plug-in key, the type of the value is \''.gettype($Prm1).'\'.');
-
+	return true;
 }
 
 // *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -1013,13 +914,6 @@ function &meth_Locator_SectionNewBDef(&$LocR,$BlockName,$Txt,$PrmLst,$Cache) {
 	$LocLst = array();
 	$LocNbr = 0;
 
-	if ($this->_PlugIns_Ok && isset($this->_piOnCacheField)) {
-		$pi = true;
-		$ArgLst = array(0=>$BlockName, 1=>false, 2=>&$Txt, 3=>array('att'=>true));
-	} else {
-		$pi = false;
-	}
-
 	// Cache TBS locators
 	$Cache = ($Cache && $this->TurboBlock);
 	if ($Cache) {
@@ -1033,11 +927,6 @@ function &meth_Locator_SectionNewBDef(&$LocR,$BlockName,$Txt,$PrmLst,$Cache) {
 			$IsAMF = false;
 			$IsAtt = false;
 			$NewIdx = false;
-
-			if ($pi) {
-				$ArgLst[1] = &$Loc;
-				$this->meth_Plugin_RunAll($this->_piOnCacheField,$ArgLst);
-			}
 
 			if (($Loc->SubName==='#') || ($Loc->SubName==='$')) {
 				$Loc->IsRecInfo = true;
@@ -1271,10 +1160,8 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			// Analyze parameter 'strconv'
 			if (isset($Loc->PrmLst['strconv'])) {
 				$this->meth_Conv_Prepare($Loc, $Loc->PrmLst['strconv']);
-			} elseif (isset($Loc->PrmLst['htmlconv'])) { // compatibility
-				$this->meth_Conv_Prepare($Loc, $Loc->PrmLst['htmlconv']);
-			} else {
-				if ($this->Charset===false) $Loc->ConvStr = false; // No conversion
+			} else if ($this->Charset===false) {
+				$Loc->ConvStr = false; // No conversion
 			}
 			// Analyze parameter 'protect'
 			if (isset($Loc->PrmLst['protect'])) {
@@ -1294,63 +1181,62 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$Loc->OpeArg = array();
 			$Loc->OpeUtf8 = false;
 			foreach ($OpeLst as $i=>$ope) {
-				if ($ope==='list') {
-					$Loc->OpeAct[$i] = 1;
-					$Loc->OpePrm[$i] = (isset($Loc->PrmLst['valsep'])) ? $Loc->PrmLst['valsep'] : ',';
-					if (($Loc->ConvMode===1) && $Loc->ConvStr) $Loc->ConvMode = -1; // special mode for item list conversion
-				} elseif ($ope==='minv') {
-					$Loc->OpeAct[$i] = 11;
-					$Loc->MSave = $Loc->MagnetId;
-				} elseif ($ope==='attbool') { // this operation key is set when a loc is cached with paremeter atttrue
-					$Loc->OpeAct[$i] = 14;
-				} elseif ($ope==='utf8')  { $Loc->OpeUtf8 = true;
-				} elseif ($ope==='upper') { $Loc->OpeAct[$i] = 15;
-				} elseif ($ope==='lower') { $Loc->OpeAct[$i] = 16;
-				} elseif ($ope==='upper1') { $Loc->OpeAct[$i] = 17;
-				} elseif ($ope==='upperw') { $Loc->OpeAct[$i] = 18;
-				} elseif ($ope==='upperx') { $Loc->OpeAct[$i] = 19;
-				} else {
-					$x = substr($ope,0,4);
-					if ($x==='max:') {
-						$Loc->OpeAct[$i] = (isset($Loc->PrmLst['maxhtml'])) ? 2 : 3;
-						if (isset($Loc->PrmLst['maxutf8'])) $Loc->OpeUtf8 = true;
-						$Loc->OpePrm[$i] = intval(trim(substr($ope,4)));
-						$Loc->OpeEnd = (isset($Loc->PrmLst['maxend'])) ? $Loc->PrmLst['maxend'] : '...';
-						if ($Loc->OpePrm[$i]<=0) $Loc->Ope = false;
-					} elseif ($x==='mod:') {$Loc->OpeAct[$i] = 5; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));
-					} elseif ($x==='add:') {$Loc->OpeAct[$i] = 6; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));
-					} elseif ($x==='mul:') {$Loc->OpeAct[$i] = 7; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));
-					} elseif ($x==='div:') {$Loc->OpeAct[$i] = 8; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));
-					} elseif ($x==='mok:') {$Loc->OpeAct[$i] = 9; $Loc->OpeMOK[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;
-					} elseif ($x==='mko:') {$Loc->OpeAct[$i] =10; $Loc->OpeMKO[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;
-					} elseif ($x==='nif:') {$Loc->OpeAct[$i] =12; $Loc->OpePrm[$i] = trim(substr($ope,4));
-					} elseif ($x==='msk:') {$Loc->OpeAct[$i] =13; $Loc->OpePrm[$i] = trim(substr($ope,4));
-					} elseif ($x==='cus:') {$Loc->OpeAct[$i] = 999999; $Loc->OpePrm[$i] = trim(substr($ope,4));
-					} elseif (isset($this->_piOnOperation)) {
-						$Loc->OpeAct[$i] = 0;
-						$Loc->OpePrm[$i] = $ope;
-						$Loc->OpeArg[$i] = array($Loc->FullName,&$CurrVal,&$Loc->PrmLst,&$Txt,$Loc->PosBeg,$Loc->PosEnd,&$Loc);
-						$Loc->PrmLst['_ope'] = $Loc->PrmLst['ope'];
-					} elseif (!isset($Loc->PrmLst['noerr'])) {
-						$this->meth_Misc_Alert($Loc,'parameter ope doesn\'t support value \''.$ope.'\'.',true);
-					}
+				switch ($ope) {
+					case 'list':
+						$Loc->OpeAct[$i] = 1;
+						$Loc->OpePrm[$i] = (isset($Loc->PrmLst['valsep'])) ? $Loc->PrmLst['valsep'] : ',';
+						if (($Loc->ConvMode===1) && $Loc->ConvStr) $Loc->ConvMode = -1; // special mode for item list conversion
+					continue;
+
+					case 'minv':
+						$Loc->OpeAct[$i] = 11;
+						$Loc->MSave = $Loc->MagnetId;
+					continue;
+
+					case 'attbool': // this operation key is set when a loc is cached with paremeter atttrue
+						$Loc->OpeAct[$i] = 14;
+					continue;
+
+					case 'utf8':	$Loc->OpeUtf8 = true;	continue;
+					case 'upper':	$Loc->OpeAct[$i] = 15;	continue;
+					case 'lower':	$Loc->OpeAct[$i] = 16;	continue;
+					case 'upper1':	$Loc->OpeAct[$i] = 17;	continue;
+					case 'upperw':	$Loc->OpeAct[$i] = 18;	continue;
+					case 'upperx':	$Loc->OpeAct[$i] = 19;	continue;
+
+					default:
+						switch (substr($ope,0,4)) {
+							case 'max:':
+								$Loc->OpeAct[$i] = (isset($Loc->PrmLst['maxhtml'])) ? 2 : 3;
+								if (isset($Loc->PrmLst['maxutf8'])) $Loc->OpeUtf8 = true;
+								$Loc->OpePrm[$i] = intval(trim(substr($ope,4)));
+								$Loc->OpeEnd = (isset($Loc->PrmLst['maxend'])) ? $Loc->PrmLst['maxend'] : '...';
+								if ($Loc->OpePrm[$i]<=0) $Loc->Ope = false;
+							continue;
+
+							case 'mod:': $Loc->OpeAct[$i] = 5; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
+							case 'add:': $Loc->OpeAct[$i] = 6; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
+							case 'mul:': $Loc->OpeAct[$i] = 7; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
+							case 'div:': $Loc->OpeAct[$i] = 8; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
+							case 'mok:': $Loc->OpeAct[$i] = 9; $Loc->OpeMOK[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;	continue;
+							case 'mko:': $Loc->OpeAct[$i] =10; $Loc->OpeMKO[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;	continue;
+							case 'nif:': $Loc->OpeAct[$i] =12; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
+							case 'msk:': $Loc->OpeAct[$i] =13; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
+							case 'cus:': $Loc->OpeAct[$i] = 999999; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
+
+							default:
+								if (!isset($Loc->PrmLst['noerr'])) {
+									$this->meth_Misc_Alert($Loc,'parameter ope doesn\'t support value \''.$ope.'\'.',true);
+								}
+							continue;
+						}
+					continue;
 				}
 			}
 		}
 		$Loc->FirstMerge = false;
 	}
 	$ConvProtect = $Loc->ConvProtect;
-
-	// Plug-in OnFormat
-	if ($this->_piOnFrm_Ok) {
-		if (isset($Loc->OnFrmArgPi)) {
-			$Loc->OnFrmArgPi[1] = &$CurrVal;
-			$Loc->OnFrmArgPi[3] = &$this; // bugs.php.net/51174
-		} else {
-			$Loc->OnFrmArgPi = array($Loc->FullName,&$CurrVal,&$Loc->PrmLst,&$this);
-		}
-		$this->meth_PlugIn_RunAll($this->_piOnFormat,$Loc->OnFrmArgPi);
-	}
 
 	// Operation
 	if ($Loc->Ope) {
@@ -1360,7 +1246,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				$Loc->PrmLst['ope'] = $Loc->OpePrm[$i]; // for compatibility
 				$OpeArg = &$Loc->OpeArg[$i];
 				$OpeArg[1] = &$CurrVal; $OpeArg[3] = &$Txt;
-				if (!$this->meth_PlugIn_RunAll($this->_piOnOperation,$OpeArg)) return $Loc->PosBeg;
 				break;
 			case  1:
 				if ($Loc->ConvMode===-1) {
@@ -1401,9 +1286,9 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			case  8: $CurrVal = ('0'+$CurrVal) / $Loc->OpePrm[$i]; break;
 			case  9; case 10:
 				if ($ope===9) {
-				 $CurrVal = (in_array($this->meth_Misc_ToStr($CurrVal),$Loc->OpeMOK)) ? ' ' : '';
+					$CurrVal = (in_array($this->meth_Misc_ToStr($CurrVal),$Loc->OpeMOK)) ? ' ' : '';
 				} else {
-				 $CurrVal = (in_array($this->meth_Misc_ToStr($CurrVal),$Loc->OpeMKO)) ? '' : ' ';
+					$CurrVal = (in_array($this->meth_Misc_ToStr($CurrVal),$Loc->OpeMKO)) ? '' : ' ';
 				} // no break here
 			case 11:
 				if ($this->meth_Misc_ToStr($CurrVal)==='') {
@@ -1515,26 +1400,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			} else {
 				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
 			}
-			$ConvProtect = false;
-		}
-	}
-
-	if (isset($Loc->PrmLst['script'])) {// Include external PHP script
-		$x = $Loc->PrmLst['script'];
-		if ($x===true) $x = $CurrVal;
-		//$this->meth_Merge_AutoVar($x,false);
-		$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
-		if ($x!=='') {
-			$this->_Subscript = $x;
-			$this->CurrPrm = &$Loc->PrmLst;
-			$sub = isset($Loc->PrmLst['subtpl']);
-			if ($sub) $this->meth_Misc_ChangeMode(true,$Loc,$CurrVal);
-			if ($this->meth_Misc_RunSubscript($CurrVal,$Loc->PrmLst)===false) {
-				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter script is not found or not readable.',true);
-			}
-			if ($sub) $this->meth_Misc_ChangeMode(false,$Loc,$CurrVal);
-			$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
-			unset($this->CurrPrm);
 			$ConvProtect = false;
 		}
 	}
@@ -1783,7 +1648,6 @@ function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
 	$LocR->HeaderFound = false;
 	$LocR->FooterFound = false;
 	$LocR->SerialEmpty = false;
-	$LocR->GrpBreak = false; // Only for plug-ins
 
 	$LocR->WhenFound = false;
 	$LocR->WhenDefault = false;
@@ -2352,21 +2216,24 @@ function meth_Merge_Block(&$Txt,$BlockLst,&$SrcId,&$Query,$SpePrm,$SpeRecNum,$Qr
 
 }
 
-function meth_Merge_BlockParallel(&$Txt,&$LocR,&$Src) {
 
+function meth_Merge_BlockParallel(&$Txt,&$LocR,&$Src) {
 	// Main loop
 	$Src->DataFetch();
 
-	$FirstRec = true;
+	//TODO: LOOK INTO THIS STATEMENT. IT IS USELESS
+	//$FirstRec = true;
 
 	// Prepare sources
 	$BlockRes = array();
-	for ($i=1 ; $i<=$LocR->SectionNbr ; $i++) {
+	for ($i=1; $i<=$LocR->SectionNbr; $i++) {
 		if ($i>1) {
 			// Add txt source between the BDefs
-			$BlockRes[$i] = substr($Txt, $LocR->SectionLst[$i-1]->PosEnd + 1, $LocR->SectionLst[$i]->PosBeg - $LocR->SectionLst[$i-1]->PosEnd -1);
-		} else {
-			$BlockRes[$i] = '';
+			$BlockRes[] = substr(
+				$Txt,
+				$LocR->SectionLst[$i-1]->PosEnd + 1,
+				$LocR->SectionLst[$i]->PosBeg - $LocR->SectionLst[$i-1]->PosEnd -1
+			);
 		}
 	}
 
@@ -2375,16 +2242,15 @@ function meth_Merge_BlockParallel(&$Txt,&$LocR,&$Src) {
 		for ($i=1 ; $i<=$LocR->SectionNbr ; $i++) {
 			$SecDef = &$LocR->SectionLst[$i];
 			$SecSrc = $this->meth_Merge_SectionNormal($SecDef,$Src);
-			$BlockRes[$i] .= $SecSrc;
+			$BlockRes[] = $SecSrc;
 		}
 		// Next row
 		$Src->DataFetch();
 	}
 
-	$BlockRes = implode('', $BlockRes);
-	$Txt = substr_replace($Txt,$BlockRes,$LocR->PosBeg,$LocR->PosEnd-$LocR->PosBeg+1);
-
+	$Txt = substr_replace($Txt, implode('',$BlockRes), $LocR->PosBeg, $LocR->PosEnd-$LocR->PosBeg+1);
 }
+
 
 function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 
@@ -2392,31 +2258,14 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 	$SecId = 0;
 	$SecOk = ($LocR->SectionNbr>0);
 	$SecSrc = '';
-	$BlockRes = ''; // The result of the chained merged blocks
+	$BlockRes = array(); // The result of the chained merged blocks
 	$IsSerial = false;
 	$SrId = 0;
 	$SrNbr = 0;
 	$GrpFound = false;
 	if ($LocR->HeaderFound || $LocR->FooterFound) {
 		$GrpFound = true;
-		$piOMG = false;
 		if ($LocR->FooterFound) $Src->PrevRec = (object) null;
-	}
-  // Plug-ins
-	$piOMS = false;
-	if ($this->_PlugIns_Ok) {
-		if (isset($this->_piBeforeMergeBlock)) {
-			$ArgLst = array(&$Txt,&$LocR->PosBeg,&$LocR->PosEnd,$LocR->PrmLst,&$Src,&$LocR);
-			$this->meth_Plugin_RunAll($this->_piBeforeMergeBlock,$ArgLst);
-		}
-		if (isset($this->_piOnMergeSection)) {
-			$ArgLst = array(&$BlockRes,&$SecSrc);
-			$piOMS = true;
-		}
-		if ($GrpFound && isset($this->_piOnMergeGroup)) {
-			$ArgLst2 = array(0,0,&$Src,&$LocR);
-			$piOMG = true;
-		}
 	}
 
 	// Main loop
@@ -2445,9 +2294,7 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 						if (!$brk_i) $brk_i = !($GrpDef->PrevValue===$x);
 						if ($brk_i) {
 							$brk_any = true;
-							$ok = true;
-							if ($piOMG) {$ArgLst2[0]=&$Src->PrevRec; $ArgLst2[1]=&$GrpDef; $ok = $this->meth_PlugIn_RunAll($this->_piOnMergeGroup,$ArgLst2);}
-							if ($ok!==false) $brk_src = $this->meth_Merge_SectionNormal($GrpDef,$Src->PrevRec).$brk_src;
+							$brk_src = $this->meth_Merge_SectionNormal($GrpDef,$Src->PrevRec).$brk_src;
 							$GrpDef->PrevValue = $x;
 						}
 					}
@@ -2463,9 +2310,7 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 					$x = $this->meth_Merge_SectionNormal($GrpDef->FDef,$Src);
 					if (!$brk) $brk = !($GrpDef->PrevValue===$x);
 					if ($brk) {
-						$ok = true;
-						if ($piOMG) {$ArgLst2[0]=&$Src; $ArgLst2[1]=&$GrpDef; $ok = $this->meth_PlugIn_RunAll($this->_piOnMergeGroup,$ArgLst2);}
-						if ($ok!==false) $brk_src .= $this->meth_Merge_SectionNormal($GrpDef,$Src);
+						$brk_src .= $this->meth_Merge_SectionNormal($GrpDef,$Src);
 						$GrpDef->PrevValue = $x;
 					}
 				}
@@ -2473,10 +2318,10 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 			}
 			if ($brk_any) {
 				if ($IsSerial) {
-					$BlockRes .= $this->meth_Merge_SectionSerial($SecDef,$SrId,$LocR);
+					$BlockRes[] = $this->meth_Merge_SectionSerial($SecDef,$SrId,$LocR);
 					$IsSerial = false;
 				}
-				$BlockRes .= $brk_src;
+				$BlockRes[] = $brk_src;
 			}
 		} // end of header and footer
 
@@ -2499,7 +2344,7 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 			$SrBDef->SrTxt = $this->meth_Merge_SectionNormal($SrBDef,$Src);
 			if ($SrId>=$SrNbr) {
 				$SecSrc = $this->meth_Merge_SectionSerial($SecDef,$SrId,$LocR);
-				$BlockRes .= $SecSrc;
+				$BlockRes[] = $SecSrc;
 				$IsSerial = false;
 			}
 		} else { // Classic merge
@@ -2530,8 +2375,7 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 					if ($LocR->WhenDefaultBeforeNS) {$SecSrc = $x_when.$SecSrc;} else {$SecSrc = $SecSrc.$x_when;}
 				}
 			}
-			if ($piOMS) $this->meth_PlugIn_RunAll($this->_piOnMergeSection,$ArgLst);
-			$BlockRes .= $SecSrc;
+			$BlockRes[] = $SecSrc;
 		}
 
 		// Next row
@@ -2550,9 +2394,7 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 			for ($i=1;$i<=$LocR->FooterNbr;$i++) {
 				$GrpDef = &$LocR->FooterDef[$i];
 				if ($GrpDef->AddLastGrp) {
-					$ok = true;
-					if ($piOMG) {$ArgLst2[0]=&$Src->PrevRec; $ArgLst2[1]=&$GrpDef; $ok = $this->meth_PlugIn_RunAll($this->_piOnMergeGroup,$ArgLst2);}
-					if ($ok!==false) $SecSrc .= $this->meth_Merge_SectionNormal($GrpDef,$Src->PrevRec);
+					$SecSrc .= $this->meth_Merge_SectionNormal($GrpDef,$Src->PrevRec);
 				}
 			}
 		}
@@ -2567,19 +2409,10 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 		}
 	}
 
-	// Plug-ins
-	if ($piOMS && ($SecSrc!=='')) $this->meth_PlugIn_RunAll($this->_piOnMergeSection,$ArgLst);
-
-	$BlockRes .= $SecSrc;
-
-	// Plug-ins
-	if ($this->_PlugIns_Ok && isset($ArgLst) && isset($this->_piAfterMergeBlock)) {
-		$ArgLst = array(&$BlockRes,&$Src,&$LocR);
-		$this->meth_PlugIn_RunAll($this->_piAfterMergeBlock,$ArgLst);
-	}
+	$BlockRes[] = $SecSrc;
 
 	// Merge the result
-	$Txt = substr_replace($Txt,$BlockRes,$LocR->PosBeg,$LocR->PosEnd-$LocR->PosBeg+1);
+	$Txt = substr_replace($Txt, implode('',$BlockRes), $LocR->PosBeg, $LocR->PosEnd-$LocR->PosBeg+1);
 	if ($LocR->P1) $LocR->FOStop = $LocR->PosBeg + strlen($BlockRes) -1;
 
 }
@@ -2687,12 +2520,7 @@ function meth_Merge_AutoSpe(&$Txt,&$Loc) {
 			break;
 		case 'cst': $x = @constant($Loc->SubLst[2]); break;
 		case 'tbs_info':
-			$x = 'TinyButStrong version '.$this->Version.' for PHP 5';
-			$x .= "\r\nInstalled plug-ins: ".count($this->_PlugIns);
-			foreach (array_keys($this->_PlugIns) as $pi) {
-				$o = &$this->_PlugIns[$pi];
-				$x .= "\r\n- plug-in [".(isset($o->Name) ? $o->Name : $pi ).'] version '.(isset($o->Version) ? $o->Version : '?' );
-			}
+			$x = 'TinyButStrong version '.$this->Version.' for PHP-5.x and HHVM-3.x';
 			break;
 		case 'php_info':
 			ob_start();
@@ -2703,13 +2531,7 @@ function meth_Merge_AutoSpe(&$Txt,&$Loc) {
 			if (!isset($Loc->PrmLst['strconv'])) {$Loc->PrmLst['strconv'] = 'no'; $Loc->PrmLst['protect'] = 'no';}
 			break;
 		default:
-			$IsSupported = false;
-			if (isset($this->_piOnSpecialVar)) {
-				$x = '';
-				$ArgLst = array(substr($Loc->SubName,1),&$IsSupported ,&$x, &$Loc->PrmLst,&$Txt,&$Loc->PosBeg,&$Loc->PosEnd,&$Loc);
-				$this->meth_PlugIn_RunAll($this->_piOnSpecialVar,$ArgLst);
-			}
-			if (!$IsSupported) $ErrMsg = '\''.$Loc->SubLst[1].'\' is an unsupported keyword.';
+			$ErrMsg = '\''.$Loc->SubLst[1].'\' is an unsupported keyword.';
 		}
 	} else {
 		$ErrMsg = 'it doesn\'t have any subname.';
@@ -3279,10 +3101,6 @@ function meth_Misc_UserFctCheck(&$FctInfo,$FctCat,&$FctObj,&$ErrMsg,$FctCheck=fa
 
 }
 
-function meth_Misc_RunSubscript(&$CurrVal,$CurrPrm) {
-// Run a subscript without any local variable damage
-	return @include($this->_Subscript);
-}
 
 function meth_Misc_Charset($Charset) {
 	if ($Charset==='+') return;
@@ -3309,109 +3127,20 @@ function meth_Misc_Charset($Charset) {
 	$this->Charset = $Charset;
 }
 
-function meth_PlugIn_RunAll(&$FctBank,&$ArgLst) {
-	$OkAll = true;
-	foreach ($FctBank as $FctInfo) {
-		$Ok = call_user_func_array($FctInfo,$ArgLst);
-		if (!is_null($Ok)) $OkAll = ($OkAll && $Ok);
-	}
-	return $OkAll;
-}
-
-function meth_PlugIn_Install($PlugInId,$ArgLst,$Auto) {
-
-	$ErrMsg = 'with plug-in \''.$PlugInId.'\'';
-
-	if (class_exists($PlugInId)) {
-		// Create an instance
-		$IsObj = true;
-		$PiRef = new $PlugInId;
-		$PiRef->TBS = &$this;
-		if (!method_exists($PiRef,'OnInstall')) return $this->meth_Misc_Alert($ErrMsg,'OnInstall() method is not found.');
-		$FctRef = array(&$PiRef,'OnInstall');
-	} else {
-		$FctRef = 'tbspi_'.$PlugInId.'_OnInstall';
-		if(function_exists($FctRef)) {
-			$IsObj = false;
-			$PiRef = true;
-		} else {
-			return $this->meth_Misc_Alert($ErrMsg,'no class named \''.$PlugInId.'\' is found, and no function named \''.$FctRef.'\' is found.');
-		}
-	}
-
-	$this->_PlugIns[$PlugInId] = &$PiRef;
-
-	$EventLst = call_user_func_array($FctRef,$ArgLst);
-	if (is_string($EventLst)) $EventLst = explode(',',$EventLst);
-	if (!is_array($EventLst)) return $this->meth_Misc_Alert($ErrMsg,'OnInstall() method does not return an array.');
-
-	// Add activated methods
-	foreach ($EventLst as $Event) {
-		$Event = trim($Event);
-		if (!$this->meth_PlugIn_SetEvent($PlugInId, $Event)) return false;
-	}
-
-	return true;
-
-}
-
-function meth_PlugIn_SetEvent($PlugInId, $Event, $NewRef='') {
-// Enable or disable a plug-in event. It can be called by a plug-in, even during the OnInstall event. $NewRef can be used to change the method associated to the event.
-
-	// Check the event's name
-	if (strpos(',OnCommand,BeforeLoadTemplate,AfterLoadTemplate,BeforeShow,AfterShow,OnData,OnFormat,OnOperation,BeforeMergeBlock,OnMergeSection,OnMergeGroup,AfterMergeBlock,OnSpecialVar,OnMergeField,OnCacheField,', ','.$Event.',')===false) return $this->meth_Misc_Alert('with plug-in \''.$PlugInId.'\'','The plug-in event named \''.$Event.'\' is not supported by TinyButStrong (case-sensitive). This event may come from the OnInstall() method.');
-
-	$PropName = '_pi'.$Event;
-
-	if ($NewRef===false) {
-		// Disable the event
-		if (!isset($this->$PropName)) return false;
-		$PropRef = &$this->$PropName;
-		unset($PropRef[$PlugInId]);
-		return true;
-	}
-
-	// Prepare the reference to be called
-	$PiRef = &$this->_PlugIns[$PlugInId];
-	if (is_object($PiRef)) {
-		if ($NewRef==='') $NewRef = $Event;
-		if (!method_exists($PiRef, $NewRef)) return $this->meth_Misc_Alert('with plug-in \''.$PlugInId.'\'','The plug-in event named \''.$Event.'\' is declared but its corresponding method \''.$NewRef.'\' is found.');
-		$FctRef = array(&$PiRef, $NewRef);
-	} else {
-		$FctRef = ($NewRef==='') ? 'tbspi_'.$PlugInId.'_'.$Event : $NewRef;
-		if (!function_exists($FctRef)) return $this->meth_Misc_Alert('with plug-in \''.$PlugInId.'\'','The expected function \''.$FctRef.'\' is not found.');
-	}
-
-	// Save information into the corresponding property
-	if (!isset($this->$PropName)) $this->$PropName = array();
-	$PropRef = &$this->$PropName;
-	$PropRef[$PlugInId] = $FctRef;
-
-	// Flags saying if a plugin is installed
-	switch ($Event) {
-	case 'OnCommand': break;
-	case 'OnSpecialVar': break;
-	case 'OnOperation': break;
-	case 'OnFormat': $this->_piOnFrm_Ok = true; break;
-	default: $this->_PlugIns_Ok = true; break;
-	}
-
-	return true;
-
-}
 
 static function meth_Misc_ToStr($Value) {
-	if (is_string($Value)) {
-		return $Value;
-	} elseif(is_object($Value)) {
-		if (method_exists($Value,'__toString')) {
-			return $Value->__toString();
-		} elseif (is_a($Value, 'DateTime')) {
-			return $Value->format('c');
-		}
+	if (is_string($Value)) return $Value;
+	if (!is_object($Value)) return @(string)$Value;
+
+	if (method_exists($Value,'__toString')) {
+		return $Value->__toString();
+	} elseif (is_a($Value, 'DateTime')) {
+		return $Value->format('c');
 	}
-	return @(string)$Value; // (string) is faster than strval() and settype()
+
+	return @(string)$Value;
 }
+
 
 function meth_Misc_Format(&$Value,&$PrmLst) {
 // This function return the formated representation of a Date/Time or numeric variable using a 'VB like' format syntax instead of the PHP syntax.
