@@ -1925,9 +1925,10 @@ function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 	}
 
 	$BlockRes[] = $SecSrc;
+	$BlockRes = implode('',$BlockRes);
 
 	// Merge the result
-	$Txt = substr_replace($Txt, implode('',$BlockRes), $LocR->PosBeg, $LocR->PosEnd-$LocR->PosBeg+1);
+	$Txt = substr_replace($Txt, $BlockRes, $LocR->PosBeg, $LocR->PosEnd-$LocR->PosBeg+1);
 	if ($LocR->P1) $LocR->FOStop = $LocR->PosBeg + strlen($BlockRes) -1;
 
 }
