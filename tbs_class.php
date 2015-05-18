@@ -905,15 +905,25 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	if (isset($Loc->PrmLst['file'])) {
 		$x = $Loc->PrmLst['file'];
 		if ($x===true) $x = $CurrVal;
-		//$this->meth_Merge_AutoVar($x,false);
 		$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
 		$CurrVal = '';
 		if ($x!=='') {
-			if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
-				$this->meth_Merge_AutoVar($CurrVal,true);
-				$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
+			if (!empty($Loc->PrmLst['when'])) {
+				if ($this->f_Misc_CheckCondition($Loc->PrmLst['when'])) {
+					if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
+						$this->meth_Merge_AutoVar($CurrVal,true);
+						$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
+					} else if (!isset($Loc->PrmLst['noerr'])) {
+						$this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
+					}
+				}
 			} else {
-				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
+				if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
+					$this->meth_Merge_AutoVar($CurrVal,true);
+					$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
+				} else if (!isset($Loc->PrmLst['noerr'])) {
+					$this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
+				}
 			}
 			$ConvProtect = false;
 		}
