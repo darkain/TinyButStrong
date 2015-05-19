@@ -668,7 +668,13 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	}
 
 	if ($Loc->FirstMerge) {
-		if (isset($Loc->PrmLst['frm'])) {
+		if (isset($Loc->PrmLst['date'])) {
+			$Loc->ConvMode = 1001; // date
+			$Loc->ConvProtect = false;
+		} else if (isset($Loc->PrmLst['sprintf'])) {
+			$Loc->ConvMode = 1002; // sprintf
+			$Loc->ConvProtect = false;
+		} else if (isset($Loc->PrmLst['frm'])) {
 			$Loc->ConvMode = 0; // Frm
 			$Loc->ConvProtect = false;
 		} else {
@@ -848,6 +854,10 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 		}
 	} elseif ($Loc->ConvMode===0) { // Format
 		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);
+	} elseif ($Loc->ConvMode===1001) { // date
+		$CurrVal = date($Loc->PrmLst['date'],$CurrVal);
+	} elseif ($Loc->ConvMode===1002) { // sprintf
+		$CurrVal = sprintf($Loc->PrmLst['sprintf'], $CurrVal);
 	} elseif ($Loc->ConvMode===2) { // Special string conversion
 		$CurrVal = $this->meth_Misc_ToStr($CurrVal);
 		if ($Loc->ConvStr) $this->meth_Conv_Str($CurrVal,$Loc->ConvBr);
