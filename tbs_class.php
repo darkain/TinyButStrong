@@ -11,9 +11,17 @@ Author   : http://www.tinybutstrong.com/onlyyou.html
 This library is free software.
 You can redistribute and modify it even for commercial usage,
 but you must accept and respect the LPGL License version 3.
+
+********************************************************
+
+TinyButXtreme - Heavily modified version of TinyButStrong
+------------------------
+Version  : 10.0.0 for PHP 5.4+ and HHVM 3.6+
+Date     : 2015-??-??
+Web site : https://github.com/darkain/TinyButStrong
 */
 // Check PHP version
-if (version_compare(PHP_VERSION,'5.0')<0) echo '<br><b>TinyButStrong Error</b> (PHP Version Check) : Your PHP version is '.PHP_VERSION.' while TinyButStrong needs PHP version 5.0 or higher. You should try with TinyButStrong Edition for PHP 4.';
+if (version_compare(PHP_VERSION,'5.4')<0) echo '<br><b>TinyButXtreme Error</b> (PHP Version Check) : Your PHP version is '.PHP_VERSION.' while TinyButXtreme needs PHP version 5.0 or higher. You should try with TinyButXtreme Edition for PHP 4.';
 
 
 require_once('tbs_locator.php.inc');
@@ -30,7 +38,7 @@ define('TBS_EXIT', 2);
 
 
 
-class clsTinyButStrong {
+class clsTinyButXtreme {
 
 // Public properties
 public $Source = '';
@@ -42,7 +50,7 @@ public $Assigned = array();
 public $ExtendedMethods = array();
 public $ErrCount = 0;
 // Undocumented (can change at any version)
-public $Version = '3.9.0';
+public $Version = '10.0.0';
 public $Charset = '';
 public $TurboBlock = true;
 public $VarPrefix = '';
@@ -97,14 +105,6 @@ function __construct($Options=null,$VarPrefix='',$FctPrefix='') {
 	// Set options
 	$this->VarRef =& $GLOBALS;
 	if (is_array($Options)) $this->SetOption($Options);
-
-	// Links to global variables (cannot be converted to static yet because of compatibility)
-	//global $_TBS_FormatLst, $_TBS_UserFctLst, $_TBS_BlockAlias;
-	global $_TBS_UserFctLst, $_TBS_BlockAlias;
-	//if (!isset($_TBS_FormatLst))  $_TBS_FormatLst  = array();
-	if (!isset($_TBS_UserFctLst)) $_TBS_UserFctLst = array();
-	if (!isset($_TBS_BlockAlias)) $_TBS_BlockAlias = array();
-	$this->_UserFctLst = &$_TBS_UserFctLst;
 }
 
 
@@ -116,7 +116,7 @@ function __call($meth, $args) {
 			return call_user_func_array(array(&$this->ExtendedMethods[$meth], $meth), $args);
 		}
 	} else {
-		$this->meth_Misc_Alert('Method not found','\''.$meth.'\' is neither a native nor an extended method of TinyButStrong.');
+		$this->meth_Misc_Alert('Method not found','\''.$meth.'\' is neither a native nor an extended method of TinyButXtreme.');
 	}
 }
 
@@ -150,43 +150,35 @@ function SetOption($o, $v=false, $d=false) {
 		$this->_ChrVal = $this->_ChrOpen.'val'.$this->_ChrClose;
 		$this->_ChrProtect = '&#'.ord($this->_ChrOpen[0]).';'.substr($this->_ChrOpen,1);
 	}
-	//if (array_key_exists('tpl_frms',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
-	if (array_key_exists('block_alias',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_BlockAlias'], false, $o['block_alias'], $d);
 	if (array_key_exists('parallel_conf',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_ParallelLst'], false, $o['parallel_conf'], $d);
 	if (array_key_exists('include_path',$o)) self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
 	if (isset($o['render'])) $this->Render = $o['render'];
-//	if (isset($o['methods_allowed'])) $this->MethodsAllowed = $o['methods_allowed'];
 }
 
 function GetOption($o) {
-	if ($o==='all') {
-//		$x = explode(',', 'var_prefix,fct_prefix,noerr,auto_merge,onload,onshow,att_delim,protect,turbo_block,charset,chr_open,chr_close,tpl_frms,block_alias,include_path,render');
-		$x = explode(',', 'var_prefix,fct_prefix,noerr,auto_merge,onload,onshow,att_delim,protect,turbo_block,charset,chr_open,chr_close,block_alias,include_path,render');
-		$r = array();
-		foreach ($x as $o) $r[$o] = $this->GetOption($o);
+	switch ($o) {
+		case'all':
+			$x = ['var_prefix','fct_prefix','noerr','auto_merge','onload','onshow','att_delim','protect','turbo_block','charset','chr_open','chr_close','block_alias','include_path','render'];
+			$r = [];
+			foreach ($x as $o) $r[$o] = $this->GetOption($o);
 		return $r;
+
+		case 'var_prefix':	return $this->VarPrefix;
+		case 'fct_prefix':	return $this->FctPrefix;
+		case 'noerr':		return $this->NoErr;
+		case 'auto_merge':	return ($this->OnLoad && $this->OnShow);
+		case 'onload':		return $this->OnLoad;
+		case 'onshow':		return $this->OnShow;
+		case 'att_delim':	return $this->AttDelim;
+		case 'protect':		return $this->Protect;
+		case 'turbo_block':	return $this->TurboBlock;
+		case 'charset':		return $this->Charset;
+		case 'chr_open':	return $this->_ChrOpen;
+		case 'chr_close':	return $this->_ChrClose;
+		case 'include_path':return $this->IncludePath;
+		case 'render':		return $this->Render;
 	}
-	if ($o==='var_prefix') return $this->VarPrefix;
-	if ($o==='fct_prefix') return $this->FctPrefix;
-	if ($o==='noerr') return $this->NoErr;
-	if ($o==='auto_merge') return ($this->OnLoad && $this->OnShow);
-	if ($o==='onload') return $this->OnLoad;
-	if ($o==='onshow') return $this->OnShow;
-	if ($o==='att_delim') return $this->AttDelim;
-	if ($o==='protect') return $this->Protect;
-	if ($o==='turbo_block') return $this->TurboBlock;
-	if ($o==='charset') return $this->Charset;
-	if ($o==='chr_open') return $this->_ChrOpen;
-	if ($o==='chr_close') return $this->_ChrClose;
-	/*if ($o==='tpl_frms') {
-		// simplify the list of formats
-		$x = array();
-		foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
-		return $x;
-	}*/
-	if ($o==='include_path') return $this->IncludePath;
-	if ($o==='render') return $this->Render;
-//	if ($o==='methods_allowed') return $this->MethodsAllowed;
+
 	return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
 }
 
@@ -194,14 +186,14 @@ public function ResetVarRef($ToGlobal) {
 	if ($ToGlobal) {
 		$this->VarRef = &$GLOBALS;
 	} else {
-		$x = array();
+		$x = [];
 		$this->VarRef = &$x;
 	}
 }
 
 // Public methods
 public function LoadTemplate($File,$Charset='') {
-	if ($File==='') {
+	if (empty($File)) {
 		$this->meth_Misc_Charset($Charset);
 		return true;
 	}
@@ -215,11 +207,13 @@ public function LoadTemplate($File,$Charset='') {
 			$this->Source = $x;
 		}
 	}
+
 	if ($this->meth_Misc_IsMainTpl()) {
 		if (!is_null($File)) $this->_LastFile = $File;
 		if ($Charset!=='+') $this->TplVars = array();
 		$this->meth_Misc_Charset($Charset);
 	}
+
 	// Automatic fields and blocks
 	$this->meth_Merge_AutoVar($this->Source,true);
 	if ($this->OnLoad) $this->meth_Merge_AutoOn($this->Source,'onload',true,true);
@@ -588,16 +582,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 					unset($Value); $Value = ''; break;
 				}
 			} elseif (is_object($Value)) {
-				$ArgLst = $this->f_Misc_CheckArgLst($x);
-/*				if (method_exists($Value,$x)  &&  $this->MethodsAllowed) {
-					if (!in_array(strtok($Loc->FullName,'.'),array('onload','onshow','var')) ) {
-						$x = call_user_func_array(array(&$Value,$x),$ArgLst);
-					} else {
-						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'\''.$x.'\' is a method and the current TBS settings do not allow to call methods on automatic fields.',true);
-						$x = '';
-					}
 
-				} elseif (property_exists($Value,$x)) {*/
 				if (property_exists($Value,$x)) {
 					$prop = new ReflectionProperty($Value,$x);
 					if ($prop->isStatic()) {
@@ -608,35 +593,14 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 
 				} elseif (isset($Value->$x)) {
 					$x = $Value->$x; // useful for overloaded property
-/*
-				} elseif (method_exists($Value,$x)  &&  !$this->MethodsAllowed) {
-					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'\''.$x.'\' is a method and the current TBS settings do not allow to call methods on automatic fields.',true);
-					$x = '';
-*/
+
 				} else {
-//					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.get_class($Value).'\'.',true);
 					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',true);
 					unset($Value); $Value = ''; break;
 				}
 
 				$Value = &$x; unset($x); $x = '';
 
-/*
-			} else if (class_exists($Value)) {
-				if (property_exists($Value,$x)) {
-					$prop = new ReflectionProperty($Value,$x);
-					if ($prop->isStatic()) {
-						$x = &$Value::$$x;
-					} else {
-						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a static method nor a static property in the class \''.$Value.'\'.',true);
-						unset($Value); $Value = ''; break;
-					}
-				} else {
-					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.$Value.'\'.',true);
-					unset($Value); $Value = ''; break;
-				}
-				$Value = &$x; unset($x); $x = '';
-*/
 			} else {
 				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item before \''.$x.'\' is neither an object nor an array. Its type is '.gettype($Value).'.',true);
 				unset($Value); $Value = ''; break;
@@ -678,9 +642,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 		} else if (isset($Loc->PrmLst['sprintf'])) {
 			$Loc->ConvMode = 1002; // sprintf
 			$Loc->ConvProtect = false;
-/*		} else if (isset($Loc->PrmLst['frm'])) {
-			$Loc->ConvMode = 0; // Frm
-			$Loc->ConvProtect = false;*/
 		} else {
 			// Analyze parameter 'strconv'
 			if (isset($Loc->PrmLst['strconv'])) {
@@ -856,8 +817,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$CurrVal = $this->meth_Misc_ToStr($CurrVal);
 			if ($Loc->ConvStr) $this->meth_Conv_Str($CurrVal,$Loc->ConvBr);
 		}
-/*	} elseif ($Loc->ConvMode===0) { // Format
-		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);*/
 	} elseif ($Loc->ConvMode===1001) { // date
 		$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
 	} elseif ($Loc->ConvMode===1002) { // sprintf
@@ -888,11 +847,9 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 		$z = false;
 		$i = 1;
 		while ($i!==false) {
-			//if ($Loc->PrmIfVar[$i]) $Loc->PrmIfVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmIf[$i],true);
 			$x = str_replace($this->_ChrVal,$CurrVal,$Loc->PrmIf[$i]);
 			if ($this->f_Misc_CheckCondition($x)) {
 				if (isset($Loc->PrmThen[$i])) {
-					//if ($Loc->PrmThenVar[$i]) $Loc->PrmThenVar[$i] = $this->meth_Merge_AutoVar($Loc->PrmThen[$i],true);
 					$z = $Loc->PrmThen[$i];
 				}
 				$i = false;
@@ -900,7 +857,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				$i++;
 				if ($i>$Loc->PrmIfNbr) {
 					if (isset($Loc->PrmLst['else'])) {
-						//if ($Loc->PrmElseVar) $Loc->PrmElseVar = $this->meth_Merge_AutoVar($Loc->PrmLst['else'],true);
 						$z =$Loc->PrmLst['else'];
 					}
 					$i = false;
@@ -1394,7 +1350,8 @@ function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
 function meth_Locator_FindParallel(&$Txt, $ZoneBeg, $ZoneEnd, $ConfId) {
 
 	// Define configurations
-	global $_TBS_ParallelLst, $_TBS_BlockAlias;
+//	global $_TBS_ParallelLst, $_TBS_BlockAlias;
+	global $_TBS_ParallelLst;
 
 	if (!isset($_TBS_ParallelLst)) $_TBS_ParallelLst = array();
 
@@ -2026,8 +1983,8 @@ function meth_Merge_AutoSpe(&$Txt,&$Loc) {
 		case 'template_name': $x = $this->_LastFile; break;
 		case 'template_date': $x = ''; if ($this->f_Misc_GetFile($x,$this->_LastFile,'',array(),false)) $x = $x['mtime']; break;
 		case 'template_path': $x = dirname($this->_LastFile).'/'; break;
-		case 'name': $x = 'TinyButStrong'; break;
-		case 'logo': $x = '**TinyButStrong**'; break;
+		case 'name': $x = 'TinyButXtreme'; break;
+		case 'logo': $x = '**TinyButXtreme**'; break;
 		case 'charset': $x = $this->Charset; break;
 		case 'error_msg': $this->_ErrMsgName = $Loc->FullName; return $Loc->PosEnd;	break;
 		case '': $ErrMsg = 'it doesn\'t have any keyword.'; break;
@@ -2060,7 +2017,7 @@ function meth_Merge_AutoSpe(&$Txt,&$Loc) {
 			break;
 		case 'cst': $x = @constant($Loc->SubLst[2]); break;
 		case 'tbs_info':
-			$x = 'TinyButStrong version '.$this->Version.' for PHP-5.x and HHVM-3.x';
+			$x = 'TinyButXtreme version '.$this->Version.' for PHP-5.4+ and HHVM-3.6+';
 			break;
 		case 'php_info':
 			ob_start();
@@ -2389,7 +2346,7 @@ function meth_Conv_Str(&$Txt,$ConvBr=true) {
 	}
 }
 
-// Standard alert message provided by TinyButStrong, return False is the message is cancelled.
+// Standard alert message provided by TinyButXtreme, return False is the message is cancelled.
 function meth_Misc_Alert($Src,$Msg,$NoErrMsg=false,$SrcType=false) {
 	$this->ErrCount++;
 	if ($this->NoErr || (PHP_SAPI==='cli') ) {
@@ -2408,7 +2365,7 @@ function meth_Misc_Alert($Src,$Msg,$NoErrMsg=false,$SrcType=false) {
 			$Src = $SrcType.' '.$this->_ChrOpen.$Src->FullName.'...'.$this->_ChrClose;
 		}
 	}
-	$x = $t[0].'TinyButStrong Error'.$t[1].' '.$Src.': '.$Msg;
+	$x = $t[0].'TinyButXtreme Error'.$t[1].' '.$Src.': '.$Msg;
 	if ($NoErrMsg) $x = $x.' '.$t[2].'This message can be cancelled using parameter \'noerr\'.'.$t[3];
 	$x = $x.$t[4]."\n";
 	if ($this->NoErr) {
@@ -2483,165 +2440,6 @@ function meth_Misc_ChangeMode($Init,&$Loc,&$CurrVal) {
 	}
 }
 
-function meth_Misc_UserFctCheck(&$FctInfo,$FctCat,&$FctObj,&$ErrMsg,$FctCheck=false) {
-
-	$FctId = $FctCat.':'.$FctInfo;
-	if (isset($this->_UserFctLst[$FctId])) {
-		$FctInfo = $this->_UserFctLst[$FctId];
-		return true;
-	}
-
-	// Check and put in cache
-	$FctStr = $FctInfo;
-	$IsData = ($FctCat!=='f');
-	$Save = true;
-	if ($FctStr[0]==='~') {
-		$ObjRef = &$this->ObjectRef;
-		$Lst = explode('.',substr($FctStr,1));
-		$iMax = count($Lst) - 1;
-		$Suff = 'tbsdb';
-		$iMax0 = $iMax;
-		if ($IsData) {
-			$Suff = $Lst[$iMax];
-			$iMax--;
-		}
-		// Reading sub items
-		for ($i=0;$i<=$iMax;$i++) {
-			$x = &$Lst[$i];
-			if (is_object($ObjRef)) {
-				$ArgLst = $this->f_Misc_CheckArgLst($x);
-				if (method_exists($ObjRef,$x)) {
-					if ($i<$iMax) {
-						$f = array(&$ObjRef,$x); unset($ObjRef);
-						$ObjRef = call_user_func_array($f,$ArgLst);
-					}
-				} elseif ($i===$iMax0) {
-					$ErrMsg = 'Expression \''.$FctStr.'\' is invalid because \''.$x.'\' is not a method in the class \''.get_class($ObjRef).'\'.';
-					return false;
-				} elseif (isset($ObjRef->$x)) {
-					$ObjRef = &$ObjRef->$x;
-				} else {
-					$ErrMsg = 'Expression \''.$FctStr.'\' is invalid because sub-item \''.$x.'\' is neither a method nor a property in the class \''.get_class($ObjRef).'\'.';
-					return false;
-				}
-			} elseif (($i<$iMax0) && is_array($ObjRef)) {
-				if (isset($ObjRef[$x])) {
-					$ObjRef = &$ObjRef[$x];
-				} else {
-					$ErrMsg = 'Expression \''.$FctStr.'\' is invalid because sub-item \''.$x.'\' is not a existing key in the array.';
-					return false;
-				}
-			} else {
-				$ErrMsg = 'Expression \''.$FctStr.'\' is invalid because '.(($i===0)?'property ObjectRef':'sub-item \''.$x.'\'').' is not an object'.(($i<$iMax)?' or an array.':'.');
-				return false;
-			}
-		}
-		// Referencing last item
-		if ($IsData) {
-			$FctInfo = array('open'=>'','fetch'=>'','close'=>'');
-			foreach ($FctInfo as $act=>$x) {
-				$FctName = $Suff.'_'.$act;
-				if (method_exists($ObjRef,$FctName)) {
-					$FctInfo[$act] = array(&$ObjRef,$FctName);
-				} else {
-					$ErrMsg = 'Expression \''.$FctStr.'\' is invalid because method '.$FctName.' is not found.';
-					return false;
-				}
-			}
-			$FctInfo['type'] = 4;
-			if (isset($this->RecheckObj) && $this->RecheckObj) $Save = false;
-		} else {
-			$FctInfo = array(&$ObjRef,$x);
-		}
-	} elseif ($IsData) {
-
-		$IsObj = ($FctCat==='o');
-
-		if ($IsObj && method_exists($FctObj,'tbsdb_open') && (!method_exists($FctObj,'+'))) { // '+' avoid a bug in PHP 5
-
-			if (!method_exists($FctObj,'tbsdb_fetch')) {
-				$ErrMsg = 'the expected method \'tbsdb_fetch\' is not found for the class '.$Cls.'.';
-				return false;
-			}
-			if (!method_exists($FctObj,'tbsdb_close')) {
-				$ErrMsg = 'the expected method \'tbsdb_close\' is not found for the class '.$Cls.'.';
-				return false;
-			}
-			$FctInfo = array('type'=>5);
-
-		}	else {
-
-			if ($FctCat==='r') { // Resource
-				$x = strtolower($FctStr);
-				$x = str_replace('-','_',$x);
-				$Key = '';
-				$i = 0;
-				$iMax = strlen($x);
-				while ($i<$iMax) {
-					if (($x[$i]==='_') || (($x[$i]>='a') && ($x[$i]<='z')) || (($x[$i]>='0') && ($x[$i]<='9'))) {
-						$Key .= $x[$i];
-						$i++;
-					} else {
-						$i = $iMax;
-					}
-				}
-			} else {
-				$Key = $FctStr;
-			}
-
-			$FctInfo = array('open'=>'','fetch'=>'','close'=>'');
-			foreach ($FctInfo as $act=>$x) {
-				$FctName = 'tbsdb_'.$Key.'_'.$act;
-				if (function_exists($FctName)) {
-					$FctInfo[$act] = $FctName;
-				} else {
-					$err = true;
-					if ($act==='open') { // Try simplified key
-						$p = strpos($Key,'_');
-						if ($p!==false) {
-							$Key2 = substr($Key,0,$p);
-							$FctName2  = 'tbsdb_'.$Key2.'_'.$act;
-							if (function_exists($FctName2)) {
-								$err = false;
-								$Key = $Key2;
-								$FctInfo[$act] = $FctName2;
-							}
-						}
-					}
-					if ($err) {
-						$ErrMsg = 'Data source Id \''.$FctStr.'\' is unsupported because function \''.$FctName.'\' is not found.';
-						return false;
-					}
-				}
-			}
-
-			$FctInfo['type'] = 3;
-
-		}
-
-	} else {
-		if ( $FctCheck && ($this->FctPrefix!=='') && (strncmp($this->FctPrefix,$FctStr,strlen($this->FctPrefix))!==0) ) {
-			$ErrMsg = 'user function \''.$FctStr.'\' does not match the allowed prefix.'; return false;
-		} else if (!function_exists($FctStr)) {
-			$x = explode('.',$FctStr);
-			if (count($x)==2) {
-				if (class_exists($x[0])) {
-					$FctInfo = $x;
-				} else {
-					$ErrMsg = 'user function \''.$FctStr.'\' is not correct because \''.$x[0].'\' is not a class name.'; return false;
-				}
-			} else {
-				$ErrMsg = 'user function \''.$FctStr.'\' is not found.'; return false;
-			}
-		}
-	}
-
-	if ($Save) $this->_UserFctLst[$FctId] = $FctInfo;
-	return true;
-
-}
-
-
 function meth_Misc_Charset($Charset) {
 	if ($Charset==='+') return;
 	$this->_CharsetFct = false;
@@ -2681,106 +2479,6 @@ static function meth_Misc_ToStr($Value) {
 	return @(string)$Value;
 }
 
-/*
-function meth_Misc_Format(&$Value,&$PrmLst) {
-// This function return the formated representation of a Date/Time or numeric variable using a 'VB like' format syntax instead of the PHP syntax.
-
-	$FrmStr = $PrmLst['frm'];
-	$CheckNumeric = true;
-	if (is_string($Value)) $Value = trim($Value);
-
-	if ($FrmStr==='') return '';
-	$Frm = self::f_Misc_FormatSave($FrmStr);
-
-	// Manage Multi format strings
-	if ($Frm['type']=='multi') {
-
-		// Select the format
-		if (is_numeric($Value)) {
-			if (is_string($Value)) $Value = 0.0 + $Value;
-			if ($Value>0) {
-				$FrmStr = &$Frm[0];
-			} elseif ($Value<0) {
-				$FrmStr = &$Frm[1];
-				if ($Frm['abs']) $Value = abs($Value);
-			} else { // zero
-				$FrmStr = &$Frm[2];
-				$Minus = '';
-			}
-			$CheckNumeric = false;
-		} else {
-			$Value = $this->meth_Misc_ToStr($Value);
-			if ($Value==='') {
-				return $Frm[3]; // Null value
-			} else if (!ctype_digit($Value)) {
-				$t = strtotime($Value); // We look if it's a date
-				if (($t===-1) || ($t===false)) { // Date not recognized
-					return $Frm[1];
-				} else { // It's a date
-					$Value = $t;
-					$FrmStr = &$Frm[0];
-				}
-			} else {
-				$FrmStr = &$Frm[0];
-			}
-		}
-
-		// Retrieve the correct simple format
-		if ($FrmStr==='') return '';
-		$Frm = self::f_Misc_FormatSave($FrmStr);
-
-	}
-
-	switch ($Frm['type']) {
-	case 'num' :
-		// NUMERIC
-		if ($CheckNumeric) {
-			if (is_numeric($Value)) {
-				if (is_string($Value)) $Value = 0.0 + $Value;
-			} else {
-				return $this->meth_Misc_ToStr($Value);
-			}
-		}
-		if ($Frm['PerCent']) $Value = $Value * 100;
-		$Value = number_format($Value,$Frm['DecNbr'],$Frm['DecSep'],$Frm['ThsSep']);
-		if ($Frm['Pad']!==false) $Value = str_pad($Value, $Frm['Pad'], '0', STR_PAD_LEFT);
-		if ($Frm['ThsRpl']!==false) $Value = str_replace($Frm['ThsSep'], $Frm['ThsRpl'], $Value);
-		$Value = substr_replace($Frm['Str'],$Value,$Frm['Pos'],$Frm['Len']);
-		return $Value;
-		break;
-	case 'date' :
-		// DATE
-		if (is_object($Value)) {
-			$Value = $this->meth_Misc_ToStr($Value);
-		}
-		if (is_string($Value)) {
-			if ($Value==='') return '';
-			if (!ctype_digit($Value)) {
-				$x = strtotime($Value);
-				if (($x===-1) || ($x===false)) {
-					if (!is_numeric($Value)) $Value = 0;
-				} else {
-					$Value = &$x;
-				}
-			}
-		} else {
-			if (!is_numeric($Value)) return $this->meth_Misc_ToStr($Value);
-		}
-		if ($Frm['loc'] || isset($PrmLst['locale'])) {
-			$x = strftime($Frm['str_loc'],$Value);
-			$this->meth_Conv_Str($x,false); // may have accent
-			return $x;
-		} else {
-			return date($Frm['str_us'],$Value);
-		}
-		break;
-	default:
-		return $Frm['string'];
-		break;
-	}
-
-}
-*/
 // Simply update an array
 static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
 	if (!is_array($v)) {
@@ -2817,168 +2515,8 @@ static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
 		}
 	}
 }
-/*
-static function f_Misc_FormatSave(&$FrmStr,$Alias='') {
 
-	$FormatLst = &$GLOBALS['_TBS_FormatLst'];
 
-	if (isset($FormatLst[$FrmStr])) {
-		if ($Alias!='') $FormatLst[$Alias] = &$FormatLst[$FrmStr];
-		return $FormatLst[$FrmStr];
-	}
-
-	if (strpos($FrmStr,'|')!==false) {
-
-		// Multi format
-		$Frm = explode('|',$FrmStr); // syntax: Postive|Negative|Zero|Null
-		$FrmNbr = count($Frm);
-		$Frm['abs'] = ($FrmNbr>1);
-		if ($FrmNbr<3) $Frm[2] = &$Frm[0]; // zero
-		if ($FrmNbr<4) $Frm[3] = ''; // null
-		$Frm['type'] = 'multi';
-		$FormatLst[$FrmStr] = $Frm;
-
-	} elseif (($nPosEnd = strrpos($FrmStr,'0'))!==false) {
-
-		// Numeric format
-		$nDecSep = '.';
-		$nDecNbr = 0;
-		$nDecOk = true;
-		$nPad = false;
-		$nPadZ = 0;
-
-		if (substr($FrmStr,$nPosEnd+1,1)==='.') {
-			$nPosEnd++;
-			$nPos = $nPosEnd;
-			$nPadZ = 1;
-		} else {
-			$nPos = $nPosEnd - 1;
-			while (($nPos>=0) && ($FrmStr[$nPos]==='0')) {
-				$nPos--;
-			}
-			if (($nPos>=1) && ($FrmStr[$nPos-1]==='0')) {
-				$nDecSep = $FrmStr[$nPos];
-				$nDecNbr = $nPosEnd - $nPos;
-			} else {
-				$nDecOk = false;
-			}
-		}
-
-		// Thousand separator
-		$nThsSep = '';
-		$nThsRpl = false;
-		if (($nDecOk) && ($nPos>=5)) {
-			if ((substr($FrmStr,$nPos-3,3)==='000') && ($FrmStr[$nPos-4]!=='0')) {
-				$p = strrpos(substr($FrmStr,0,$nPos-4), '0');
-				if ($p!==false) {
-					$len = $nPos-4-$p;
-					$x = substr($FrmStr, $p+1, $len);
-					if ($len>1) {
-						// for compatibility for number_format() with PHP < 5.4.0
-						$nThsSep = ($nDecSep=='*') ? '.' : '*';
-						$nThsRpl = $x;
-					} else {
-						$nThsSep = $x;
-					}
-					$nPos = $p+1;
-				}
-			}
-		}
-
-		// Pass next zero
-		if ($nDecOk) $nPos--;
-		while (($nPos>=0) && ($FrmStr[$nPos]==='0')) {
-			$nPos--;
-		}
-
-		$nLen = $nPosEnd-$nPos;
-		if ( ($nThsSep==='') && ($nLen>($nDecNbr+$nPadZ+1)) )	$nPad = $nLen - $nPadZ;
-
-		// Percent
-		$nPerCent = (strpos($FrmStr,'%')===false) ? false : true;
-
-		$FormatLst[$FrmStr] = array('type'=>'num','Str'=>$FrmStr,'Pos'=>($nPos+1),'Len'=>$nLen,'ThsSep'=>$nThsSep,'ThsRpl'=>$nThsRpl,'DecSep'=>$nDecSep,'DecNbr'=>$nDecNbr,'PerCent'=>$nPerCent,'Pad'=>$nPad);
-
-	} else {
-
-		// Date format
-		$x = $FrmStr;
-		$FrmPHP = '';
-		$FrmLOC = '';
-		$StrIn = false;
-		$Cnt = 0;
-		$i = strpos($FrmStr,'(locale)');
-		$Locale = ($i!==false);
-		if ($Locale) $x = substr_replace($x,'',$i,8);
-
-		$iEnd = strlen($x);
-		for ($i=0;$i<$iEnd;$i++) {
-
-			if ($StrIn) {
-				// We are in a string part
-				if ($x[$i]==='"') {
-					if (substr($x,$i+1,1)==='"') {
-						$FrmPHP .= '\\"'; // protected char
-						$FrmLOC .= $x[$i];
-						$i++;
-					} else {
-						$StrIn = false;
-					}
-				} else {
-					$FrmPHP .= '\\'.$x[$i]; // protected char
-					$FrmLOC .= $x[$i];
-				}
-			} else {
-				if ($x[$i]==='"') {
-					$StrIn = true;
-				} else {
-					$Cnt++;
-					if     (strcasecmp(substr($x,$i,2),'hh'  )===0) { $FrmPHP .= 'H'; $FrmLOC .= '%H'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,2),'hm'  )===0) { $FrmPHP .= 'h'; $FrmLOC .= '%I'; $i += 1;} // for compatibility
-					elseif (strcasecmp(substr($x,$i,1),'h'   )===0) { $FrmPHP .= 'G'; $FrmLOC .= '%H';}
-					elseif (strcasecmp(substr($x,$i,2),'rr'  )===0) { $FrmPHP .= 'h'; $FrmLOC .= '%I'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,1),'r'   )===0) { $FrmPHP .= 'g'; $FrmLOC .= '%I';}
-					elseif (strcasecmp(substr($x,$i,4),'ampm')===0) { $FrmPHP .= substr($x,$i,1); $FrmLOC .= '%p'; $i += 3;} // $Fmp = 'A' or 'a'
-					elseif (strcasecmp(substr($x,$i,2),'nn'  )===0) { $FrmPHP .= 'i'; $FrmLOC .= '%M'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,2),'ss'  )===0) { $FrmPHP .= 's'; $FrmLOC .= '%S'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,2),'xx'  )===0) { $FrmPHP .= 'S'; $FrmLOC .= ''  ; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,4),'yyyy')===0) { $FrmPHP .= 'Y'; $FrmLOC .= '%Y'; $i += 3;}
-					elseif (strcasecmp(substr($x,$i,2),'yy'  )===0) { $FrmPHP .= 'y'; $FrmLOC .= '%y'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,4),'mmmm')===0) { $FrmPHP .= 'F'; $FrmLOC .= '%B'; $i += 3;}
-					elseif (strcasecmp(substr($x,$i,3),'mmm' )===0) { $FrmPHP .= 'M'; $FrmLOC .= '%b'; $i += 2;}
-					elseif (strcasecmp(substr($x,$i,2),'mm'  )===0) { $FrmPHP .= 'm'; $FrmLOC .= '%m'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,1),'m'   )===0) { $FrmPHP .= 'n'; $FrmLOC .= '%m';}
-					elseif (strcasecmp(substr($x,$i,4),'wwww')===0) { $FrmPHP .= 'l'; $FrmLOC .= '%A'; $i += 3;}
-					elseif (strcasecmp(substr($x,$i,3),'www' )===0) { $FrmPHP .= 'D'; $FrmLOC .= '%a'; $i += 2;}
-					elseif (strcasecmp(substr($x,$i,1),'w'   )===0) { $FrmPHP .= 'w'; $FrmLOC .= '%u';}
-					elseif (strcasecmp(substr($x,$i,4),'dddd')===0) { $FrmPHP .= 'l'; $FrmLOC .= '%A'; $i += 3;}
-					elseif (strcasecmp(substr($x,$i,3),'ddd' )===0) { $FrmPHP .= 'D'; $FrmLOC .= '%a'; $i += 2;}
-					elseif (strcasecmp(substr($x,$i,2),'dd'  )===0) { $FrmPHP .= 'd'; $FrmLOC .= '%d'; $i += 1;}
-					elseif (strcasecmp(substr($x,$i,1),'d'   )===0) { $FrmPHP .= 'j'; $FrmLOC .= '%d';}
-					else {
-						$FrmPHP .= '\\'.$x[$i]; // protected char
-						$FrmLOC .= $x[$i]; // protected char
-						$Cnt--;
-					}
-				}
-			}
-
-		}
-
-		if ($Cnt>0) {
-			$FormatLst[$FrmStr] = array('type'=>'date','str_us'=>$FrmPHP,'str_loc'=>$FrmLOC,'loc'=>$Locale);
-		} else {
-			$FormatLst[$FrmStr] = array('type'=>'else','string'=>$FrmStr);
-		}
-
-	}
-
-	if ($Alias!='') $FormatLst[$Alias] = &$FormatLst[$FrmStr];
-
-	return $FormatLst[$FrmStr];
-
-}
-*/
 static function f_Misc_ConvSpe(&$Loc) {
 	if ($Loc->ConvMode!==2) {
 		$Loc->ConvMode = 2;
@@ -2990,17 +2528,6 @@ static function f_Misc_ConvSpe(&$Loc) {
 	}
 }
 
-static function f_Misc_CheckArgLst(&$Str) {
-	$ArgLst = array();
-	if (substr($Str,-1,1)===')') {
-		$pos = strpos($Str,'(');
-		if ($pos!==false) {
-			$ArgLst = explode(',',substr($Str,$pos+1,strlen($Str)-$pos-2));
-			$Str = substr($Str,0,$pos);
-		}
-	}
-	return $ArgLst;
-}
 
 static function f_Misc_CheckCondition($Str) {
 // Check if an expression like "exrp1=expr2" is true or false.
@@ -3391,8 +2918,6 @@ This is because of the calling function.
 static function f_Loc_EnlargeToTag(&$Txt,&$Loc,$TagStr,$RetInnerSrc) {
 //Modify $Loc, return false if tags not found, returns the inner source of tag if $RetInnerSrc=true
 
-	$AliasLst = &$GLOBALS['_TBS_BlockAlias'];
-
 	// Analyze string
 	$Ref = 0;
 	$LevelStop = 0;
@@ -3409,33 +2934,21 @@ static function f_Loc_EnlargeToTag(&$Txt,&$Loc,$TagStr,$RetInnerSrc) {
 			$t = substr($TagStr,0,$p);
 			$TagStr = substr($TagStr,$p+1);
 		}
- 		do { // Check parentheses, relative position and single tag
- 			$t = trim($t);
-	 		$e = strlen($t) - 1; // pos of last char
-	 		if (($e>1) && ($t[0]==='(') && ($t[$e]===')')) {
-	 			if ($Ref===0) $Ref = $i;
-	 			if ($Ref===$i) $LevelStop++;
-	 			$t = substr($t,1,$e-1);
-	 		} else {
-	 			if (($e>=0) && ($t[$e]==='/')) $t = substr($t,0,$e); // for compatibilty
-	 			$e = false;
-	 		}
- 		} while ($e!==false);
-		if (isset($AliasLst[$t])) {
-			$a = $AliasLst[$t];
-			if (is_string($a)) {
-				if ($i>999) return false; // prevent from circular alias
-				$TagStr = ($TagStr==='') ? $a : $a.'+'.$TagStr;
+		do { // Check parentheses, relative position and single tag
+			$t = trim($t);
+			$e = strlen($t) - 1; // pos of last char
+			if (($e>1) && ($t[0]==='(') && ($t[$e]===')')) {
+				if ($Ref===0) $Ref = $i;
+				if ($Ref===$i) $LevelStop++;
+				$t = substr($t,1,$e-1);
 			} else {
-				$TagLst[$i] = $t;
-				$TagFct[$i] = $a;
-				$i++;
+				if (($e>=0) && ($t[$e]==='/')) $t = substr($t,0,$e); // for compatibilty
+				$e = false;
 			}
-		} else {
-			$TagLst[$i] = $t;
-			$TagFct[$i] = false;
-			$i++;
-		}
+		} while ($e!==false);
+		$TagLst[$i] = $t;
+		$TagFct[$i] = false;
+		$i++;
 	}
 
 	$TagMax = $i-1;
