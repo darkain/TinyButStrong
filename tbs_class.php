@@ -855,7 +855,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	} elseif ($Loc->ConvMode===0) { // Format
 		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);
 	} elseif ($Loc->ConvMode===1001) { // date
-		$CurrVal = date($Loc->PrmLst['date'],$CurrVal);
+		$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
 	} elseif ($Loc->ConvMode===1002) { // sprintf
 		$CurrVal = sprintf($Loc->PrmLst['sprintf'], $CurrVal);
 	} elseif ($Loc->ConvMode===2) { // Special string conversion
