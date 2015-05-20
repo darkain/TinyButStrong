@@ -24,8 +24,8 @@ Web site : https://github.com/darkain/TinyButStrong
 if (version_compare(PHP_VERSION,'5.4')<0) echo '<br><b>TinyButXtreme Error</b> (PHP Version Check) : Your PHP version is '.PHP_VERSION.' while TinyButXtreme needs PHP version 5.0 or higher. You should try with TinyButXtreme Edition for PHP 4.';
 
 
-require_once('tbs_locator.php.inc');
-require_once('tbs_datasource.php.inc');
+require_once('tbx_locator.php.inc');
+require_once('tbx_datasource.php.inc');
 
 
 // Render flags
