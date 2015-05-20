@@ -3954,31 +3954,13 @@ static function f_Xml_FindNewLine(&$Txt,$PosBeg,$Forward,$IsRef) {
 }
 
 static function f_Xml_GetNextEntityName($Txt, $Pos, &$tag, &$PosBeg, &$p) {
-/*
- $tag : tag name
- $PosBeg : position of the tag
- $p   : position where the read has stop
- $z   : first char after the name
-*/
+	$Pos = strpos($Txt, '<', $Pos);
+	if ($Pos === false) return false;
 
-	$tag = '';
-	$PosBeg = strpos($Txt, '<', $Pos);
-
-	if ($PosBeg===false) return false;
-
-	// Read the name of the tag
-	$go = true;
-	$p = $PosBeg;
-	while ($go) {
-		$p++;
-		$z = $Txt[$p];
-		if ($go = ($z!==' ') && ($z!=="\r") && ($z!=="\n") && ($z!=='>') && ($z!=='/') ) {
-			$tag .= $z;
-		}
-	}
+	$p		= strcspn($Txt, " />\r\n", $Pos);
+	$tag	= substr($Txt, $Pos, $p-$Pos);
 
 	return true;
-
 }
 
 }
