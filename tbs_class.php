@@ -51,7 +51,7 @@ public $FctPrefix = '';
 public $Protect = true;
 public $ErrMsg = '';
 public $AttDelim = false;
-public $MethodsAllowed = false;
+//public $MethodsAllowed = false;
 public $OnLoad = true;
 public $OnShow = true;
 public $IncludePath = array();
@@ -99,8 +99,9 @@ function __construct($Options=null,$VarPrefix='',$FctPrefix='') {
 	if (is_array($Options)) $this->SetOption($Options);
 
 	// Links to global variables (cannot be converted to static yet because of compatibility)
-	global $_TBS_FormatLst, $_TBS_UserFctLst, $_TBS_BlockAlias;
-	if (!isset($_TBS_FormatLst))  $_TBS_FormatLst  = array();
+	//global $_TBS_FormatLst, $_TBS_UserFctLst, $_TBS_BlockAlias;
+	global $_TBS_UserFctLst, $_TBS_BlockAlias;
+	//if (!isset($_TBS_FormatLst))  $_TBS_FormatLst  = array();
 	if (!isset($_TBS_UserFctLst)) $_TBS_UserFctLst = array();
 	if (!isset($_TBS_BlockAlias)) $_TBS_BlockAlias = array();
 	$this->_UserFctLst = &$_TBS_UserFctLst;
@@ -149,17 +150,18 @@ function SetOption($o, $v=false, $d=false) {
 		$this->_ChrVal = $this->_ChrOpen.'val'.$this->_ChrClose;
 		$this->_ChrProtect = '&#'.ord($this->_ChrOpen[0]).';'.substr($this->_ChrOpen,1);
 	}
-	if (array_key_exists('tpl_frms',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
+	//if (array_key_exists('tpl_frms',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
 	if (array_key_exists('block_alias',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_BlockAlias'], false, $o['block_alias'], $d);
 	if (array_key_exists('parallel_conf',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_ParallelLst'], false, $o['parallel_conf'], $d);
 	if (array_key_exists('include_path',$o)) self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
 	if (isset($o['render'])) $this->Render = $o['render'];
-	if (isset($o['methods_allowed'])) $this->MethodsAllowed = $o['methods_allowed'];
+//	if (isset($o['methods_allowed'])) $this->MethodsAllowed = $o['methods_allowed'];
 }
 
 function GetOption($o) {
 	if ($o==='all') {
-		$x = explode(',', 'var_prefix,fct_prefix,noerr,auto_merge,onload,onshow,att_delim,protect,turbo_block,charset,chr_open,chr_close,tpl_frms,block_alias,include_path,render');
+//		$x = explode(',', 'var_prefix,fct_prefix,noerr,auto_merge,onload,onshow,att_delim,protect,turbo_block,charset,chr_open,chr_close,tpl_frms,block_alias,include_path,render');
+		$x = explode(',', 'var_prefix,fct_prefix,noerr,auto_merge,onload,onshow,att_delim,protect,turbo_block,charset,chr_open,chr_close,block_alias,include_path,render');
 		$r = array();
 		foreach ($x as $o) $r[$o] = $this->GetOption($o);
 		return $r;
@@ -176,15 +178,15 @@ function GetOption($o) {
 	if ($o==='charset') return $this->Charset;
 	if ($o==='chr_open') return $this->_ChrOpen;
 	if ($o==='chr_close') return $this->_ChrClose;
-	if ($o==='tpl_frms') {
+	/*if ($o==='tpl_frms') {
 		// simplify the list of formats
 		$x = array();
 		foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
 		return $x;
-	}
+	}*/
 	if ($o==='include_path') return $this->IncludePath;
 	if ($o==='render') return $this->Render;
-	if ($o==='methods_allowed') return $this->MethodsAllowed;
+//	if ($o==='methods_allowed') return $this->MethodsAllowed;
 	return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
 }
 
@@ -587,7 +589,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 				}
 			} elseif (is_object($Value)) {
 				$ArgLst = $this->f_Misc_CheckArgLst($x);
-				if (method_exists($Value,$x)  &&  $this->MethodsAllowed) {
+/*				if (method_exists($Value,$x)  &&  $this->MethodsAllowed) {
 					if (!in_array(strtok($Loc->FullName,'.'),array('onload','onshow','var')) ) {
 						$x = call_user_func_array(array(&$Value,$x),$ArgLst);
 					} else {
@@ -595,7 +597,8 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 						$x = '';
 					}
 
-				} elseif (property_exists($Value,$x)) {
+				} elseif (property_exists($Value,$x)) {*/
+				if (property_exists($Value,$x)) {
 					$prop = new ReflectionProperty($Value,$x);
 					if ($prop->isStatic()) {
 						$x = &$Value::$$x;
@@ -605,13 +608,14 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 
 				} elseif (isset($Value->$x)) {
 					$x = $Value->$x; // useful for overloaded property
-
+/*
 				} elseif (method_exists($Value,$x)  &&  !$this->MethodsAllowed) {
 					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'\''.$x.'\' is a method and the current TBS settings do not allow to call methods on automatic fields.',true);
 					$x = '';
-
+*/
 				} else {
-					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.get_class($Value).'\'.',true);
+//					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is neither a method nor a property in the class \''.get_class($Value).'\'.',true);
+					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',true);
 					unset($Value); $Value = ''; break;
 				}
 
@@ -674,9 +678,9 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 		} else if (isset($Loc->PrmLst['sprintf'])) {
 			$Loc->ConvMode = 1002; // sprintf
 			$Loc->ConvProtect = false;
-		} else if (isset($Loc->PrmLst['frm'])) {
+/*		} else if (isset($Loc->PrmLst['frm'])) {
 			$Loc->ConvMode = 0; // Frm
-			$Loc->ConvProtect = false;
+			$Loc->ConvProtect = false;*/
 		} else {
 			// Analyze parameter 'strconv'
 			if (isset($Loc->PrmLst['strconv'])) {
@@ -852,8 +856,8 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$CurrVal = $this->meth_Misc_ToStr($CurrVal);
 			if ($Loc->ConvStr) $this->meth_Conv_Str($CurrVal,$Loc->ConvBr);
 		}
-	} elseif ($Loc->ConvMode===0) { // Format
-		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);
+/*	} elseif ($Loc->ConvMode===0) { // Format
+		$CurrVal = $this->meth_Misc_Format($CurrVal,$Loc->PrmLst);*/
 	} elseif ($Loc->ConvMode===1001) { // date
 		$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
 	} elseif ($Loc->ConvMode===1002) { // sprintf
@@ -2677,7 +2681,7 @@ static function meth_Misc_ToStr($Value) {
 	return @(string)$Value;
 }
 
-
+/*
 function meth_Misc_Format(&$Value,&$PrmLst) {
 // This function return the formated representation of a Date/Time or numeric variable using a 'VB like' format syntax instead of the PHP syntax.
 
@@ -2776,7 +2780,7 @@ function meth_Misc_Format(&$Value,&$PrmLst) {
 	}
 
 }
-
+*/
 // Simply update an array
 static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
 	if (!is_array($v)) {
@@ -2805,15 +2809,15 @@ static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
 		} else { // string keys
 			if (is_null($a)) {
 				unset($array[$p]);
-			} elseif ($numerical==='frm') {
-				self::f_Misc_FormatSave($a, $p);
+			/*} elseif ($numerical==='frm') {
+				self::f_Misc_FormatSave($a, $p);*/
 			} else {
 				$array[$p] = $a;
 			}
 		}
 	}
 }
-
+/*
 static function f_Misc_FormatSave(&$FrmStr,$Alias='') {
 
 	$FormatLst = &$GLOBALS['_TBS_FormatLst'];
@@ -2974,7 +2978,7 @@ static function f_Misc_FormatSave(&$FrmStr,$Alias='') {
 	return $FormatLst[$FrmStr];
 
 }
-
+*/
 static function f_Misc_ConvSpe(&$Loc) {
 	if ($Loc->ConvMode!==2) {
 		$Loc->ConvMode = 2;
