@@ -102,20 +102,7 @@ class clsTbsDataSource {
 
 		if ($FctInfo!==false) {
 			$ErrMsg = false;
-			if ($TBS->meth_Misc_UserFctCheck($FctInfo,$FctCat,$FctObj,$ErrMsg,false)) {
-				$this->Type = $FctInfo['type'];
-				if ($this->Type!==_TBS_DS_OBJECT) {
-					if ($this->Type===_TBS_DS_OBJECTREF) {
-						$this->FctPrm = array(false,0);
-						$this->SrcId = &$FctInfo['open'][0];
-					}
-					$this->FctOpen  = &$FctInfo['open'];
-					$this->FctFetch = &$FctInfo['fetch'];
-					$this->FctClose = &$FctInfo['close'];
-				}
-			} else {
-				$this->Type = $this->DataAlert($ErrMsg);
-			}
+			$this->Type = $this->DataAlert($ErrMsg);
 		}
 
 		return ($this->Type!==false);

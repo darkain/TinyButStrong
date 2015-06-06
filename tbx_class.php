@@ -280,17 +280,16 @@ public function MergeBlock($BlockLst,$SrcId='assigned',$Query='',$QryPrms=false)
 
 }
 
-public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultPrm=false) {
+public function MergeField($NameLst,$Value='assigned',$DefaultPrm=false) {
 
-	$FctCheck = $IsUserFct;
 	$SubStart = 0;
 	$Ok = true;
 	$Prm = is_array($DefaultPrm);
 
 	if ( ($Value==='assigned') && ($NameLst!=='var') && ($NameLst!=='onshow') && ($NameLst!=='onload') ) {
-		$Arg = array($NameLst,&$Value,&$IsUserFct,&$DefaultPrm);
+		$Arg = array($NameLst,&$Value,&$DefaultPrm);
 		if (!$this->meth_Misc_Assign($NameLst, $Arg, 'MergeField')) return false;
-		$NameLst = $Arg[0]; $Value = &$Arg[1]; $IsUserFct = &$Arg[2]; $DefaultPrm = &$Arg[3];
+		$NameLst = $Arg[0]; $Value = &$Arg[1]; $DefaultPrm = &$Arg[2];
 	}
 
 	$NameLst = explode(',',$NameLst);
@@ -304,22 +303,8 @@ public function MergeField($NameLst,$Value='assigned',$IsUserFct=false,$DefaultP
 			case 'var':		$this->meth_Merge_AutoVar($this->Source, true);					continue;
 		}
 		$PosBeg = 0;
-		// Initilize the user function (only once)
-		if ($FctCheck) {
-			$FctInfo = $Value;
-			$ErrMsg = false;
-			if (!$this->meth_Misc_UserFctCheck($FctInfo,'f',$ErrMsg,$ErrMsg,false)) return $this->meth_Misc_Alert('with MergeField() method',$ErrMsg);
-			$FctArg = array('','');
-			$SubStart = false;
-			$FctCheck = false;
-		}
 		while ($Loc = $this->meth_Locator_FindTbs($this->Source,$Name,$PosBeg,'.')) {
 			if ($Prm) $Loc->PrmLst = array_merge($DefaultPrm,$Loc->PrmLst);
-			// Apply user function
-			if ($IsUserFct) {
-				$FctArg[0] = &$Loc->SubName; $FctArg[1] = &$Loc->PrmLst;
-				$Value = call_user_func_array($FctInfo,$FctArg);
-			}
 			// Merge the field
 			if ($Ok) {
 				$PosBeg = $this->meth_Locator_Replace($this->Source,$Loc,$Value,$SubStart);
@@ -615,11 +600,6 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$Loc->OnFrmInfo = $Loc->PrmLst['onformat'];
 			$Loc->OnFrmArg = array($Loc->FullName,'',&$Loc->PrmLst,&$this);
 			$ErrMsg = false;
-			if (!$this->meth_Misc_UserFctCheck($Loc->OnFrmInfo,'f',$ErrMsg,$ErrMsg,true)) {
-				unset($Loc->PrmLst['onformat']);
-				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'(parameter onformat) '.$ErrMsg);
-				$Loc->OnFrmInfo = 'pi'; // Execute the function pi() just to avoid extra error messages
-			}
 		} else {
 			$Loc->OnFrmArg[3] = &$this; // bugs.php.net/51174
 		}
@@ -1617,12 +1597,8 @@ function meth_Merge_Block(&$Txt,$BlockLst,&$SrcId,&$Query,$SpePrm,$SpeRecNum,$Qr
 					$Src->OnDataPrm = false;
 				} else {
 					$ErrMsg = false;
-					if ($this->meth_Misc_UserFctCheck($Src->OnDataPrmRef,'f',$ErrMsg,$ErrMsg,true)) {
-						$Src->OnDataOk = true;
-					} else {
-						$LocR->FullName = $this->_CurrBlock;
-						$Src->OnDataPrm = $this->meth_Misc_Alert($LocR,'(parameter ondata) '.$ErrMsg,false,'block');
-					}
+					$LocR->FullName = $this->_CurrBlock;
+					$Src->OnDataPrm = $this->meth_Misc_Alert($LocR,'(parameter ondata) '.$ErrMsg,false,'block');
 				}
 			}
 			// Dynamic query
@@ -2349,12 +2325,6 @@ function meth_Conv_Str(&$Txt,$ConvBr=true) {
 // Standard alert message provided by TinyButXtreme, return False is the message is cancelled.
 function meth_Misc_Alert($Src,$Msg,$NoErrMsg=false,$SrcType=false) {
 	$this->ErrCount++;
-	if ($this->NoErr || (PHP_SAPI==='cli') ) {
-		$t = array('','','','','');
-	} else {
-		$t = array('<br /><b>','</b>','<em>','</em>','<br />');
-		$Msg = htmlentities($Msg);
-	}
 	if (!is_string($Src)) {
 		if ($SrcType===false) $SrcType='in field';
 		if (isset($Src->PrmLst['tbstype'])) {
@@ -2365,15 +2335,10 @@ function meth_Misc_Alert($Src,$Msg,$NoErrMsg=false,$SrcType=false) {
 			$Src = $SrcType.' '.$this->_ChrOpen.$Src->FullName.'...'.$this->_ChrClose;
 		}
 	}
-	$x = $t[0].'TinyButXtreme Error'.$t[1].' '.$Src.': '.$Msg;
-	if ($NoErrMsg) $x = $x.' '.$t[2].'This message can be cancelled using parameter \'noerr\'.'.$t[3];
-	$x = $x.$t[4]."\n";
+	$x = "TinyButXtreme Error $Src: $Msg";
 	if ($this->NoErr) {
 		$this->ErrMsg .= $x;
 	} else {
-		if (PHP_SAPI!=='cli') {
-			$x = str_replace($this->_ChrOpen,$this->_ChrProtect,$x);
-		}
 		echo $x;
 	}
 	return false;
@@ -2447,12 +2412,8 @@ function meth_Misc_Charset($Charset) {
 		if (($Charset!=='') && ($Charset[0]==='=')) {
 			$ErrMsg = false;
 			$Charset = substr($Charset,1);
-			if ($this->meth_Misc_UserFctCheck($Charset,'f',$ErrMsg,$ErrMsg,false)) {
-				$this->_CharsetFct = true;
-			} else {
-				$this->meth_Misc_Alert('with charset option',$ErrMsg);
-				$Charset = '';
-			}
+			$this->meth_Misc_Alert('with charset option',$ErrMsg);
+			$Charset = '';
 		}
 	} elseif (is_array($Charset)) {
 		$this->_CharsetFct = true;
