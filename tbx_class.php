@@ -818,7 +818,8 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$CurrVal = str_replace(array("\n","\r","\t"),array('\n','\r','\t'),$CurrVal);
 		}
 
-		if ($Loc->ConvUrl) $CurrVal = rawurlencode($CurrVal);
+		if ($Loc->ConvUrl === 1) $CurrVal = urlencode($CurrVal);
+		if ($Loc->ConvUrl === 2) $CurrVal = rawurlencode($CurrVal);
 		if ($Loc->ConvUtf8) $CurrVal = utf8_encode($CurrVal);
 	}
 
@@ -2301,7 +2302,8 @@ function meth_Conv_Prepare(&$Loc, $StrConv) {
 	if (strpos($x,'+esc+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvEsc = true; }
 	if (strpos($x,'+wsp+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvWS = true; }
 	if (strpos($x,'+js+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvJS = true; }
-	if (strpos($x,'+url+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUrl = true; $Loc->ConvProtect = false; }
+	if (strpos($x,'+url+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUrl = 1; $Loc->ConvProtect = false; }
+	if (strpos($x,'+raw+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUrl = 2; $Loc->ConvProtect = false; }
 	if (strpos($x,'+utf8+')	!==false) {$this->f_Misc_ConvSpe($Loc); $Loc->ConvStr = false; $Loc->ConvUtf8 = true; }
 	if (strpos($x,'+no+')	!==false) $Loc->ConvStr = false;
 	if (strpos($x,'+yes+')	!==false) $Loc->ConvStr = true;
