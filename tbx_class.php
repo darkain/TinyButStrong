@@ -1042,7 +1042,7 @@ function meth_Locator_FindBlockNext(&$Txt,$BlockName,$PosBeg,$ChrSub,$Mode,&$P1,
 	} else {
 		$beg = $Loc->PosBeg;
 		$end = $Loc->PosEnd;
-		if ($this->f_Loc_EnlargeToTag($Txt,$Loc,$Block,false)===false) return $this->meth_Misc_Alert($Loc,'at least one tag corresponding to '.$Loc->PrmLst['block'].' is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+		if ($this->f_Loc_EnlargeToTag($Txt,$Loc,$Block,false)===false) return $this->meth_Misc_Alert($Loc,'at least one tag corresponding to &lt;'.$Loc->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
 		if ($Loc->SubOk || ($Mode===3)) {
 			$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$Loc->PosEnd-$Loc->PosBeg+1);
 			$Loc->PosDefBeg = $beg - $Loc->PosBeg;
@@ -2227,7 +2227,7 @@ function meth_Merge_AutoOn(&$Txt,$Name,$TplVar,$MergeVar) {
 				$FldPos = $LocA->PosBeg;
 				$FldLen = $LocA->PosEnd - $LocA->PosBeg + 1;
 				if ($LocA->PosBeg2===false) {
-					if ($this->f_Loc_EnlargeToTag($Txt,$LocA,$LocA->PrmLst['block'],false)===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to '.$LocA->PrmLst['block'].' is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+					if ($this->f_Loc_EnlargeToTag($Txt,$LocA,$LocA->PrmLst['block'],false)===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to &lt;'.$LocA->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
 				} else {
 					$LocA->PosEnd = $LocA->PosEnd2;
 				}
