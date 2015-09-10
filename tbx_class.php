@@ -1694,9 +1694,6 @@ function meth_Merge_BlockParallel(&$Txt,&$LocR,&$Src) {
 	// Main loop
 	$Src->DataFetch();
 
-	//TODO: LOOK INTO THIS STATEMENT. IT IS USELESS
-	//$FirstRec = true;
-
 	// Prepare sources
 	$BlockRes = array();
 	for ($i=1; $i<=$LocR->SectionNbr; $i++) {
