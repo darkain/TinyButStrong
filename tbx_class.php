@@ -682,17 +682,19 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 
 							case 'mod:':	$Loc->OpeAct[$i]	= 5;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
 							case 'add:':	$Loc->OpeAct[$i]	= 6;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'sub:':	$Loc->OpeAct[$i]	=50;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
 							case 'mul:':	$Loc->OpeAct[$i]	= 7;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
 							case 'div:':	$Loc->OpeAct[$i]	= 8;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-							case 'mdx:':	$Loc->OpeAct[$i]	= 5;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
-							case 'adx:':	$Loc->OpeAct[$i]	= 6;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
-							case 'mlx:':	$Loc->OpeAct[$i]	= 7;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
-							case 'dvx:':	$Loc->OpeAct[$i]	= 8;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
+							case 'mdx:':	$Loc->OpeAct[$i]	=51;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'adx:':	$Loc->OpeAct[$i]	=52;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'sbx:':	$Loc->OpeAct[$i]	=53;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'mlx:':	$Loc->OpeAct[$i]	=54;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'dvx:':	$Loc->OpeAct[$i]	=55;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
 							case 'mok:':	$Loc->OpeAct[$i]	= 9;	$Loc->OpeMOK[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
 							case 'mko:':	$Loc->OpeAct[$i]	=10;	$Loc->OpeMKO[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
 							case 'nif:':	$Loc->OpeAct[$i]	=12;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 							case 'msk:':	$Loc->OpeAct[$i]	=13;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
-							case 'cus:':	$Loc->OpeAct[$i]	= 999999; $Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
+							case 'cus:':	$Loc->OpeAct[$i]	=999999; $Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 
 							default:
 								if (!isset($Loc->PrmLst['noerr'])) {
@@ -787,6 +789,14 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 					$CurrVal
 				);
 			break;
+
+			case 50: $CurrVal = ('0'+$CurrVal) - $Loc->OpePrm[$i]; break;
+			case 51: $CurrVal = $Loc->OpePrm[$i] % ('0'+$CurrVal); break;
+			case 52: $CurrVal = $Loc->OpePrm[$i] + ('0'+$CurrVal); break;
+			case 53: $CurrVal = $Loc->OpePrm[$i] - ('0'+$CurrVal); break;
+			case 54: $CurrVal = $Loc->OpePrm[$i] * ('0'+$CurrVal); break;
+			case 55: $CurrVal = $Loc->OpePrm[$i] / ('0'+$CurrVal); break;
+
 
 			case 999999: $this->meth_Custom_Format($CurrVal, $Loc->OpePrm[$i]); break;
 			}
