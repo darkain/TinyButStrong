@@ -680,15 +680,19 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 								if ($Loc->OpePrm[$i]<=0) $Loc->Ope = false;
 							continue;
 
-							case 'mod:': $Loc->OpeAct[$i] = 5; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
-							case 'add:': $Loc->OpeAct[$i] = 6; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
-							case 'mul:': $Loc->OpeAct[$i] = 7; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
-							case 'div:': $Loc->OpeAct[$i] = 8; $Loc->OpePrm[$i] = '0'+trim(substr($ope,4));	continue;
-							case 'mok:': $Loc->OpeAct[$i] = 9; $Loc->OpeMOK[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;	continue;
-							case 'mko:': $Loc->OpeAct[$i] =10; $Loc->OpeMKO[] = trim(substr($ope,4)); $Loc->MSave = $Loc->MagnetId;	continue;
-							case 'nif:': $Loc->OpeAct[$i] =12; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
-							case 'msk:': $Loc->OpeAct[$i] =13; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
-							case 'cus:': $Loc->OpeAct[$i] = 999999; $Loc->OpePrm[$i] = trim(substr($ope,4));	continue;
+							case 'mod:':	$Loc->OpeAct[$i]	= 5;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'add:':	$Loc->OpeAct[$i]	= 6;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'mul:':	$Loc->OpeAct[$i]	= 7;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'div:':	$Loc->OpeAct[$i]	= 8;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
+							case 'mdx:':	$Loc->OpeAct[$i]	= 5;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
+							case 'adx:':	$Loc->OpeAct[$i]	= 6;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
+							case 'mlx:':	$Loc->OpeAct[$i]	= 7;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
+							case 'dvx:':	$Loc->OpeAct[$i]	= 8;	$Loc->OpePrm[$i]	= trim(substr($ope,4))+'0';	continue;
+							case 'mok:':	$Loc->OpeAct[$i]	= 9;	$Loc->OpeMOK[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
+							case 'mko:':	$Loc->OpeAct[$i]	=10;	$Loc->OpeMKO[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
+							case 'nif:':	$Loc->OpeAct[$i]	=12;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
+							case 'msk:':	$Loc->OpeAct[$i]	=13;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
+							case 'cus:':	$Loc->OpeAct[$i]	= 999999; $Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 
 							default:
 								if (!isset($Loc->PrmLst['noerr'])) {
