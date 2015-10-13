@@ -158,25 +158,30 @@ function SetOption($o, $v=false, $d=false) {
 function GetOption($o) {
 	switch ($o) {
 		case'all':
-			$x = ['var_prefix','fct_prefix','noerr','auto_merge','onload','onshow','att_delim','protect','turbo_block','charset','chr_open','chr_close','block_alias','include_path','render'];
+			$x = ['var_prefix','fct_prefix','noerr','auto_merge','onload','onshow','att_delim','protect','turbo_block','charset','chr_open','chr_close','tpl_frms','parallel_conf','include_path','render'];
 			$r = [];
 			foreach ($x as $o) $r[$o] = $this->GetOption($o);
 		return $r;
 
-		case 'var_prefix':	return $this->VarPrefix;
-		case 'fct_prefix':	return $this->FctPrefix;
-		case 'noerr':		return $this->NoErr;
-		case 'auto_merge':	return ($this->OnLoad && $this->OnShow);
-		case 'onload':		return $this->OnLoad;
-		case 'onshow':		return $this->OnShow;
-		case 'att_delim':	return $this->AttDelim;
-		case 'protect':		return $this->Protect;
-		case 'turbo_block':	return $this->TurboBlock;
-		case 'charset':		return $this->Charset;
-		case 'chr_open':	return $this->_ChrOpen;
-		case 'chr_close':	return $this->_ChrClose;
-		case 'include_path':return $this->IncludePath;
-		case 'render':		return $this->Render;
+		case 'var_prefix':		return $this->VarPrefix;
+		case 'fct_prefix':		return $this->FctPrefix;
+		case 'noerr':			return $this->NoErr;
+		case 'auto_merge':		return ($this->OnLoad && $this->OnShow);
+		case 'onload':			return $this->OnLoad;
+		case 'onshow':			return $this->OnShow;
+		case 'att_delim':		return $this->AttDelim;
+		case 'protect':			return $this->Protect;
+		case 'turbo_block':		return $this->TurboBlock;
+		case 'charset':			return $this->Charset;
+		case 'chr_open':		return $this->_ChrOpen;
+		case 'chr_close':		return $this->_ChrClose;
+		case 'include_path':	return $this->IncludePath;
+		case 'render':			return $this->Render;
+		case 'parallel_conf':	return $GLOBALS['_TBS_ParallelLst'];
+		case 'tpl_frms':
+			$x = array();
+			foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
+			return $x;
 	}
 
 	return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
@@ -779,7 +784,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			case 15: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_UPPER, 'UTF-8') : strtoupper($CurrVal); break;
 			case 16: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_LOWER, 'UTF-8') : strtolower($CurrVal); break;
 			case 17: $CurrVal = ucfirst($CurrVal); break;
-			case 18: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_TITLE, 'UTF-8') : ucwords($CurrVal); break;
+			case 18: $CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_TITLE, 'UTF-8') : ucwords(strtolower($CurrVal)); break;
 			case 19:
 				$CurrVal = ($Loc->OpeUtf8) ? mb_convert_case($CurrVal, MB_CASE_LOWER, 'UTF-8') : strtolower($CurrVal);
 				$CurrVal = ucwords($CurrVal);
@@ -1345,7 +1350,6 @@ function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
 function meth_Locator_FindParallel(&$Txt, $ZoneBeg, $ZoneEnd, $ConfId) {
 
 	// Define configurations
-//	global $_TBS_ParallelLst, $_TBS_BlockAlias;
 	global $_TBS_ParallelLst;
 
 	if (!isset($_TBS_ParallelLst)) $_TBS_ParallelLst = array();
@@ -2920,6 +2924,16 @@ static function f_Loc_EnlargeToTag(&$Txt,&$Loc,$TagStr,$RetInnerSrc) {
 				$e = false;
 			}
 		} while ($e!==false);
+
+		// Check for multiples
+		$p = strpos($t, '*');
+		if ($p!==false) {
+			$n = intval(substr($t, 0, $p));
+			$t = substr($t, $p + 1);
+			$n = max($n ,1); // prevent for error: minimum value is 1
+			$TagStr = str_repeat($t . '+', $n-1) . $TagStr;
+		}
+
 		$TagLst[$i] = $t;
 		$TagFct[$i] = false;
 		$i++;
@@ -3052,6 +3066,8 @@ static function f_Xml_AttFind(&$Txt,&$Loc,$Move=false,$AttDelim=false) {
 		if ($Att==='.') return false;
 	}
 
+	$Loc->AttName = $Att;
+
 	$AttLC = strtolower($Att);
 	if (isset($LocO->PrmLst[$AttLC])) {
 		// The attribute is existing
@@ -3072,7 +3088,6 @@ static function f_Xml_AttFind(&$Txt,&$Loc,$Move=false,$AttDelim=false) {
 		// The attribute is not yet existing
 		$Loc->AttDelimCnt = 0;
 		$Loc->AttBeg = false;
-		$Loc->AttName = $Att;
 	}
 
 	// Search for a delimitor
@@ -3356,7 +3371,7 @@ $Opening is used only when $LevelStop=false.
 			if ($TagOk) {
 				// Check the next char
 				$x = $Txt[$PosX];
-				if (($x===' ') || ($x==="\r") || ($x==="\n") || ($x==='>') || ($Tag==='/') || ($Tag==='')) {
+				if (($x===' ') || ($x==="\r") || ($x==="\n") || ($x==='>') || ($x==='/') || ($Tag==='/') || ($Tag==='')) {
 					// Check the encapsulation count
 					if ($LevelStop===false) { // No encaplusation check
 						if ($TagIsOpening!==$Opening) $TagOk = false;
