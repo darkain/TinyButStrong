@@ -361,38 +361,34 @@ function meth_Locator_FindTbs(&$Txt,$Name,$Pos,$ChrSub) {
 		$Pos = strpos($Txt,$Start,$Pos);
 
 		// If found => next chars are analyzed
-		if ($Pos===false) {
-			return false;
+		if ($Pos===false) return false;
+
+		$Loc = new clsTbsLocator;
+		$ReadPrm = false;
+		$PosX = $Pos + strlen($Start);
+		$x = $Txt[$PosX];
+
+		if ($x===$this->_ChrClose) {
+			$PosEnd = $PosX;
+		} elseif ($x===$ChrSub) {
+			$Loc->SubOk = true; // it is no longer the false value
+			$ReadPrm = true;
+			$PosX++;
+		} elseif (strpos(';',$x)!==false) {
+			$ReadPrm = true;
+			$PosX++;
 		} else {
-			$Loc = new clsTbsLocator;
-			$ReadPrm = false;
-			$PosX = $Pos + strlen($Start);
-			$x = $Txt[$PosX];
-
-			if ($x===$this->_ChrClose) {
-				$PosEnd = $PosX;
-			} elseif ($x===$ChrSub) {
-				$Loc->SubOk = true; // it is no longer the false value
-				$ReadPrm = true;
-				$PosX++;
-			} elseif (strpos(';',$x)!==false) {
-				$ReadPrm = true;
-				$PosX++;
-			} else {
-				$Pos++;
-			}
-
-			$Loc->PosBeg = $Pos;
-			if ($ReadPrm) {
-				self::f_Loc_PrmRead($Txt,$PosX,false,'\'',$this->_ChrOpen,$this->_ChrClose,$Loc,$PosEnd);
-				if ($PosEnd===false) {
-					$this->meth_Misc_Alert('','can\'t found the end of the tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.');
-					$Pos++;
-				}
-			}
-
+			$Pos++;
 		}
 
+		$Loc->PosBeg = $Pos;
+		if ($ReadPrm) {
+			self::f_Loc_PrmRead($Txt,$PosX,false,'\'',$this->_ChrOpen,$this->_ChrClose,$Loc,$PosEnd);
+			if ($PosEnd===false) {
+				$this->meth_Misc_Alert('','can\'t found the end of the tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.');
+				$Pos++;
+			}
+		}
 	} while ($PosEnd===false);
 
 	$Loc->PosEnd = $PosEnd;
