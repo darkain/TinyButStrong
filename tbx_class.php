@@ -700,6 +700,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 							case 'mko:':	$Loc->OpeAct[$i]	=10;	$Loc->OpeMKO[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
 							case 'nif:':	$Loc->OpeAct[$i]	=12;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 							case 'msk:':	$Loc->OpeAct[$i]	=13;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
+							case 'chk:':	$Loc->OpeAct[$i]	=60;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 							case 'cus:':	$Loc->OpeAct[$i]	=999999; $Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 
 							default:
@@ -803,6 +804,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			case 54: $CurrVal = $Loc->OpePrm[$i] * ('0'+$CurrVal); break;
 			case 55: $CurrVal = $Loc->OpePrm[$i] / ('0'+$CurrVal); break;
 
+			case 60: $CurrVal = $Loc->OpePrm[$i] == $CurrVal ? 'checked' : ''; break;
 
 			case 999999: $this->meth_Custom_Format($CurrVal, $Loc->OpePrm[$i]); break;
 			}
