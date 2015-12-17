@@ -104,24 +104,37 @@ class clsTinyButXtreme {
 
 
 	function SetOption($o, $v=false, $d=false) {
-		if (!is_array($o)) $o = array($o=>$v);
-		if (isset($o['noerr'])) $this->NoErr = $o['noerr'];
-		if (isset($o['old_subtemplate'])) $this->OldSubTpl = $o['old_subtemplate'];
+		if (!is_array($o)) $o = [$o => $v];
+
+		if (isset($o['noerr']))				$this->NoErr		= $o['noerr'];
+		if (isset($o['old_subtemplate']))	$this->OldSubTpl	= $o['old_subtemplate'];
+		if (isset($o['onload']))			$this->OnLoad		= $o['onload'];
+		if (isset($o['onshow']))			$this->OnShow		= $o['onshow'];
+		if (isset($o['att_delim']))			$this->AttDelim		= $o['att_delim'];
+		if (isset($o['protect']))			$this->Protect		= $o['protect'];
+		if (isset($o['turbo_block']))		$this->TurboBlock	= $o['turbo_block'];
+		if (isset($o['render']))			$this->Render		= $o['render'];
+
 		if (isset($o['auto_merge'])) {
 			$this->OnLoad = $o['auto_merge'];
 			$this->OnShow = $o['auto_merge'];
 		}
-		if (isset($o['onload'])) $this->OnLoad = $o['onload'];
-		if (isset($o['onshow'])) $this->OnShow = $o['onshow'];
-		if (isset($o['att_delim'])) $this->AttDelim = $o['att_delim'];
-		if (isset($o['protect'])) $this->Protect = $o['protect'];
-		if (isset($o['turbo_block'])) $this->TurboBlock = $o['turbo_block'];
 
-		if (array_key_exists('tpl_frms',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
-		if (array_key_exists('block_alias',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_BlockAlias'], false, $o['block_alias'], $d);
-		if (array_key_exists('parallel_conf',$o)) self::f_Misc_UpdateArray($GLOBALS['_TBS_ParallelLst'], false, $o['parallel_conf'], $d);
-		if (array_key_exists('include_path',$o)) self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
-		if (isset($o['render'])) $this->Render = $o['render'];
+		if (array_key_exists('tpl_frms', $o)) {
+			self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
+		}
+
+		if (array_key_exists('block_alias', $o)) {
+			self::f_Misc_UpdateArray($GLOBALS['_TBS_BlockAlias'], false, $o['block_alias'], $d);
+		}
+
+		if (array_key_exists('parallel_conf', $o)) {
+			self::f_Misc_UpdateArray($GLOBALS['_TBS_ParallelLst'], false, $o['parallel_conf'], $d);
+		}
+
+		if (array_key_exists('include_path',$o)) {
+			self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
+		}
 	}
 
 
