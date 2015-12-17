@@ -2299,7 +2299,7 @@ class clsTinyButXtreme {
 
 
 	// Convert a value to a string
-	function _string($value) {
+	static function _string($value) {
 		if (is_a($value, 'DateTime')) return $value->format('c');
 		return @(string)$value;
 	}
@@ -2308,7 +2308,7 @@ class clsTinyButXtreme {
 
 
 	// Convert a value to a string and trim it
-	function _trim($value) {
+	static function _trim($value) {
 		return trim($this->_string($value));
 	}
 
