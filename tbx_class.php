@@ -70,7 +70,6 @@ class clsTinyButXtreme {
 	public $Version			= '10.0.1';
 	public $TurboBlock		= true;
 	public $VarPrefix		= '';
-	public $VarRef			= null;
 	public $Protect			= true;
 	public $ErrMsg			= '';
 	public $AttDelim		= false;
@@ -91,7 +90,6 @@ class clsTinyButXtreme {
 
 	function __construct($options=[]) {
 		// Set options
-		$this->VarRef =& $GLOBALS;
 		if (is_array($options)) $this->SetOption($options);
 
 		// Links to global variables (cannot be converted to static yet because of compatibility)
@@ -169,18 +167,6 @@ class clsTinyButXtreme {
 		}
 
 		return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
-	}
-
-
-
-
-	public function ResetVarRef($ToGlobal) {
-		if ($ToGlobal) {
-			$this->VarRef = &$GLOBALS;
-		} else {
-			$x = [];
-			$this->VarRef = &$x;
-		}
 	}
 
 
@@ -1948,7 +1934,7 @@ class clsTinyButXtreme {
 
 
 	function _mergeAuto(&$Txt, $variable='var') {
-	// Merge automatic fields with VarRef
+	// Merge automatic fields
 
 		$Pref = &$this->VarPrefix;
 		$PrefL = strlen($Pref);
@@ -1983,16 +1969,15 @@ class clsTinyButXtreme {
 					$Pos = $Loc->PosEnd + 1;
 				}
 
-			} elseif (isset($this->VarRef[$Loc->SubLst[0]])) {
-				$Pos = $this->meth_Locator_Replace($Txt,$Loc,$this->VarRef[$Loc->SubLst[0]],1);
+			} elseif (isset($GLOBALS[$Loc->SubLst[0]])) {
+				$Pos = $this->meth_Locator_Replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]],1);
 
 			} else {
 				if (isset($Loc->PrmLst['noerr'])) {
 					$Pos = $this->meth_Locator_Replace($Txt,$Loc,$x,false);
 				} else {
 					$Pos = $Loc->PosEnd + 1;
-					$msg = (isset($this->VarRef['GLOBALS'])) ? 'VarRef seems refers to $GLOBALS' : 'VarRef seems refers to a custom array of values';
-					$this->meth_Misc_Alert($Loc,'the key \''.$Loc->SubLst[0].'\' does not exist or is not set in VarRef. ('.$msg.')',true);
+					$this->meth_Misc_Alert($Loc,'the key \''.$Loc->SubLst[0].'\' does not exist',true);
 				}
 			}
 		}
@@ -2477,7 +2462,6 @@ class clsTinyButXtreme {
 			// Save contents configuration
 			$Loc->SaveSrc = &$this->Source;
 			$Loc->SaveMode = $this->_Mode;
-			$Loc->SaveVarRef = &$this->VarRef;
 			unset($this->Source); $this->Source = '';
 			$this->_Mode++; // Mode>0 means subtemplate mode
 			if ($this->OldSubTpl) {
@@ -2496,7 +2480,6 @@ class clsTinyButXtreme {
 			}
 			$this->Source = &$Loc->SaveSrc;
 			$this->_Mode = $Loc->SaveMode;
-			$this->VarRef = &$Loc->SaveVarRef;
 		}
 	}
 

@@ -165,8 +165,8 @@ class clsTbsDataSource {
 							$i = $this->DataAlert('invalid query \''.$Query.'\' because property ObjectRef is not set.');
 						}
 					} else {
-						if (isset($this->TBS->VarRef[$Item0])) {
-							$Var = &$this->TBS->VarRef[$Item0];
+						if (isset($GLOBAL[$Item0])) {
+							$Var = &$GLOBAL[$Item0];
 							$i = 1;
 						} else {
 							$i = $this->DataAlert('invalid query \''.$Query.'\' because VarRef item \''.$Item0.'\' is not found.');
