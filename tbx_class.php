@@ -64,9 +64,8 @@ class clsTinyButXtreme {
 		$this->SetOption($options);
 
 		// Links to global variables (cannot be converted to static yet because of compatibility)
-		global $_TBS_FormatLst, $_TBS_BlockAlias;
-		if (!isset($_TBS_FormatLst))  $_TBS_FormatLst  = [];
-		if (!isset($_TBS_BlockAlias)) $_TBS_BlockAlias = [];
+		global $_TBS_FormatLst;
+		if (!isset($_TBS_FormatLst)) $_TBS_FormatLst = [];
 	}
 
 
@@ -245,10 +244,6 @@ class clsTinyButXtreme {
 			self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
 		}
 
-		if (array_key_exists('block_alias', $o)) {
-			self::f_Misc_UpdateArray($GLOBALS['_TBS_BlockAlias'], false, $o['block_alias'], $d);
-		}
-
 		if (array_key_exists('parallel_conf', $o)) {
 			self::f_Misc_UpdateArray($GLOBALS['_TBS_ParallelLst'], false, $o['parallel_conf'], $d);
 		}
@@ -264,14 +259,13 @@ class clsTinyButXtreme {
 	public function GetOption($o) {
 		switch ($o) {
 			case'all':
-				$x = ['include_path','tpl_frms', 'block_alias', 'parallel_conf'];
+				$x = ['include_path','tpl_frms', 'parallel_conf'];
 				$r = [];
 				foreach ($x as $o) $r[$o] = $this->GetOption($o);
 			return $r;
 
 			case 'include_path':	return $this->IncludePath;
 			case 'parallel_conf':	return $GLOBALS['_TBS_ParallelLst'];
-			case 'block_alias':		return $GLOBALS['_TBS_BlockAlias'];
 			case 'tpl_frms':
 				$x = [];
 				foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
@@ -1359,7 +1353,7 @@ class clsTinyButXtreme {
 	function meth_Locator_FindParallel(&$Txt, $ZoneBeg, $ZoneEnd, $ConfId) {
 
 		// Define configurations
-		global $_TBS_ParallelLst, $_TBS_BlockAlias;
+		global $_TBS_ParallelLst;
 
 		if (!isset($_TBS_ParallelLst)) $_TBS_ParallelLst = [];
 
@@ -2847,8 +2841,6 @@ class clsTinyButXtreme {
 	static function f_Loc_EnlargeToTag(&$Txt,&$Loc,$TagStr,$RetInnerSrc) {
 	//Modify $Loc, return false if tags not found, returns the inner source of tag if $RetInnerSrc=true
 
-		$AliasLst = &$GLOBALS['_TBS_BlockAlias'];
-
 		// Analyze string
 		$Ref = 0;
 		$LevelStop = 0;
@@ -2897,14 +2889,6 @@ class clsTinyButXtreme {
 				$b = '!';
 			}
 
-			// Alias
-			$a = false;
-			if (isset($AliasLst[$t])) {
-				$a = $AliasLst[$t]; // a string or a function
-				if ($i>999) return false; // prevent from circular alias
-				$TagStr = $b . $a . (($TagStr==='') ? '' : '+') . $TagStr;
-				$t = false;
-			}
 			if ($t!==false) {
 				$TagLst[$i] = $t; // with prefix ! if specified
 				$TagBnd[$i] = ($b==='');
