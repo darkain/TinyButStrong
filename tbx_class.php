@@ -45,23 +45,21 @@ class clsTinyButXtreme {
 	use tbx_xml;
 
 	// Public properties
-	public $Source			= '';
-	public $ErrCount		= 0;
+	public	$Source			= '';
+	public	$ErrCount		= 0;
 
 	// Undocumented (can change at any version)
-	public $Version			= '10.0.3';
-	public $IncludePath		= [];
+	public	$Version		= '10.0.3';
+	private	$_path			= '';
 
 	// Private
-	public $_LastFile		= '';
-	public $_Mode			= 0;
-	public $_CurrBlock		= '';
+	public	$_Mode			= 0;
+	public	$_CurrBlock		= '';
 
 
 
 
-	public function __construct($options=[]) {
-		$this->SetOption($options);
+	public function __construct() {
 	}
 
 
@@ -156,21 +154,8 @@ class clsTinyButXtreme {
 
 	public function load($file) {
 		if (empty($file)) return $this;
-
-		$x = '';
-		if (!$this->f_Misc_GetFile($x, $file, $this->_LastFile, $this->IncludePath)) {
-			return $this->meth_Misc_Alert('with load() method','file \''.$file.'\' is not found or not readable.');
-		}
-		$this->Source = $x;
-
-		if (!$this->_Mode) {
-			$this->_LastFile = $file;
-		}
-
-		// Automatic fields and blocks
-		$this('var,onload');
-
-		return $this;
+		$this->_file($this->Source, $file);
+		return $this('var,onload');
 	}
 
 
@@ -187,11 +172,8 @@ class clsTinyButXtreme {
 
 	public function render($filename=false) {
 		if ($filename) $this->load($filename);
-
 		$this('onshow');
-
 		if (!$this->_Mode) echo $this->Source;
-
 		return $this;
 	}
 
@@ -228,34 +210,6 @@ class clsTinyButXtreme {
 
 	public function fileToString($filename) {
 		return $this->load($filename)->renderToString();
-	}
-
-
-
-
-	public function SetOption($o, $v=false, $d=false) {
-		if (!is_array($o)) $o = [$o => $v];
-
-		if (array_key_exists('include_path',$o)) {
-			self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
-		}
-	}
-
-
-
-
-	public function GetOption($o) {
-		switch ($o) {
-			case'all':
-				$x = ['include_path'];
-				$r = [];
-				foreach ($x as $o) $r[$o] = $this->GetOption($o);
-			return $r;
-
-			case 'include_path': return $this->IncludePath;
-		}
-
-		return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
 	}
 
 
@@ -858,20 +812,14 @@ class clsTinyButXtreme {
 			if ($x!=='') {
 				if (!empty($Loc->PrmLst['when'])) {
 					if ($this->f_Misc_CheckCondition($Loc->PrmLst['when'])) {
-						if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
-							$this->_mergeAuto($CurrVal);
-							$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
-						} else if (!isset($Loc->PrmLst['noerr'])) {
-							$this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
-						}
-					}
-				} else {
-					if ($this->f_Misc_GetFile($CurrVal, $x, $this->_LastFile, $this->IncludePath)) {
+						$this->_file($CurrVal, $x);
 						$this->_mergeAuto($CurrVal);
 						$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
-					} else if (!isset($Loc->PrmLst['noerr'])) {
-						$this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter file is not found or not readable.',true);
 					}
+				} else {
+					$this->_file($CurrVal, $x);
+					$this->_mergeAuto($CurrVal);
+					$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
 				}
 				$ConvProtect = false;
 			}
@@ -2215,50 +2163,26 @@ class clsTinyButXtreme {
 
 
 
-	static function f_Misc_GetFile(&$Res, &$File, $LastFile='', $IncludePath=false, $Contents=true) {
-	// Load the content of a file into the text variable.
+	protected function _file(&$data, &$file) {
+		static $last = '';
 
-		$Res = '';
-		$fd = self::f_Misc_TryFile($File, false);
-		if ($fd===false) {
-			if (is_array($IncludePath)) {
-				foreach ($IncludePath as $d) {
-					$fd = self::f_Misc_TryFile($File, $d);
-					if ($fd!==false) break;
-				}
-			}
-			if (($fd===false) && ($LastFile!='')) $fd = self::f_Misc_TryFile($File, dirname($LastFile));
-			if ($fd===false) return false;
-		}
+		$data = @file_get_contents($file, true);
 
-		$fs = fstat($fd);
-		if ($Contents) {
-			// Return contents
-			if (isset($fs['size'])) {
-				if ($fs['size']>0) $Res = fread($fd,$fs['size']);
-			} else {
-				while (!feof($fd)) $Res .= fread($fd,4096);
-			}
+		if ($data !== false) {
+			$last = dirname($file) . '/';
 		} else {
-			// Return stats
-			$Res = $fs;
+			$data = @file_get_contents($last.$file, true);
 		}
 
-		fclose($fd);
+		if ($data === false) {
+			echo '<br/>';
+			echo getcwd() . '<br/>';
+			echo $last . '<br/>';
+			trigger_error('Unable to load template file: '.$file, E_USER_ERROR);
+			return false;
+		}
+
 		return true;
-
-	}
-
-
-
-
-	static function f_Misc_TryFile(&$File, $Dir) {
-		if ($Dir==='') return false;
-		$FileSearch = ($Dir===false) ? $File : $Dir.'/'.$File;
-		// 'rb' if binary for some OS. fopen() uses include_path and search on the __FILE__ directory while file_exists() doesn't.
-		$f = @fopen($FileSearch, 'r', true);
-		if ($f!==false) $File = $FileSearch;
-		return $f;
 	}
 
 
