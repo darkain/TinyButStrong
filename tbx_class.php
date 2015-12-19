@@ -1,26 +1,27 @@
 <?php
-/*
-********************************************************
-TinyButStrong - Template Engine for Pro and Beginners
-------------------------
-Version  : 3.10.0-beta-2015-10-01 for PHP 5
-Date     : 2015-10-01
-Web site : http://www.tinybutstrong.com
-Author   : http://www.tinybutstrong.com/onlyyou.html
-********************************************************
-This library is free software.
-You can redistribute and modify it even for commercial usage,
-but you must accept and respect the LPGL License version 3.
+/*******************************************************************************
+*	TinyButStrong - Template Engine for Pro and Beginners                      *
+*	------------------------                                                   *
+*	Version		: 3.10.0-beta-2015-10-01 for PHP 5                             *
+*	Date		: 2015-10-01                                                   *
+*	Web site	: http://www.tinybutstrong.com                                 *
+*	Author		: http://www.tinybutstrong.com/onlyyou.html                    *
+********************************************************************************
+*	This library is free software.                                             *
+*	You can redistribute and modify it even for commercial usage,              *
+*	but you must accept and respect the LPGL License version 3.                *
+********************************************************************************
+*	TinyButXtreme - Heavily modified fork of TinyButStrong                     *
+*	------------------------                                                   *
+*	Version		: 10.0.3 for PHP 5.4+ and HHVM 3.6+                            *
+*	Date		: 2015-12-19                                                   *
+*	Web site	: https://github.com/darkain/TinyButXtreme                     *
+*	Author		: Darkain Multimedia                                           *
+\******************************************************************************/
 
-********************************************************
 
-TinyButXtreme - Heavily modified version of TinyButStrong
-------------------------
-Version  : 10.0.0 for PHP 5.4+ and HHVM 3.6+
-Date     : 2015-??-??
-Web site : https://github.com/darkain/TinyButXtreme
-Author   : Darkain Multimedia
-*/
+
+
 // Check PHP version
 if (!version_compare(PHP_VERSION,'5.4.0', '>=')) {
 	trigger_error(
@@ -30,27 +31,13 @@ if (!version_compare(PHP_VERSION,'5.4.0', '>=')) {
 }
 
 
+
+
+require_once('tbx_constants.php.inc');
 require_once('tbx_locator.php.inc');
 require_once('tbx_datasource.php.inc');
 require_once('tbx_xml.php.inc');
 
-
-// Render flags
-define('TBS_NOTHING',	0);
-define('TBS_OUTPUT',	1);
-define('TBS_EXIT',		2);
-
-//Conversion Modes
-define('TBX_CONVERT_UNKNOWN',	-1);
-define('TBX_CONVERT_DEFAULT',	1);
-define('TBX_CONVERT_SPECIAL',	2);
-define('TBX_CONVERT_DATE',		3);
-define('TBX_CONVERT_SPRINTF',	4);
-define('TBX_CONVERT_SELECTED',	5);
-define('TBX_CONVERT_CHECKED',	6);
-
-
-// *********************************************
 
 
 
@@ -59,28 +46,13 @@ class clsTinyButXtreme {
 
 	// Public properties
 	public $Source			= '';
-	public $Render			= 3;
-	public $TplVars			= [];
-	public $ObjectRef		= false;
-	public $NoErr			= false;
-	public $Assigned		= [];
 	public $ErrCount		= 0;
 
 	// Undocumented (can change at any version)
-	public $Version			= '10.0.1';
-	public $TurboBlock		= true;
-	public $VarPrefix		= '';
-	public $Protect			= true;
-	public $ErrMsg			= '';
-	public $AttDelim		= false;
-	public $OnLoad			= true;
-	public $OnShow			= true;
+	public $Version			= '10.0.3';
 	public $IncludePath		= [];
-	public $TplStore		= [];
-	public $OldSubTpl		= false;
 
 	// Private
-	public $_ErrMsgName		= '';
 	public $_LastFile		= '';
 	public $_Mode			= 0;
 	public $_CurrBlock		= '';
@@ -88,9 +60,8 @@ class clsTinyButXtreme {
 
 
 
-	function __construct($options=[]) {
-		// Set options
-		if (is_array($options)) $this->SetOption($options);
+	public function __construct($options=[]) {
+		$this->SetOption($options);
 
 		// Links to global variables (cannot be converted to static yet because of compatibility)
 		global $_TBS_FormatLst, $_TBS_BlockAlias;
@@ -101,22 +72,174 @@ class clsTinyButXtreme {
 
 
 
-	function SetOption($o, $v=false, $d=false) {
-		if (!is_array($o)) $o = [$o => $v];
+	public function __toString() {
+		return $this->Source;
+	}
 
-		if (isset($o['noerr']))				$this->NoErr		= $o['noerr'];
-		if (isset($o['old_subtemplate']))	$this->OldSubTpl	= $o['old_subtemplate'];
-		if (isset($o['onload']))			$this->OnLoad		= $o['onload'];
-		if (isset($o['onshow']))			$this->OnShow		= $o['onshow'];
-		if (isset($o['att_delim']))			$this->AttDelim		= $o['att_delim'];
-		if (isset($o['protect']))			$this->Protect		= $o['protect'];
-		if (isset($o['turbo_block']))		$this->TurboBlock	= $o['turbo_block'];
-		if (isset($o['render']))			$this->Render		= $o['render'];
 
-		if (isset($o['auto_merge'])) {
-			$this->OnLoad = $o['auto_merge'];
-			$this->OnShow = $o['auto_merge'];
+
+
+	public function __invoke($names, $value=false) {
+		$start	= 0;
+		$names	= explode(',', $names);
+
+		foreach ($names as $name) {
+			$name = trim($name);
+			switch ($name) {
+				case '':		continue;
+				case 'onload':	$this->_mergeOn($this->Source, 'onload');	continue;
+				case 'onshow':	$this->_mergeOn($this->Source, 'onshow');	continue;
+				case 'var':		$this->_mergeAuto($this->Source);			continue;
+			}
+			$begin = 0;
+			while ($part = $this->_find($this->Source, $name, $begin, '.')) {
+				$begin = $this->_replace($this->Source, $part, $value, $start);
+			}
 		}
+
+		return $this;
+	}
+
+
+
+
+	public function field($names, $value) {
+		return $this($names, $value);
+	}
+
+
+
+
+	public function fields($fields) {
+		foreach ($fields as $name => $value) {
+			$this($name, $value);
+		}
+		return $this;
+	}
+
+
+
+
+	public function block($list, $source, $Query='', $QryPrms=false) {
+		if (is_string($list)) $list = explode(',',$list);
+
+		$this->meth_Merge_Block($this->Source, $list, $source, $Query, false, 0, $QryPrms);
+		return $this;
+	}
+
+
+
+
+	//Custom merger - both field and block supported!
+	public function merge($data) {
+		foreach ($data as $key => $value) {
+			if (is_object($value)) {
+				trigger_error('tbx::merge does not support type Object for key: ' . $key);
+			} else if (is_string($value)  ||  is_int($value)  ||  is_float($value)) {
+				$this->field($key, $value);
+			} else if ($value === false) {
+				$this->field($key, []);
+			} else if (isset($value[0])  ||  empty($value)) {
+				$this->block($key, $value);
+			} else {
+				$this->field($key, $value);
+			}
+		}
+		return $this;
+	}
+
+
+
+
+	//Another merger helper function!
+	public function mergePage($filename, $data) {
+		return $this->load($filename)->merge($data)->render();
+	}
+
+
+
+
+	public function load($file) {
+		if (empty($file)) return $this;
+
+		$x = '';
+		if (!$this->f_Misc_GetFile($x, $file, $this->_LastFile, $this->IncludePath)) {
+			return $this->meth_Misc_Alert('with load() method','file \''.$file.'\' is not found or not readable.');
+		}
+		$this->Source = $x;
+
+		if (!$this->_Mode) {
+			$this->_LastFile = $file;
+		}
+
+		// Automatic fields and blocks
+		$this('var,onload');
+
+		return $this;
+	}
+
+
+
+
+	public function loadString($template) {
+		$this->Source = $template;
+		$this('var,onload');
+		return $this;
+	}
+
+
+
+
+	public function render($filename=false) {
+		if ($filename) $this->load($filename);
+
+		$this('onshow');
+
+		if (!$this->_Mode) echo $this->Source;
+
+		return $this;
+	}
+
+
+
+
+	public function renderToString() {
+		return (string) $this('onshow');
+	}
+
+
+
+
+	public function renderBlock($filename, $block, $data) {
+		return $this->load($filename)->block($block, $data)->render();
+	}
+
+
+
+
+	public function renderField($filename, $field, $data) {
+		return $this->load($filename)->field($field, $data)->render();
+	}
+
+
+
+
+	public function renderString($template) {
+		return $this->loadString($template)->renderToString();
+	}
+
+
+
+
+	public function fileToString($filename) {
+		return $this->load($filename)->renderToString();
+	}
+
+
+
+
+	public function SetOption($o, $v=false, $d=false) {
+		if (!is_array($o)) $o = [$o => $v];
 
 		if (array_key_exists('tpl_frms', $o)) {
 			self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
@@ -138,60 +261,24 @@ class clsTinyButXtreme {
 
 
 
-	function GetOption($o) {
+	public function GetOption($o) {
 		switch ($o) {
 			case'all':
-				$x = [
-					'noerr', 'auto_merge', 'include_path', 'render',
-					'onload', 'onshow', 'att_delim', 'turbo_block', 'tpl_frms',
-					'block_alias', 'parallel_conf',
-				];
+				$x = ['include_path','tpl_frms', 'block_alias', 'parallel_conf'];
 				$r = [];
 				foreach ($x as $o) $r[$o] = $this->GetOption($o);
 			return $r;
 
-			case 'noerr':			return $this->NoErr;
-			case 'auto_merge':		return ($this->OnLoad && $this->OnShow);
-			case 'onload':			return $this->OnLoad;
-			case 'onshow':			return $this->OnShow;
-			case 'att_delim':		return $this->AttDelim;
-			case 'turbo_block':		return $this->TurboBlock;
 			case 'include_path':	return $this->IncludePath;
-			case 'render':			return $this->Render;
 			case 'parallel_conf':	return $GLOBALS['_TBS_ParallelLst'];
 			case 'block_alias':		return $GLOBALS['_TBS_BlockAlias'];
 			case 'tpl_frms':
 				$x = [];
 				foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
-				return $x;
+			return $x;
 		}
 
 		return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
-	}
-
-
-
-
-	// Public methods
-	public function LoadTemplate($File) {
-		if (!is_null($File)) {
-			$x = '';
-			if (!$this->f_Misc_GetFile($x, $File, $this->_LastFile, $this->IncludePath)) {
-				return $this->meth_Misc_Alert('with LoadTemplate() method','file \''.$File.'\' is not found or not readable.');
-			}
-			$this->Source = $x;
-		}
-
-		if ($this->meth_Misc_IsMainTpl()) {
-			if (!is_null($File)) $this->_LastFile = $File;
-			$this->TplVars = [];
-		}
-
-		// Automatic fields and blocks
-		$this->_mergeAuto($this->Source);
-		if ($this->OnLoad) $this->_mergeOn($this->Source, 'onload');
-
-		return true;
 	}
 
 
@@ -236,92 +323,12 @@ class clsTinyButXtreme {
 
 
 
-	public function MergeBlock($BlockLst,$SrcId='assigned',$Query='',$QryPrms=false) {
-
-		if ($SrcId==='assigned') {
-			$Arg = array($BlockLst,&$SrcId,&$Query,&$QryPrms);
-			if (!$this->meth_Misc_Assign($BlockLst, $Arg, 'MergeBlock')) return 0;
-			$BlockLst = $Arg[0]; $SrcId = &$Arg[1]; $Query = &$Arg[2];
-		}
-
-		if (is_string($BlockLst)) $BlockLst = explode(',',$BlockLst);
-
-		if ($SrcId==='cond') {
-			$Nbr = 0;
-			foreach ($BlockLst as $Block) {
-				$Block = trim($Block);
-				if ($Block!=='') $Nbr += $this->_mergeOn($this->Source, $Block);
-			}
-			return $Nbr;
-		} else {
-			return $this->meth_Merge_Block($this->Source,$BlockLst,$SrcId,$Query,false,0,$QryPrms);
-		}
-
-	}
-
-
-
-
-	public function MergeField($NameLst,$Value='assigned',$DefaultPrm=false) {
-
-		$SubStart = 0;
-		$Ok = true;
-		$Prm = is_array($DefaultPrm);
-
-		if ( ($Value==='assigned') && ($NameLst!=='var') && ($NameLst!=='onshow') && ($NameLst!=='onload') ) {
-			$Arg = array($NameLst,&$Value,&$DefaultPrm);
-			if (!$this->meth_Misc_Assign($NameLst, $Arg, 'MergeField')) return false;
-			$NameLst = $Arg[0]; $Value = &$Arg[1]; $DefaultPrm = &$Arg[2];
-		}
-
-		$NameLst = explode(',',$NameLst);
-
-		foreach ($NameLst as $Name) {
-			$Name = trim($Name);
-			switch ($Name) {
-				case '':		continue;
-				case 'onload':	$this->_mergeOn($this->Source, 'onload');	continue;
-				case 'onshow':	$this->_mergeOn($this->Source, 'onshow');	continue;
-				case 'var':		$this->_mergeAuto($this->Source);			continue;
-			}
-			$PosBeg = 0;
-			while ($Loc = $this->meth_Locator_FindTbs($this->Source,$Name,$PosBeg,'.')) {
-				if ($Prm) $Loc->PrmLst = array_merge($DefaultPrm,$Loc->PrmLst);
-				// Merge the field
-				if ($Ok) {
-					$PosBeg = $this->meth_Locator_Replace($this->Source,$Loc,$Value,$SubStart);
-				} else {
-					$PosBeg = $Loc->PosEnd;
-				}
-			}
-		}
-	}
-
-
-
-
-	public function Show($Render=false) {
-		if ($Render===false) $Render = $this->Render;
-		if ($this->OnShow) $this->_mergeOn($this->Source, 'onshow');
-		if ($this->_ErrMsgName!=='') $this->MergeField($this->_ErrMsgName, $this->ErrMsg);
-		if ($this->meth_Misc_IsMainTpl()) {
-			if (($Render & TBS_OUTPUT)==TBS_OUTPUT) echo $this->Source;
-			if (($Render & TBS_EXIT)==TBS_EXIT) exit;
-		} elseif ($this->OldSubTpl) {
-			if (($Render & TBS_OUTPUT)==TBS_OUTPUT) echo $this->Source;
-		}
-		return true;
-	}
-
-
-
-
 	protected function _customFormat(&$text, $style) {}
 
 
 
 
-	function meth_Locator_FindTbs(&$Txt,$Name,$Pos,$ChrSub) {
+	function _find(&$Txt, $Name, $Pos, $ChrSub) {
 	// Find a TBS Locator
 
 		$PosEnd = false;
@@ -398,11 +405,10 @@ class clsTinyButXtreme {
 		$Pos	= 0;
 
 		// Cache TBS locators
-		$Cache = ($Cache && $this->TurboBlock);
 		if ($Cache) {
 			$Chk = false;
 			$PosEndPrec = -1;
-			while ($Loc = $this->meth_Locator_FindTbs($Txt,$BlockName,$Pos,'.')) {
+			while ($Loc = $this->_find($Txt,$BlockName,$Pos,'.')) {
 
 				// Delete embeding fields
 				if ($Loc->PosBeg<$PosEndPrec) {
@@ -439,7 +445,7 @@ class clsTinyButXtreme {
 					$li = &$LocLst[$i];
 					if (isset($li->PrmLst['att'])) {
 						$LocSrc = substr($Txt,$li->PosBeg,$li->PosEnd-$li->PosBeg+1); // for error message
-						if ($this->f_Xml_AttFind($Txt,$li,$LocLst,$this->AttDelim)) {
+						if ($this->f_Xml_AttFind($Txt, $li, $LocLst, false)) {
 							if (isset($Loc->PrmLst['atttrue'])) {
 								$li->PrmLst['magnet'] = '#';
 								$li->PrmLst['ope'] = (isset($li->PrmLst['ope'])) ? $li->PrmLst['ope'].',attbool' : 'attbool';
@@ -520,7 +526,7 @@ class clsTinyButXtreme {
 
 
 
-	function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
+	function _replace(&$Txt,&$Loc,&$Value,$SubStart) {
 	// This function enables to merge a locator with a text and returns the position just after the replaced block
 	// This position can be useful because we don't know in advance how $Value will be replaced.
 
@@ -626,8 +632,6 @@ class clsTinyButXtreme {
 					} elseif ($x==='yes') {
 						$Loc->ConvProtect = true;
 					}
-				} elseif ($this->Protect===false) {
-					$Loc->ConvProtect = false;
 				}
 			}
 
@@ -713,34 +717,34 @@ class clsTinyButXtreme {
 					break;
 
 					case  1:
-						if ($Loc->mode===-1) {
+						if ($Loc->mode===TBX_CONVERT_UNKNOWN) {
 							if (is_array($CurrVal)) {
 								foreach ($CurrVal as $k => &$v) {
 									$v = $this->_string($v);
-									$this->_htmlsafe($v,$Loc->break);
+									$this->_htmlsafe($v, $Loc->break);
 								} unset($v);
 
 							} else {
 								$CurrVal = $this->_string($CurrVal);
-								$this->_htmlsafe($CurrVal,$Loc->break);
+								$this->_htmlsafe($CurrVal, $Loc->break);
 							}
 						}
 						if (is_array($CurrVal)) {
-							$CurrVal = implode($Loc->OpePrm[$i],$CurrVal);
+							$CurrVal = implode($Loc->OpePrm[$i], $CurrVal);
 						}
 					break;
 
 					case  2:
 						$x = $this->_string($CurrVal);
 						if (strlen($x)>$Loc->OpePrm[$i]) {
-							$this->f_Xml_Max($x,$Loc->OpePrm[$i],$Loc->OpeEnd);
+							$this->f_Xml_Max($x, $Loc->OpePrm[$i], $Loc->OpeEnd);
 						}
 					break;
 
 					case  3:
 						$x = $this->_string($CurrVal);
 						if (strlen($x)>$Loc->OpePrm[$i]) {
-							$CurrVal = substr($x,0,$Loc->OpePrm[$i]).$Loc->OpeEnd;
+							$CurrVal = substr($x, 0, $Loc->OpePrm[$i]).$Loc->OpeEnd;
 						}
 					break;
 
@@ -748,7 +752,7 @@ class clsTinyButXtreme {
 					case  6: $CurrVal = ('0'+$CurrVal) + $Loc->OpePrm[$i]; break;
 					case  7: $CurrVal = ('0'+$CurrVal) * $Loc->OpePrm[$i]; break;
 					case  8: $CurrVal = ('0'+$CurrVal) / $Loc->OpePrm[$i]; break;
-					case  9; case 10:
+					case  9: case 10:
 						if ($ope===9) {
 							$CurrVal = (in_array($this->_string($CurrVal),$Loc->OpeMOK)) ? ' ' : '';
 						} else {
@@ -897,7 +901,7 @@ class clsTinyButXtreme {
 		}
 
 		if (isset($Loc->PrmLst['att'])) {
-			$this->f_Xml_AttFind($Txt,$Loc,true,$this->AttDelim);
+			$this->f_Xml_AttFind($Txt, $Loc, true, false);
 			if (isset($Loc->PrmLst['atttrue'])) {
 				$CurrVal = self::f_Loc_AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName);
 				$Loc->PrmLst['magnet'] = '#';
@@ -919,7 +923,7 @@ class clsTinyButXtreme {
 					if ($Loc->PrmLst['magnet']==='#') {
 						if (!isset($Loc->AttBeg)) {
 							$Loc->PrmLst['att'] = '.';
-							$this->f_Xml_AttFind($Txt,$Loc,true,$this->AttDelim);
+							$this->f_Xml_AttFind($Txt, $Loc, true, false);
 						}
 						if (isset($Loc->AttBeg)) {
 							$Loc->MagnetId = -3;
@@ -1004,7 +1008,7 @@ class clsTinyButXtreme {
 		$SearchDef = true;
 		$FirstField = false;
 		// Search for the first tag with parameter "block"
-		while ($SearchDef && ($Loc = $this->meth_Locator_FindTbs($Txt,$BlockName,$PosBeg,$ChrSub))) {
+		while ($SearchDef && ($Loc = $this->_find($Txt,$BlockName,$PosBeg,$ChrSub))) {
 			if (isset($Loc->PrmLst['block'])) {
 				if (isset($Loc->PrmLst['p1'])) {
 					if ($P1) return false;
@@ -1032,7 +1036,7 @@ class clsTinyButXtreme {
 			if (($FirstField!==false) && ($FirstField->PosEnd<$Loc->PosBeg)) $FieldBefore = true;
 
 			$Opened = 1;
-			while ($Loc2 = $this->meth_Locator_FindTbs($Txt,$BlockName,$PosBeg,$ChrSub)) {
+			while ($Loc2 = $this->_find($Txt,$BlockName,$PosBeg,$ChrSub)) {
 				if (isset($Loc2->PrmLst['block'])) {
 					switch ($Loc2->PrmLst['block']) {
 					case 'end':   $Opened--; break;
@@ -1086,14 +1090,6 @@ class clsTinyButXtreme {
 
 
 	function meth_Locator_PartAndRename(&$CurrVal, &$PrmLst) {
-
-		// Store part
-		if (isset($PrmLst['store'])) {
-			$storename = (isset($PrmLst['storename'])) ? $PrmLst['storename'] : 'default';
-			if (!isset($this->TplStore[$storename])) $this->TplStore[$storename] = '';
-			$this->TplStore[$storename] .= $this->f_Xml_GetPart($CurrVal, $PrmLst['store'], false);
-		}
-
 		// Get part
 		if (isset($PrmLst['getpart'])) {
 			$part = $PrmLst['getpart'];
@@ -1394,31 +1390,31 @@ class clsTinyButXtreme {
 		$SrcP = substr($Txt, $SrcPOffset, $par_c->PosBeg - $SrcPOffset);
 
 		// temporary variables
-		$tagR = '';
-		$tagC = '';
-		$z = '';
-		$pRO  = false;
-		$pROe = false;
-		$pCO  = false;
-		$pCOe = false;
-		$p = false;
-		$Loc = new tbxLocator;
+		$tagR			= '';
+		$tagC			= '';
+		$z				= '';
+		$pRO			= false;
+		$pROe			= false;
+		$pCO			= false;
+		$pCOe			= false;
+		$p				= false;
+		$Loc			= new tbxLocator;
 
-		$Rows  = [];
-		$RowIdx = 0;
-		$RefRow = false;
-		$RefCellB= false;
-		$RefCellE = false;
+		$Rows			= [];
+		$RowIdx			= 0;
+		$RefRow			= false;
+		$RefCellB		= false;
+		$RefCellE		= false;
 
-		$RowType = [];
+		$RowType		= [];
 
 		// Loop on entities inside the parent entity
-		$PosR = 0;
+		$PosR			= 0;
 
-		$mode_column = true;
-		$Cells = [];
-		$ColNum = 1;
-		$IsRef = false;
+		$mode_column	= true;
+		$Cells			= [];
+		$ColNum			= 1;
+		$IsRef			= false;
 
 		// Search for the next Row Opening tag
 		while (self::f_Xml_GetNextEntityName($SrcP, $PosR, $tagR, $pRO, $p)) {
@@ -1597,7 +1593,7 @@ class clsTinyButXtreme {
 		$this->_CurrBlock = $BlockLst;
 
 		// Get source type and info
-		$Src = new clsTbsDataSource;
+		$Src = new tbxDatasource;
 		if (!$Src->DataPrepare($SrcId,$this)) {
 			$this->_CurrBlock = $BlockSave;
 			return 0;
@@ -1936,45 +1932,29 @@ class clsTinyButXtreme {
 	function _mergeAuto(&$Txt, $variable='var') {
 	// Merge automatic fields
 
-		$Pref = &$this->VarPrefix;
-		$PrefL = strlen($Pref);
-		$PrefOk = ($PrefL>0);
-
 		// Then we scann all fields in the model
 		$x = '';
 		$Pos = 0;
-		while ($Loc = $this->meth_Locator_FindTbs($Txt, $variable, $Pos, '.')) {
+		while ($Loc = $this->_find($Txt, $variable, $Pos, '.')) {
 			if ($Loc->SubNbr==0) $Loc->SubLst[0]=''; // In order to force error message
 
 			if ($Loc->SubLst[0]==='') {
 				$Pos = $this->_mergeSpecial($Txt,$Loc);
 
 			} elseif ($Loc->SubLst[0][0]==='~') {
-				if (!isset($ObjOk)) $ObjOk = (is_object($this->ObjectRef) || is_array($this->ObjectRef));
-				if ($ObjOk) {
-					$Loc->SubLst[0] = substr($Loc->SubLst[0],1);
-					$Pos = $this->meth_Locator_Replace($Txt,$Loc,$this->ObjectRef,0);
-				} elseif (isset($Loc->PrmLst['noerr'])) {
-					$Pos = $this->meth_Locator_Replace($Txt,$Loc,$x,false);
-				} else {
-					$this->meth_Misc_Alert($Loc,'property ObjectRef is neither an object nor an array. Its type is \''.gettype($this->ObjectRef).'\'.',true);
-					$Pos = $Loc->PosEnd + 1;
-				}
-
-			} elseif ($PrefOk && (substr($Loc->SubLst[0],0,$PrefL)!==$Pref)) {
 				if (isset($Loc->PrmLst['noerr'])) {
-					$Pos = $this->meth_Locator_Replace($Txt,$Loc,$x,false);
+					$Pos = $this->_replace($Txt,$Loc,$x,false);
 				} else {
-					$this->meth_Misc_Alert($Loc,'does not match the allowed prefix.',true);
+					$this->meth_Misc_Alert($Loc,'property is neither an object nor an array.',true);
 					$Pos = $Loc->PosEnd + 1;
 				}
 
 			} elseif (isset($GLOBALS[$Loc->SubLst[0]])) {
-				$Pos = $this->meth_Locator_Replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]],1);
+				$Pos = $this->_replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]],1);
 
 			} else {
 				if (isset($Loc->PrmLst['noerr'])) {
-					$Pos = $this->meth_Locator_Replace($Txt,$Loc,$x,false);
+					$Pos = $this->_replace($Txt,$Loc,$x,false);
 				} else {
 					$Pos = $Loc->PosEnd + 1;
 					$this->meth_Misc_Alert($Loc,'the key \''.$Loc->SubLst[0].'\' does not exist',true);
@@ -2024,7 +2004,7 @@ class clsTinyButXtreme {
 		}
 
 		if ($Loc->PosBeg === false) return $Loc->PosEnd;
-		return $this->meth_Locator_Replace($Txt,$Loc,$x,$SubStart);
+		return $this->_replace($Txt,$Loc,$x,$SubStart);
 	}
 
 
@@ -2034,13 +2014,13 @@ class clsTinyButXtreme {
 		$Pos = 0;
 		$SubStart = ($CurrRec===false) ? false : 0;
 		do {
-			$Loc = $this->meth_Locator_FindTbs($Txt,$this->_CurrBlock,$Pos,'.');
+			$Loc = $this->_find($Txt,$this->_CurrBlock,$Pos,'.');
 			if ($Loc!==false) {
 				if (($PosMax!==false) && ($Loc->PosEnd>$PosMax)) return;
 				if ($Loc->SubName==='#') {
-					$NewEnd = $this->meth_Locator_Replace($Txt,$Loc,$RecNum,false);
+					$NewEnd = $this->_replace($Txt,$Loc,$RecNum,false);
 				} else {
-					$NewEnd = $this->meth_Locator_Replace($Txt,$Loc,$CurrRec,$SubStart);
+					$NewEnd = $this->_replace($Txt,$Loc,$CurrRec,$SubStart);
 				}
 				if ($PosMax!==false) $PosMax += $NewEnd - $Loc->PosEnd;
 				$Pos = $NewEnd;
@@ -2065,7 +2045,7 @@ class clsTinyButXtreme {
 			// Chached locators
 			for ($i=$iMax;$i>0;$i--) {
 				if ($LocLst[$i]->PosBeg<$PosMax) {
-					$this->meth_Locator_Replace($Txt,$LocLst[$i],$x,false);
+					$this->_replace($Txt,$LocLst[$i],$x,false);
 					if ($LocLst[$i]->Enlarged) {
 						$PosMax = $LocLst[$i]->PosBeg;
 						$LocLst[$i]->PosBeg = $LocLst[$i]->PosBeg0;
@@ -2079,7 +2059,7 @@ class clsTinyButXtreme {
 			if ($BDef->Chk) {
 				$BlockName = &$BDef->Name;
 				$Pos = 0;
-				while ($Loc = $this->meth_Locator_FindTbs($Txt,$BlockName,$Pos,'.')) $Pos = $this->meth_Locator_Replace($Txt,$Loc,$x,false);
+				while ($Loc = $this->_find($Txt,$BlockName,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$x,false);
 			}
 
 		} else {
@@ -2089,12 +2069,12 @@ class clsTinyButXtreme {
 				if ($LocLst[$i]->PosBeg<$PosMax) {
 					if ($LocLst[$i]->IsRecInfo) {
 						if ($LocLst[$i]->RecInfo==='#') {
-							$this->meth_Locator_Replace($Txt,$LocLst[$i],$Src->RecNum,false);
+							$this->_replace($Txt,$LocLst[$i],$Src->RecNum,false);
 						} else {
-							$this->meth_Locator_Replace($Txt,$LocLst[$i],$Src->RecKey,false);
+							$this->_replace($Txt,$LocLst[$i],$Src->RecKey,false);
 						}
 					} else {
-						$this->meth_Locator_Replace($Txt,$LocLst[$i],$Src->CurrRec,0);
+						$this->_replace($Txt,$LocLst[$i],$Src->CurrRec,0);
 					}
 					if ($LocLst[$i]->Enlarged) {
 						$PosMax = $LocLst[$i]->PosBeg;
@@ -2111,14 +2091,14 @@ class clsTinyButXtreme {
 				foreach ($Src->CurrRec as $key => $val) {
 					$Pos = 0;
 					$Name = $BlockName.'.'.$key;
-					while ($Loc = $this->meth_Locator_FindTbs($Txt,$Name,$Pos,'.')) $Pos = $this->meth_Locator_Replace($Txt,$Loc,$val,0);
+					while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$val,0);
 				}
 				$Pos = 0;
 				$Name = $BlockName.'.#';
-				while ($Loc = $this->meth_Locator_FindTbs($Txt,$Name,$Pos,'.')) $Pos = $this->meth_Locator_Replace($Txt,$Loc,$Src->RecNum,0);
+				while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$Src->RecNum,0);
 				$Pos = 0;
 				$Name = $BlockName.'.$';
-				while ($Loc = $this->meth_Locator_FindTbs($Txt,$Name,$Pos,'.')) $Pos = $this->meth_Locator_Replace($Txt,$Loc,$Src->RecKey,0);
+				while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$Src->RecKey,0);
 			}
 
 		}
@@ -2268,14 +2248,14 @@ class clsTinyButXtreme {
 					} else {
 						// Merge the block as if it was a field
 						$x = '';
-						$this->meth_Locator_Replace($Txt,$LocA,$x,false);
+						$this->_replace($Txt,$LocA,$x,false);
 					}
 					$Pos = $LocA->PosBeg;
 				}
 
 			} else { // Field (has no subname at this point)
 				$x = '';
-				$Pos = $this->meth_Locator_Replace($Txt,$LocA,$x,false);
+				$Pos = $this->_replace($Txt,$LocA,$x,false);
 				$Pos = $LocA->PosBeg;
 			}
 
@@ -2283,14 +2263,6 @@ class clsTinyButXtreme {
 
 		// merge other fields (must have subnames)
 		$this->_mergeAuto($this->Source, $Name);
-
-		foreach ($this->Assigned as $n=>$a) {
-			if (isset($a['auto']) && ($a['auto']===$Name)) {
-				$x = [];
-				$this->meth_Misc_Assign($n,$x,false);
-			}
-		}
-
 	}
 
 
@@ -2351,10 +2323,6 @@ class clsTinyButXtreme {
 				$part->ConvHex		= true;
 			break;
 
-			case $safe === 'nobr':
-				$part->break		= false;
-			break;
-
 			//HANDLED BY DEFAULT OPTION ABOVE
 			case $safe === 'no':
 			case $safe === 'none':
@@ -2365,6 +2333,10 @@ class clsTinyButXtreme {
 			//case $safe === 'yes':
 			//	$part->ConvStr		= true;
 			//break;
+
+			case $safe === 'nobr':
+				$part->break		= false;
+			//Intentionally falling through case
 
 			default:
 				$part->ConvStr		= true;
@@ -2394,8 +2366,9 @@ class clsTinyButXtreme {
 
 
 	// Standard alert message provided by TinyButXtreme, return False is the message is cancelled.
-	function meth_Misc_Alert($Src,$Msg,$NoErrMsg=false,$SrcType=false) {
+	function meth_Misc_Alert($Src, $Msg, $NoErrMsg=false, $SrcType=false) {
 		$this->ErrCount++;
+
 		if (!is_string($Src)) {
 			if ($SrcType===false) $SrcType='in field';
 			if (isset($Src->PrmLst['tbstype'])) {
@@ -2406,80 +2379,26 @@ class clsTinyButXtreme {
 				$Src = $SrcType.' ['.$Src->FullName.'...]';
 			}
 		}
-		$x = "TinyButXtreme Error $Src: $Msg";
-		if ($this->NoErr) {
-			$this->ErrMsg .= $x;
-		} else {
-			echo $x;
-		}
+
+		echo "TinyButXtreme Error $Src: $Msg";
+
 		return false;
 	}
 
 
 
 
-	function meth_Misc_Assign($Name,&$ArgLst,$CallingMeth) {
-	// $ArgLst must be by reference in order to have its inner items by reference too.
-
-		if (!isset($this->Assigned[$Name])) {
-			if ($CallingMeth===false) return true;
-			return $this->meth_Misc_Alert('with '.$CallingMeth.'() method','key \''.$Name.'\' is not defined in property Assigned.');
-		}
-
-		$a = &$this->Assigned[$Name];
-		$meth = (isset($a['type'])) ? $a['type'] : 'MergeBlock';
-		if (($CallingMeth!==false) && (strcasecmp($CallingMeth,$meth)!=0)) return $this->meth_Misc_Alert('with '.$CallingMeth.'() method','the assigned key \''.$Name.'\' cannot be used with method '.$CallingMeth.' because it is defined to run with '.$meth.'.');
-
-		$n = count($a);
-		for ($i=0;$i<$n;$i++) {
-			if (isset($a[$i])) $ArgLst[$i] = &$a[$i];
-		}
-
-		if ($CallingMeth===false) {
-			if (in_array(strtolower($meth),array('mergeblock','mergefield'))) {
-				call_user_func_array(array(&$this,$meth), $ArgLst);
-			} else {
-				return $this->meth_Misc_Alert('The assigned field \''.$Name.'\'. cannot be merged because its type \''.$a[0].'\' is not supported.');
-			}
-		}
-		if (!isset($a['merged'])) $a['merged'] = 0;
-		$a['merged']++;
-		return true;
-	}
-
-
-
-
-	function meth_Misc_IsMainTpl() {
-		return ($this->_Mode==0);
-	}
-
-
-
-
-	function meth_Misc_ChangeMode($Init,&$Loc,&$CurrVal) {
+	function meth_Misc_ChangeMode($Init, &$Loc, &$CurrVal) {
 		if ($Init) {
 			// Save contents configuration
-			$Loc->SaveSrc = &$this->Source;
-			$Loc->SaveMode = $this->_Mode;
+			$Loc->SaveSrc	= &$this->Source;
+			$Loc->SaveMode	= $this->_Mode;
 			unset($this->Source); $this->Source = '';
 			$this->_Mode++; // Mode>0 means subtemplate mode
-			if ($this->OldSubTpl) {
-				ob_start(); // Start buffuring output
-				$Loc->SaveRender = $this->Render;
-			}
-			$this->Render = TBS_OUTPUT;
 		} else {
-			// Restore contents configuration
-			if ($this->OldSubTpl) {
-				$CurrVal = ob_get_contents();
-				ob_end_clean();
-				$this->Render = $Loc->SaveRender;
-			} else {
-				$CurrVal = $this->Source;
-			}
-			$this->Source = &$Loc->SaveSrc;
-			$this->_Mode = $Loc->SaveMode;
+			$CurrVal		= $this->Source;
+			$this->Source	= &$Loc->SaveSrc;
+			$this->_Mode	= $Loc->SaveMode;
 		}
 	}
 
@@ -2589,28 +2508,18 @@ class clsTinyButXtreme {
 		}
 
 		// Compare values
-		if ($Ope==='=') {
-			return (strcasecmp($Val1,$Val2)==0);
-		} elseif ($Ope==='!=') {
-			return (strcasecmp($Val1,$Val2)!=0);
-		} elseif ($Ope==='~=') {
-			return (preg_match($Val2,$Val1)>0);
-		} else {
-			if ($Nude1) $Val1='0'+$Val1;
-			if ($Nude2) $Val2='0'+$Val2;
-			if ($Ope==='+-') {
-				return ($Val1>$Val2);
-			} elseif ($Ope==='-+') {
-				return ($Val1 < $Val2);
-			} elseif ($Ope==='+=-') {
-				return ($Val1 >= $Val2);
-			} elseif ($Ope==='-=+') {
-				return ($Val1<=$Val2);
-			} else {
-				return false;
-			}
-		}
+		if ($Ope==='=')		return (strcasecmp($Val1, $Val2)==0);
+		if ($Ope==='!=')	return (strcasecmp($Val1, $Val2)!=0);
+		if ($Ope==='~=')	return (preg_match($Val2, $Val1) >0);
 
+		if ($Nude1) $Val1='0'+$Val1;
+		if ($Nude2) $Val2='0'+$Val2;
+
+		if ($Ope==='+-')	return ($Val1  > $Val2);
+		if ($Ope==='-+')	return ($Val1  < $Val2);
+		if ($Ope==='+=-')	return ($Val1 >= $Val2);
+		if ($Ope==='-=+')	return ($Val1 <= $Val2);
+		return false;
 	}
 
 

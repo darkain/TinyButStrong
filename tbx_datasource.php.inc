@@ -1,28 +1,12 @@
 <?php
 
-define('_TBS_DS_ARRAY', 0);
-define('_TBS_DS_NUMBER', 1);
-define('_TBS_DS_TEXT', 2);
-define('_TBS_DS_FUNCTION', 3);
-define('_TBS_DS_OBJECTREF', 4);
-define('_TBS_DS_OBJECT', 5);
-define('_TBS_DS_PUDL', 5);
-define('_TBS_DS_ITERATOR', 9);
 
 
-define('_TBS_DS_SUB0', 0);
-define('_TBS_DS_SUB1', 1);
-define('_TBS_DS_SUB2', 2);
-define('_TBS_DS_SUB3', 3);
-
-
-
-class clsTbsDataSource {
+class tbxDatasource {
 
 	public $Type			= false;
-	public $SubType			= _TBS_DS_SUB0;
+	public $SubType			= TBX_DS_SUB0;
 	public $SrcId			= false;
-	public $Query			= '';
 	public $RecSet			= false;
 	public $RecKey			= '';
 	public $RecNum			= 0;
@@ -57,7 +41,7 @@ class clsTbsDataSource {
 		$FctObj			= false;
 
 		if (is_array($SrcId)) {
-			$this->Type = _TBS_DS_ARRAY;
+			$this->Type = TBX_DS_ARRAY;
 
 		} elseif (is_resource($SrcId)) {
 			$FctInfo	= get_resource_type($SrcId);
@@ -65,27 +49,27 @@ class clsTbsDataSource {
 
 		} elseif (is_string($SrcId)) {
 			switch (strtolower($SrcId)) {
-				case 'array':	$this->Type = _TBS_DS_ARRAY;	$this->SubType = _TBS_DS_SUB1; break;
-				case 'clear':	$this->Type = _TBS_DS_ARRAY;	$this->SubType = _TBS_DS_SUB3; break;
-				case 'text':	$this->Type = _TBS_DS_TEXT;		break;
-				case 'num':		$this->Type = _TBS_DS_NUMBER;	break;
+				case 'array':	$this->Type = TBX_DS_ARRAY;	$this->SubType = TBX_DS_SUB1; break;
+				case 'clear':	$this->Type = TBX_DS_ARRAY;	$this->SubType = TBX_DS_SUB3; break;
+				case 'text':	$this->Type = TBX_DS_TEXT;		break;
+				case 'num':		$this->Type = TBX_DS_NUMBER;	break;
 				default:		$FctInfo = $SrcId; $FctCat = 'k';
 			}
 
 		} else if (is_a($SrcId, 'pudlResult')) {
-			$this->Type		= _TBS_DS_PUDL;
+			$this->Type		= TBX_DS_PUDL;
 
 		} elseif ($SrcId instanceof Iterator) {
-			$this->Type		= _TBS_DS_ITERATOR;
-			$this->SubType	= _TBS_DS_SUB1;
+			$this->Type		= TBX_DS_ITERATOR;
+			$this->SubType	= TBX_DS_SUB1;
 
 		} elseif ($SrcId instanceof ArrayObject) {
-			$this->Type		= _TBS_DS_ITERATOR;
-			$this->SubType	= _TBS_DS_SUB2;
+			$this->Type		= TBX_DS_ITERATOR;
+			$this->SubType	= TBX_DS_SUB2;
 
 		} elseif ($SrcId instanceof IteratorAggregate) {
-			$this->Type		= _TBS_DS_ITERATOR;
-			$this->SubType	= _TBS_DS_SUB3;
+			$this->Type		= TBX_DS_ITERATOR;
+			$this->SubType	= TBX_DS_SUB3;
 
 		} elseif (is_object($SrcId)) {
 			$FctInfo = get_class($SrcId);
@@ -109,7 +93,7 @@ class clsTbsDataSource {
 	}
 
 
-	public function DataOpen(&$Query,$QryPrms=false) {
+	public function DataOpen(&$Query) {
 
 		// Init values
 		unset($this->CurrRec); $this->CurrRec = true;
@@ -133,20 +117,20 @@ class clsTbsDataSource {
 		}
 
 		switch ($this->Type) {
-			case _TBS_DS_ARRAY:
-				if (($this->SubType===_TBS_DS_SUB1) && (is_string($Query))) {
-					$this->SubType = _TBS_DS_SUB2;
+			case TBX_DS_ARRAY:
+				if (($this->SubType===TBX_DS_SUB1) && (is_string($Query))) {
+					$this->SubType = TBX_DS_SUB2;
 				}
 
-				if ($this->SubType===_TBS_DS_SUB0) {
+				if ($this->SubType===TBX_DS_SUB0) {
 					$this->RecSet = &$this->SrcId;
-				} elseif ($this->SubType===_TBS_DS_SUB1) {
+				} elseif ($this->SubType===TBX_DS_SUB1) {
 					if (is_array($Query)) {
 						$this->RecSet = &$Query;
 					} else {
 						$this->DataAlert('type \''.gettype($Query).'\' not supported for the Query Parameter going with \'array\' Source Type.');
 					}
-				} elseif ($this->SubType===_TBS_DS_SUB2) {
+				} elseif ($this->SubType===TBX_DS_SUB2) {
 					// TBS query string for array and objects, syntax: "var[item1][item2]->item3[item4]..."
 					$x = trim($Query);
 					$z = chr(0);
@@ -207,7 +191,7 @@ class clsTbsDataSource {
 							$this->RecSet = &$Var;
 						}
 					}
-				} elseif ($this->SubType===_TBS_DS_SUB3) { // Clear
+				} elseif ($this->SubType===TBX_DS_SUB3) { // Clear
 					$this->RecSet = array();
 				}
 				// First record
@@ -219,7 +203,8 @@ class clsTbsDataSource {
 				}
 			break;
 
-			case _TBS_DS_NUMBER:
+
+			case TBX_DS_NUMBER:
 				$this->RecSet = true;
 				$this->NumMin = 1;
 				$this->NumMax = 1;
@@ -245,11 +230,13 @@ class clsTbsDataSource {
 				}
 			break;
 
-			case _TBS_DS_PUDL:
+
+			case TBX_DS_PUDL:
 				case 1: $this->RecSet = &$this->SrcId;
 			break;
 
-			case _TBS_DS_TEXT:
+
+			case TBX_DS_TEXT:
 				if (is_string($Query)) {
 					$this->RecSet = &$Query;
 				} else {
@@ -257,24 +244,9 @@ class clsTbsDataSource {
 				}
 			break;
 
-			case _TBS_DS_FUNCTION:
-				$FctOpen = $this->FctOpen;
-				$this->RecSet = $FctOpen($this->SrcId,$Query,$QryPrms);
-				if ($this->RecSet===false) $this->DataAlert('function '.$FctOpen.'() has failed to open query {'.$Query.'}');
-			break;
 
-			case _TBS_DS_OBJECTREF:
-				$this->RecSet = call_user_func_array($this->FctOpen,array(&$this->SrcId,&$Query,&$QryPrms));
-				if ($this->RecSet===false) $this->DataAlert('method '.get_class($this->FctOpen[0]).'::'.$this->FctOpen[1].'() has failed to open query {'.$Query.'}');
-			break;
-
-			case _TBS_DS_OBJECT:
-				$this->RecSet = $this->SrcId->tbsdb_open($this->SrcId,$Query,$QryPrms);
-				if ($this->RecSet===false) $this->DataAlert('method '.get_class($this->SrcId).'::tbsdb_open() has failed to open query {'.$Query.'}');
-			break;
-
-			case _TBS_DS_ITERATOR:
-				if ($this->SubType==_TBS_DS_SUB1) {
+			case TBX_DS_ITERATOR:
+				if ($this->SubType==TBX_DS_SUB1) {
 					$this->RecSet = $this->SrcId;
 				} else {
 					$this->RecSet = $this->SrcId->getIterator();
@@ -283,7 +255,7 @@ class clsTbsDataSource {
 			break;
 		}
 
-		if (($this->Type===_TBS_DS_ARRAY) || ($this->Type===_TBS_DS_ITERATOR)) {
+		if (($this->Type===TBX_DS_ARRAY) || ($this->Type===TBX_DS_ITERATOR)) {
 			unset($this->RecKey); $this->RecKey = '';
 		} else {
 			if ($this->RecSaving) {
@@ -301,7 +273,7 @@ class clsTbsDataSource {
 		if ($this->RecSaved) {
 			if ($this->RecNum<$this->RecNbr) {
 				if ($this->FirstRec) {
-					if ($this->SubType===_TBS_DS_SUB2) { // From string
+					if ($this->SubType===TBX_DS_SUB2) { // From string
 						reset($this->RecSet);
 						$this->RecKey = key($this->RecSet);
 						$this->CurrRec = &$this->RecSet[$this->RecKey];
@@ -311,7 +283,7 @@ class clsTbsDataSource {
 					}
 					$this->FirstRec = false;
 				} else {
-					if ($this->SubType===_TBS_DS_SUB2) { // From string
+					if ($this->SubType===TBX_DS_SUB2) { // From string
 						next($this->RecSet);
 						$this->RecKey = key($this->RecSet);
 						$this->CurrRec = &$this->RecSet[$this->RecKey];
@@ -323,9 +295,9 @@ class clsTbsDataSource {
 				if ((!is_array($this->CurrRec)) && (!is_object($this->CurrRec))) $this->CurrRec = array('key'=>$this->RecKey, 'val'=>$this->CurrRec);
 				$this->RecNum++;
 				if ($this->OnDataOk) {
-					$this->OnDataArgs[1] = &$this->CurrRec; // Reference has changed if ($this->SubType===_TBS_DS_SUB2)
+					$this->OnDataArgs[1] = &$this->CurrRec; // Reference has changed if ($this->SubType===TBX_DS_SUB2)
 					if ($this->OnDataPrm) call_user_func_array($this->OnDataPrmRef,$this->OnDataArgs);
-					if ($this->SubType!==_TBS_DS_SUB2) $this->RecSet[$this->RecKey] = $this->CurrRec; // save modifications because array reading is done without reference :(
+					if ($this->SubType!==TBX_DS_SUB2) $this->RecSet[$this->RecKey] = $this->CurrRec; // save modifications because array reading is done without reference :(
 				}
 			} else {
 				unset($this->CurrRec); $this->CurrRec = false;
@@ -334,11 +306,11 @@ class clsTbsDataSource {
 		}
 
 		switch ($this->Type) {
-			case _TBS_DS_PUDL:
+			case TBX_DS_PUDL:
 				$this->CurrRec = $this->RecSet->row();
 			break;
 
-			case _TBS_DS_NUMBER:
+			case TBX_DS_NUMBER:
 				if (($this->NumVal>=$this->NumMin) && ($this->NumVal<=$this->NumMax)) {
 					$this->CurrRec = array('val'=>$this->NumVal);
 					$this->NumVal += $this->NumStep;
@@ -347,7 +319,7 @@ class clsTbsDataSource {
 				}
 			break;
 
-			case _TBS_DS_TEXT:
+			case TBX_DS_TEXT:
 				if ($this->RecNum===0) {
 					if ($this->RecSet==='') {
 						$this->CurrRec = false;
@@ -359,24 +331,24 @@ class clsTbsDataSource {
 				}
 			break;
 
-			case _TBS_DS_FUNCTION:
+			case TBX_DS_FUNCTION:
 				$FctFetch = $this->FctFetch;
 				$this->CurrRec = $FctFetch($this->RecSet,$this->RecNum+1);
 			break;
 
-			case _TBS_DS_OBJECTREF:
+			case TBX_DS_OBJECTREF:
 				$this->FctPrm[0] = &$this->RecSet; $this->FctPrm[1] = $this->RecNum+1;
 				$this->CurrRec = call_user_func_array($this->FctFetch,$this->FctPrm);
 			break;
 
-			case _TBS_DS_OBJECT:
+			case TBX_DS_OBJECT:
 				$this->CurrRec = $this->SrcId->tbsdb_fetch($this->RecSet,$this->RecNum+1);
 			break;
 
-			case _TBS_DS_ITERATOR:
+			case TBX_DS_ITERATOR:
 				if ($this->RecSet->valid()) {
-					$this->CurrRec = $this->RecSet->current();
-					$this->RecKey = $this->RecSet->key();
+					$this->CurrRec	= $this->RecSet->current();
+					$this->RecKey	= $this->RecSet->key();
 					$this->RecSet->next();
 				} else {
 					$this->CurrRec = false;
@@ -396,16 +368,17 @@ class clsTbsDataSource {
 
 
 	public function DataClose() {
-		$this->OnDataOk = false;
-		$this->OnDataPrm = false;
+		$this->OnDataOk		= false;
+		$this->OnDataPrm	= false;
 		if ($this->RecSaved) return;
 
 		switch ($this->Type) {
-			case _TBS_DS_PUDL:		$this->RecSet->free(); break;
-			case _TBS_DS_FUNCTION:	$FctClose=$this->FctClose; $FctClose($this->RecSet); break;
-			case _TBS_DS_OBJECTREF:	call_user_func_array($this->FctClose,array(&$this->RecSet)); break;
-			case _TBS_DS_OBJECT:	$this->SrcId->tbsdb_close($this->RecSet); break;
+			case TBX_DS_PUDL:		$this->RecSet->free(); break;
+			case TBX_DS_FUNCTION:	$FctClose=$this->FctClose; $FctClose($this->RecSet); break;
+			case TBX_DS_OBJECTREF:	call_user_func_array($this->FctClose,array(&$this->RecSet)); break;
+			case TBX_DS_OBJECT:		$this->SrcId->tbsdb_close($this->RecSet); break;
 		}
+
 		if ($this->RecSaving) {
 			$this->RecSet = &$this->RecBuffer;
 			$this->RecNbr = $this->RecNumInit + count($this->RecSet);
