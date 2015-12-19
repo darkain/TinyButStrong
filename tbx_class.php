@@ -62,10 +62,6 @@ class clsTinyButXtreme {
 
 	public function __construct($options=[]) {
 		$this->SetOption($options);
-
-		// Links to global variables (cannot be converted to static yet because of compatibility)
-		global $_TBS_FormatLst;
-		if (!isset($_TBS_FormatLst)) $_TBS_FormatLst = [];
 	}
 
 
@@ -240,10 +236,6 @@ class clsTinyButXtreme {
 	public function SetOption($o, $v=false, $d=false) {
 		if (!is_array($o)) $o = [$o => $v];
 
-		if (array_key_exists('tpl_frms', $o)) {
-			self::f_Misc_UpdateArray($GLOBALS['_TBS_FormatLst'], 'frm', $o['tpl_frms'], $d);
-		}
-
 		if (array_key_exists('include_path',$o)) {
 			self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
 		}
@@ -255,16 +247,12 @@ class clsTinyButXtreme {
 	public function GetOption($o) {
 		switch ($o) {
 			case'all':
-				$x = ['include_path','tpl_frms'];
+				$x = ['include_path'];
 				$r = [];
 				foreach ($x as $o) $r[$o] = $this->GetOption($o);
 			return $r;
 
-			case 'include_path':	return $this->IncludePath;
-			case 'tpl_frms':
-				$x = [];
-				foreach ($GLOBALS['_TBS_FormatLst'] as $s=>$i) $x[$s] = $i['Str'];
-			return $x;
+			case 'include_path': return $this->IncludePath;
 		}
 
 		return $this->meth_Misc_Alert('with GetOption() method','option \''.$o.'\' is not supported.');;
