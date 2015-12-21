@@ -215,45 +215,6 @@ class clsTinyButXtreme {
 
 
 
-	public function GetBlockSource($BlockName,$AsArray=false,$DefTags=true,$ReplaceWith=false) {
-		$RetVal = [];
-		$Nbr = 0;
-		$Pos = 0;
-		$FieldOutside = false;
-		$P1 = false;
-		$Mode = ($DefTags) ? 3 : 2;
-		$PosBeg1 = 0;
-		$PosEndPrec = false;
-		while ($Loc = $this->meth_Locator_FindBlockNext($this->Source,$BlockName,$Pos,'.',$Mode,$P1,$FieldOutside)) {
-			$Nbr++;
-			$Sep = '';
-			if ($Nbr==1) {
-				$PosBeg1 = $Loc->PosBeg;
-			} elseif (!$AsArray) {
-				$Sep = substr($this->Source,$PosSep,$Loc->PosBeg-$PosSep); // part of the source between sections
-			}
-			$RetVal[$Nbr] = $Sep.$Loc->BlockSrc;
-			$Pos = $Loc->PosEnd;
-			$PosSep = $Loc->PosEnd+1;
-			$P1 = false;
-		}
-		if ($Nbr==0) return false;
-		if (!$AsArray) {
-			if ($DefTags)  {
-				// Return the true part of the template
-				$RetVal = substr($this->Source,$PosBeg1,$Pos-$PosBeg1+1);
-			} else {
-				// Return the concatenated section without def tags
-				$RetVal = implode('', $RetVal);
-			}
-		}
-		if ($ReplaceWith!==false) $this->Source = substr($this->Source,0,$PosBeg1).$ReplaceWith.substr($this->Source,$Pos+1);
-		return $RetVal;
-	}
-
-
-
-
 	protected function _customFormat(&$text, $style) {}
 
 
@@ -814,12 +775,10 @@ class clsTinyButXtreme {
 					if ($this->f_Misc_CheckCondition($Loc->PrmLst['when'])) {
 						$this->_file($CurrVal, $x);
 						$this->_mergeAuto($CurrVal);
-						$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
 					}
 				} else {
 					$this->_file($CurrVal, $x);
 					$this->_mergeAuto($CurrVal);
-					$this->meth_Locator_PartAndRename($CurrVal, $Loc->PrmLst);
 				}
 				$ConvProtect = false;
 			}
@@ -1008,53 +967,6 @@ class clsTinyButXtreme {
 		$Loc->BlockFound = true;
 		if (($FirstField!==false) && ($FirstField->PosEnd<$Loc->PosBeg)) $FieldBefore = true;
 		return $Loc; // methods return by ref by default
-
-	}
-
-
-
-
-	function meth_Locator_PartAndRename(&$CurrVal, &$PrmLst) {
-		// Get part
-		if (isset($PrmLst['getpart'])) {
-			$part = $PrmLst['getpart'];
-		} elseif (isset($PrmLst['getbody'])) {
-			$part = $PrmLst['getbody'];
-		} else {
-			$part = false;
-		}
-		if ($part!=false) {
-			$CurrVal = $this->f_Xml_GetPart($CurrVal, $part, true);
-		}
-
-		// Rename or delete TBS tags names
-		if (isset($PrmLst['rename'])) {
-
-			$Replace = $PrmLst['rename'];
-
-			if (is_string($Replace)) $Replace = explode(',',$Replace);
-			foreach ($Replace as $x) {
-				if (is_string($x)) $x = explode('=', $x);
-				if (count($x)==2) {
-					$old = trim($x[0]);
-					$new = trim($x[1]);
-					if ($old!=='') {
-						if ($new==='') {
-							$q = false;
-							$s = 'clear';
-							$this->meth_Merge_Block($CurrVal, $old, $s, $q, false, false, false);
-						} else {
-							$CurrVal = str_replace(
-								['['.$old.'.',	'['.$old.' ',	'['.$old.';',	'['.$old.']'],
-								['['.$new.'.',	'['.$new.' ',	'['.$new.';',	'['.$new.']'],
-								$CurrVal
-							);
-						}
-					}
-				}
-			}
-
-		}
 
 	}
 
@@ -1608,7 +1520,7 @@ class clsTinyButXtreme {
 
 
 	// Merge Special Var Fields ([var..*])
-	function _mergeSpecial(&$Txt,&$Loc) {
+	protected function _mergeSpecial(&$Txt,&$Loc) {
 		$SubStart = false;
 
 		if (!isset($Loc->SubLst[1])) {
