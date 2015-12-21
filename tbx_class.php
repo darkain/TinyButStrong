@@ -1871,6 +1871,8 @@ class clsTinyButXtreme {
 			//break;
 
 			case $safe === 'nobr':
+			case $safe === 'pre':
+			case $safe === 'textarea':
 				$part->break		= false;
 			//Intentionally falling through case
 
