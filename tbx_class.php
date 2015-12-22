@@ -50,7 +50,6 @@ class clsTinyButXtreme {
 
 	// Undocumented (can change at any version)
 	public	$Version		= '10.0.3';
-	private	$_path			= '';
 
 	// Private
 	public	$_Mode			= 0;
@@ -474,7 +473,6 @@ class clsTinyButXtreme {
 			if ($Loc->FirstMerge) {
 				$Loc->OnFrmInfo = $Loc->PrmLst['onformat'];
 				$Loc->OnFrmArg = array($Loc->FullName,'',&$Loc->PrmLst,&$this);
-				$ErrMsg = false;
 			} else {
 				$Loc->OnFrmArg[3] = &$this; // bugs.php.net/51174
 			}
@@ -611,7 +609,7 @@ class clsTinyButXtreme {
 					case  1:
 						if ($Loc->mode===TBX_CONVERT_UNKNOWN) {
 							if (is_array($CurrVal)) {
-								foreach ($CurrVal as $k => &$v) {
+								foreach ($CurrVal as &$v) {
 									$v = $this->_string($v);
 									$this->_htmlsafe($v, $Loc->break);
 								} unset($v);
@@ -1218,9 +1216,8 @@ class clsTinyButXtreme {
 					if (isset($Src->OnDataPrmDone[$Src->OnDataPrmRef])) {
 						$Src->OnDataPrm = false;
 					} else {
-						$ErrMsg = false;
 						$LocR->FullName = $this->_CurrBlock;
-						$Src->OnDataPrm = $this->meth_Misc_Alert($LocR,'(parameter ondata) '.$ErrMsg,false,'block');
+						$Src->OnDataPrm = $this->meth_Misc_Alert($LocR,'(parameter ondata) ',false,'block');
 					}
 				}
 				// Dynamic query
@@ -1772,8 +1769,6 @@ class clsTinyButXtreme {
 					$Txt = substr_replace($Txt,'',$LocA->PosBeg,$LocA->PosEnd-$LocA->PosBeg+1);
 					$Pos = $LocA->PosBeg;
 				} else {
-					$FldPos = $LocA->PosBeg;
-					$FldLen = $LocA->PosEnd - $LocA->PosBeg + 1;
 					if ($LocA->PosBeg2===false) {
 						if ($this->f_Loc_EnlargeToTag($Txt,$LocA,$LocA->PrmLst['block'],false)===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to &lt;'.$LocA->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
 					} else {

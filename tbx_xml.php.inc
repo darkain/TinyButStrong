@@ -26,7 +26,7 @@ trait tbx_xml {
 	 * @param mixed $MoveLocLst true to simple move the loc, or an array of loc to rearrange the list after the move.
 	 *              Note: rearrange doest not work with PHP4.
 	 */
-	static function f_Xml_AttFind(&$Txt,&$Loc,$MoveLocLst=false,$AttDelim=false,$LocLst=false) {
+	static function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $AttDelim=false) {
 	// att=div#class ; att=((div))#class ; att=+((div))#class
 
 		$Att = $Loc->PrmLst['att'];
@@ -473,16 +473,6 @@ trait tbx_xml {
 			$p += $Inc;
 		} while (true);
 
-	}
-
-	static function f_Xml_GetNextEntityName($Txt, $Pos, &$tag, &$PosBeg, &$p) {
-		$Pos = strpos($Txt, '<', $Pos);
-		if ($Pos === false) return false;
-
-		$p		= strcspn($Txt, " />\r\n", $Pos);
-		$tag	= substr($Txt, $Pos, $p-$Pos);
-
-		return true;
 	}
 
 }
