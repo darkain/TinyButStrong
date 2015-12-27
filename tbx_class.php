@@ -50,6 +50,7 @@ class clsTinyButXtreme {
 
 	// Undocumented (can change at any version)
 	public	$Version		= '10.0.3';
+	public	$filepath		= '';
 
 	// Private
 	public	$_Mode			= 0;
@@ -2073,20 +2074,16 @@ class clsTinyButXtreme {
 
 
 	protected function _file(&$data, &$file) {
-		static $last = '';
-
 		$data = @file_get_contents($file, true);
 
 		if ($data !== false) {
-			$last = dirname($file) . '/';
+			$this->filepath = $file;
 		} else {
-			$data = @file_get_contents($last.$file, true);
+			$path = dirname($this->filepath) . '/';
+			$data = @file_get_contents($path.$file, true);
 		}
 
 		if ($data === false) {
-			echo '<br/>';
-			echo getcwd() . '<br/>';
-			echo $last . '<br/>';
 			trigger_error('Unable to load template file: '.$file, E_USER_ERROR);
 			return false;
 		}
