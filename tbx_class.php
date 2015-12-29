@@ -55,7 +55,7 @@ class clsTinyButXtreme {
 	// Private
 	public	$_Mode			= 0;
 	public	$_CurrBlock		= '';
-
+	public	$_P1			= false;
 
 
 
@@ -115,8 +115,17 @@ class clsTinyButXtreme {
 
 	public function block($list, $source, $Query='', $QryPrms=false) {
 		if (is_string($list)) $list = explode(',',$list);
-
 		$this->meth_Merge_Block($this->Source, $list, $source, $Query, false, 0, $QryPrms);
+		return $this;
+	}
+
+
+
+
+	public function repeat($list, $source, $Query='', $QryPrms=false) {
+		$this->_P1 = true;
+		$this->block($list, $source, $Query, $QryPrms);
+		$this->_P1 = false;
 		return $this;
 	}
 
@@ -893,9 +902,9 @@ class clsTinyButXtreme {
 		// Search for the first tag with parameter "block"
 		while ($SearchDef && ($Loc = $this->_find($Txt,$BlockName,$PosBeg,$ChrSub))) {
 			if (isset($Loc->PrmLst['block'])) {
-				if (isset($Loc->PrmLst['p1'])) {
+				if (isset($Loc->PrmLst['p1'])  ||  $this->_P1) {
 					if ($P1) return false;
-					$P1 = true;
+					$Loc->PrmLst['p1'] = $P1 = true;
 				}
 				$Block = $Loc->PrmLst['block'];
 				$SearchDef = false;
@@ -1722,13 +1731,13 @@ class clsTinyButXtreme {
 	// Merge [onload] or [onshow] fields and blocks
 	function _mergeOn(&$Txt, $Name) {
 
-		$GrpDisplayed = [];
-		$GrpExclusive = [];
-		$P1 = false;
-		$FieldBefore = false;
-		$Pos = 0;
+		$GrpDisplayed	= [];
+		$GrpExclusive	= [];
+		$P1				= false;
+		$FieldBefore	= false;
+		$Pos			= 0;
 
-		while ($LocA=$this->meth_Locator_FindBlockNext($Txt,$Name,$Pos,'_',1,$P1,$FieldBefore)) {
+		while ($LocA=$this->meth_Locator_FindBlockNext($Txt, $Name, $Pos, '_', 1, $P1, $FieldBefore)) {
 
 			if ($LocA->BlockFound) {
 
