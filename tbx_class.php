@@ -1820,7 +1820,7 @@ class clsTinyButXtreme {
 
 	// Convert a value to a string and trim it
 	static function _trim($value) {
-		return trim($this->_string($value));
+		return trim(self::_string($value));
 	}
 
 
