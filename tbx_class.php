@@ -1861,6 +1861,7 @@ class clsTinyButXtreme {
 			case 'json':
 				$this->_safe_default($part);
 				$part->ConvJson		= true;
+				$part->ConvProtect	= false;
 			break;
 
 			case 'url':
