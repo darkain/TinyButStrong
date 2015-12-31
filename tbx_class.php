@@ -427,7 +427,7 @@ class clsTinyButXtreme {
 
 
 
-	function _replace(&$Txt,&$Loc,&$Value,$SubStart) {
+	function _replace(&$Txt, &$Loc, &$Value, $SubStart, $Src=false) {
 	// This function enables to merge a locator with a text and returns the position just after the replaced block
 	// This position can be useful because we don't know in advance how $Value will be replaced.
 
@@ -729,8 +729,17 @@ class clsTinyButXtreme {
 			break;
 
 			case TBX_CONVERT_SPECIAL:
+				if ($Loc->ConvJson) {
+					$CurrVal = json_encode(is_object($Src) ? $Src->SrcId : $CurrVal);
+					break;
+				}
+
 				$CurrVal = $this->_string($CurrVal);
-				if ($Loc->ConvStr) $this->_htmlsafe($CurrVal,$Loc->break);
+
+				if ($Loc->ConvStr)			$this->_htmlsafe($CurrVal, $Loc->break);
+				if ($Loc->ConvUrl === 1)	$CurrVal = urlencode($CurrVal);
+				if ($Loc->ConvUrl === 2)	$CurrVal = rawurlencode($CurrVal);
+
 				if ($Loc->ConvJS) {
 					$CurrVal = str_replace(
 						["\n","\r","\t"],
@@ -738,8 +747,6 @@ class clsTinyButXtreme {
 						addslashes($CurrVal)
 					);
 				}
-				if ($Loc->ConvUrl === 1) $CurrVal = urlencode($CurrVal);
-				if ($Loc->ConvUrl === 2) $CurrVal = rawurlencode($CurrVal);
 			break;
 		}
 
@@ -1190,7 +1197,7 @@ class clsTinyButXtreme {
 
 		// Get source type and info
 		$Src = new tbxDatasource;
-		if (!$Src->DataPrepare($SrcId,$this)) {
+		if (!$Src->DataPrepare($SrcId, $this)) {
 			$this->_CurrBlock = $BlockSave;
 			return 0;
 		}
@@ -1299,7 +1306,7 @@ class clsTinyButXtreme {
 				$NbrRecTot += $Src->RecNum;
 				$BlockId++;
 			}
-			if ($LocR->FieldOutside) $this->meth_Merge_FieldOutside($Txt,$Src->CurrRec,$Src->RecNum,$LocR->FOStop);
+			if ($LocR->FieldOutside) $this->_outside($Txt, $Src, $LocR->FOStop);
 
 		}
 
@@ -1568,22 +1575,25 @@ class clsTinyButXtreme {
 
 
 
-	function meth_Merge_FieldOutside(&$Txt, &$CurrRec, $RecNum, $PosMax) {
+	function _outside(&$Txt, &$Src, $PosMax) {
 		$Pos = 0;
-		$SubStart = ($CurrRec===false) ? false : 0;
+		$SubStart = ($Src->CurrRec===false) ? false : 0;
 		do {
-			$Loc = $this->_find($Txt,$this->_CurrBlock,$Pos,'.');
-			if ($Loc!==false) {
-				if (($PosMax!==false) && ($Loc->PosEnd>$PosMax)) return;
-				if ($Loc->SubName==='#') {
-					$NewEnd = $this->_replace($Txt,$Loc,$RecNum,false);
-				} else {
-					$NewEnd = $this->_replace($Txt,$Loc,$CurrRec,$SubStart);
-				}
-				if ($PosMax!==false) $PosMax += $NewEnd - $Loc->PosEnd;
-				$Pos = $NewEnd;
+			$Loc = $this->_find($Txt, $this->_CurrBlock, $Pos, '.');
+			if ($Loc === false) return;
+			if (($PosMax !== false) && ($Loc->PosEnd > $PosMax)) return;
+
+			if ($Loc->SubName==='#') {
+				$NewEnd = $this->_replace($Txt, $Loc, $Src->RecNum, false, $Src);
+			} else {
+				$NewEnd = $this->_replace($Txt, $Loc, $Src->CurrRec, $SubStart, $Src);
 			}
-		} while ($Loc!==false);
+
+			if ($PosMax !== false) $PosMax += $NewEnd - $Loc->PosEnd;
+
+			$Pos = $NewEnd;
+
+		} while (1);
 	}
 
 
@@ -1841,43 +1851,48 @@ class clsTinyButXtreme {
 	// PREPARE SAFETY
 	function _safe(&$part, $safe) {
 		$part->ConvStr				= false;
-		$safe = trim(strtolower($safe));
-		switch (true) {
-			case $safe === 'js':
+
+		switch (trim(strtolower($safe))) {
+			case 'js':
 				$this->_safe_default($part);
 				$part->ConvJS		= true;
 			break;
 
-			case $safe === 'url':
+			case 'json':
+				$this->_safe_default($part);
+				$part->ConvJson		= true;
+			break;
+
+			case 'url':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 1;
 				$part->ConvProtect	= false;
 			break;
 
-			case $safe === 'raw':
+			case 'raw':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 2;
 				$part->ConvProtect	= false;
 			break;
 
-			case $safe === 'hex':
+			case 'hex':
 				$part->ConvHex		= true;
 			break;
 
 			//HANDLED BY DEFAULT OPTION ABOVE
-			case $safe === 'no':
-			case $safe === 'none':
+			case 'no':
+			case 'none':
 			//	$part->ConvStr		= false;
 			break;
 
 			//HANDLED BY DEFAULT CASE BELOW
-			//case $safe === 'yes':
+			//case 'yes':
 			//	$part->ConvStr		= true;
 			//break;
 
-			case $safe === 'nobr':
-			case $safe === 'pre':
-			case $safe === 'textarea':
+			case 'nobr':
+			case 'pre':
+			case 'textarea':
 				$part->break		= false;
 			//Intentionally falling through case
 
@@ -1893,6 +1908,7 @@ class clsTinyButXtreme {
 		if ($part->mode === TBX_CONVERT_SPECIAL) return;
 		$part->mode					= TBX_CONVERT_SPECIAL;
 		$part->ConvJS				= false;
+		$part->ConvJson				= false;
 		$part->ConvUrl				= false;
 	}
 
