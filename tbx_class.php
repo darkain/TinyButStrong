@@ -511,6 +511,10 @@ class clsTinyButXtreme {
 				$Loc->mode			= TBX_CONVERT_FORMAT;
 				$Loc->ConvProtect	= false;
 
+			} else if (isset($Loc->PrmLst['convert'])) {
+				$Loc->mode			= TBX_CONVERT_FUNCTION;
+				$Loc->ConvProtect	= false;
+
 			} else if (isset($Loc->PrmLst['safe'])) {
 				$this->_safe($Loc, $Loc->PrmLst['safe']);
 
@@ -737,6 +741,51 @@ class clsTinyButXtreme {
 
 			case TBX_CONVERT_CHECKED:
 				$CurrVal = trim($Loc->PrmLst['checked']) === $this->_trim($CurrVal) ? 'checked' : '';
+			break;
+
+			case TBX_CONVERT_FUNCTION:
+				$list = explode(',', strtolower($Loc->PrmLst['convert']));
+				foreach ($list as $item) switch (trim($item)) {
+					case 'addslashes':			$CurrVal = addslashes($CurrVal);			break;
+					case 'bin2hex':				$CurrVal = bin2hex($CurrVal);				break;
+					case 'chr':					$CurrVal = chr($CurrVal);					break;
+					case 'chunk_split':			$CurrVal = chunk_split($CurrVal);			break;
+					case 'crc32':				$CurrVal = crc32($CurrVal);					break;
+					case 'hebrev':				$CurrVal = hebrev($CurrVal);				break;
+					case 'hebrevc':				$CurrVal = hebrevc($CurrVal);				break;
+					case 'hex':					$CurrVal = bin2hex($CurrVal);				break;
+					case 'hex2bin':				$CurrVal = hex2bin($CurrVal);				break;
+					case 'html_entity_decode':	$CurrVal = html_entity_decode($CurrVal);	break;
+					case 'htmlentities':		$CurrVal = htmlentities($CurrVal);			break;
+					case 'htmlspecialchars':	$CurrVal = htmlspecialchars($CurrVal);		break;
+					case 'lcfirst':				$CurrVal = lcfirst($CurrVal);				break;
+					case 'lower':				$CurrVal = strtolower($CurrVal);			break;
+					case 'ltrim':				$CurrVal = ltrim($CurrVal);					break;
+					case 'md5':					$CurrVal = md5($CurrVal);					break;
+					case 'metaphone':			$CurrVal = metaphone($CurrVal);				break;
+					case 'nl2br':				$CurrVal = nl2br($CurrVal);					break;
+					case 'number_format':		$CurrVal = number_format($CurrVal);			break;
+					case 'ord':					$CurrVal = ord($CurrVal);					break;
+					case 'rtrim':				$CurrVal = rtrim($CurrVal);					break;
+					case 'sha1':				$CurrVal = sha1($CurrVal);					break;
+					case 'soundex':				$CurrVal = soundex($CurrVal);				break;
+					case 'strip_tags':			$CurrVal = strip_tags($CurrVal);			break;
+					case 'stripcslashes':		$CurrVal = stripcslashes($CurrVal);			break;
+					case 'stripslashes':		$CurrVal = stripslashes($CurrVal);			break;
+					case 'strlen':				$CurrVal = strlen($CurrVal);				break;
+					case 'strrev':				$CurrVal = strrev($CurrVal);				break;
+					case 'strtolower':			$CurrVal = strtolower($CurrVal);			break;
+					case 'strtoupper':			$CurrVal = strtoupper($CurrVal);			break;
+					case 'trim':				$CurrVal = trim($CurrVal);					break;
+					case 'ucfirst':				$CurrVal = ucfirst($CurrVal);				break;
+					case 'ucwords':				$CurrVal = ucwords($CurrVal);				break;
+					case 'unhex':				$CurrVal = hex2bin($CurrVal);				break;
+					case 'uudecode':			$CurrVal = convert_uudecode($CurrVal);		break;
+					case 'uuencode':			$CurrVal = convert_uuencode($CurrVal);		break;
+					case 'upper':				$CurrVal = strtoupper($CurrVal);			break;
+					case 'wordwrap':			$CurrVal = wordwrap($CurrVal);				break;
+					default: $this->_customFormat($CurrVal, $Loc->PrmLst['convert']);
+				}
 			break;
 
 			case TBX_CONVERT_SPECIAL:
