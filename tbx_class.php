@@ -713,6 +713,9 @@ class clsTinyButXtreme {
 			break;
 
 			case TBX_CONVERT_DATE:
+				if (!is_array($CurrVal)  &&  !is_int($CurrVal)  &&  !ctype_digit($CurrVal)) {
+					$CurrVal = strtotime($CurrVal);
+				}
 				$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
 			break;
 
