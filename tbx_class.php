@@ -507,6 +507,10 @@ class clsTinyButXtreme {
 				$Loc->mode			= TBX_CONVERT_SPRINTF;
 				$Loc->ConvProtect	= false;
 
+			} else if (isset($Loc->PrmLst['format'])) {
+				$Loc->mode			= TBX_CONVERT_FORMAT;
+				$Loc->ConvProtect	= false;
+
 			} else if (isset($Loc->PrmLst['safe'])) {
 				$this->_safe($Loc, $Loc->PrmLst['safe']);
 
@@ -721,6 +725,10 @@ class clsTinyButXtreme {
 
 			case TBX_CONVERT_SPRINTF:
 				$CurrVal = sprintf($Loc->PrmLst['sprintf'], $this->_string($CurrVal));
+			break;
+
+			case TBX_CONVERT_FORMAT:
+				$CurrVal = sprintf($Loc->PrmLst['format'], $this->_string($CurrVal));
 			break;
 
 			case TBX_CONVERT_SELECTED:
