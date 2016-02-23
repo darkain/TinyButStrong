@@ -441,8 +441,18 @@ class clsTinyButXtreme {
 					} elseif (array_key_exists($x,$Value)) {// can happens when value is NULL
 						$Value = &$Value[$x];
 					} else {
-						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item \''.$x.'\' is not an existing key in the array.',true);
-						unset($Value); $Value = ''; break;
+						if (!isset($Loc->PrmLst['noerr'])) {
+							$this->meth_Misc_Alert(
+								$Loc,
+								'item \''.$x.'\' is not an existing key in the array',
+								true,
+								false,
+								$Value
+							);
+						}
+						unset($Value);
+						$Value = '';
+						break;
 					}
 				} elseif (is_object($Value)) {
 
@@ -458,7 +468,15 @@ class clsTinyButXtreme {
 						$x = $Value->$x; // useful for overloaded property
 
 					} else {
-						if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',true);
+						if (!isset($Loc->PrmLst['noerr'])) {
+							$this->meth_Misc_Alert(
+								$Loc,
+								'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',
+								true,
+								false,
+								$Value
+							);
+						}
 						unset($Value);
 						$Value = '';
 						break;
@@ -1986,7 +2004,7 @@ class clsTinyButXtreme {
 
 
 	// Standard alert message provided by TinyButXtreme, return False is the message is cancelled.
-	function meth_Misc_Alert($Src, $Msg, $NoErrMsg=false, $SrcType=false) {
+	function meth_Misc_Alert($Src, $Msg, $NoErrMsg=false, $SrcType=false, $data='') {
 		$this->ErrCount++;
 
 		if (!is_string($Src)) {
