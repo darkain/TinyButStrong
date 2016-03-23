@@ -734,6 +734,7 @@ class clsTinyButXtreme {
 					$CurrVal = bin2hex($CurrVal);
 				} else {
 					$CurrVal = $this->_string($CurrVal);
+					if ($Loc->ConvPhone) $CurrVal = $this->_phone($CurrVal);
 					if ($Loc->ConvStr) $this->_htmlsafe($CurrVal,$Loc->break);
 				}
 			break;
@@ -1906,6 +1907,47 @@ class clsTinyButXtreme {
 
 
 
+	// Clean up a phone number
+	static function _phone($value) {
+		$phone		=	preg_replace('/[^\d]/', '', $value);
+
+		//USA/CANADA
+		if (preg_match('/^\d{10}$/', $phone)) {
+			return		substr($phone, 0, 3) . '-'
+					.	substr($phone, 3, 3) . '-'
+					.	substr($phone, 6, 4);
+		}
+
+		//USA/CANADA
+		if (preg_match('/^1\d{10}$/', $phone)) {
+			return		substr($phone, 1, 3) . '-'
+					.	substr($phone, 4, 3) . '-'
+					.	substr($phone, 7, 4);
+		}
+
+		//CZECH REPUBLIC
+		if (preg_match('/^00420\d{9}$/', $phone)) {
+			return	'00420 '
+					.	substr($phone,  5, 3) . ' '
+					.	substr($phone,  8, 3) . ' '
+					.	substr($phone, 11, 3);
+		}
+
+		//FRANCE
+		if (preg_match('/^0033\d{9}$/', $phone)) {
+			return	'0033 '
+					.	substr($phone,  4, 3) . ' '
+					.	substr($phone,  7, 2) . ' '
+					.	substr($phone,  9, 2) . ' '
+					.	substr($phone, 11, 2);
+		}
+
+		return $value;
+	}
+
+
+
+
 	// Convert a value to a string and trim it
 	static function _trim($value) {
 		return trim(self::_string($value));
@@ -1956,6 +1998,10 @@ class clsTinyButXtreme {
 
 			case 'hex':
 				$part->ConvHex		= true;
+			break;
+
+			case 'phone':
+				$part->ConvPhone	= true;
 			break;
 
 			//HANDLED BY DEFAULT OPTION ABOVE
