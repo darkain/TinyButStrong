@@ -35,17 +35,17 @@ class tbxDatasource {
 
 
 	public function DataPrepare(&$SrcId, &$TBS) {
-		$this->SrcId	= &$SrcId;
-		$this->TBS		= &$TBS;
-		$FctInfo		= false;
-		$FctObj			= false;
+		$this->SrcId		= &$SrcId;
+		$this->TBS			= &$TBS;
+		$FctInfo			= false;
+		$FctObj				= false;
 
 		if (is_array($SrcId)) {
-			$this->Type = TBX_DS_ARRAY;
+			$this->Type		= TBX_DS_ARRAY;
 
 		} elseif (is_resource($SrcId)) {
-			$FctInfo	= get_resource_type($SrcId);
-			$FctCat		= 'r';
+			$FctInfo		= get_resource_type($SrcId);
+			$FctCat			= 'r';
 
 		} elseif (is_string($SrcId)) {
 			switch (strtolower($SrcId)) {
@@ -72,13 +72,15 @@ class tbxDatasource {
 			$this->SubType	= TBX_DS_SUB3;
 
 		} elseif (is_object($SrcId)) {
-			$FctInfo = get_class($SrcId);
-			$FctCat = 'o';
-			$FctObj = &$SrcId;
+			$FctInfo		= get_class($SrcId);
+			$FctCat			= 'o';
+			$FctObj			= &$SrcId;
 			$this->SrcId = &$SrcId;
 
-		} elseif ($SrcId===false) {
-			$this->DataAlert('the specified source is set to FALSE. Maybe your connection has failed.');
+		} elseif ($SrcId === false) {
+			$SrcId			= [];
+			$this->Type		= TBX_DS_ARRAY;
+			//$this->DataAlert('the specified source is set to FALSE. Maybe your connection has failed.');
 
 		} else {
 			$this->DataAlert('unsupported variable type : \''.gettype($SrcId).'\'.');
@@ -86,7 +88,7 @@ class tbxDatasource {
 
 		if ($FctInfo!==false) {
 			$ErrMsg = false;
-			$this->Type = $this->DataAlert($ErrMsg);
+			$this->Type		= $this->DataAlert($ErrMsg);
 		}
 
 		return ($this->Type!==false);
