@@ -196,6 +196,13 @@ class clsTinyButXtreme {
 
 
 
+	public function renderFromString($template) {
+		return $this->loadString($template)->render();
+	}
+
+
+
+
 	public function renderBlock($filename, $block, $data) {
 		return $this->load($filename)->block($block, $data)->render();
 	}
