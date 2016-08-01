@@ -827,7 +827,9 @@ class clsTinyButXtreme {
 
 				if ($Loc->ConvStr)			$this->_htmlsafe($CurrVal, $Loc->break);
 				if ($Loc->ConvUrl === 1)	$CurrVal = urlencode($CurrVal);
-				if ($Loc->ConvUrl === 2)	$CurrVal = rawurlencode($CurrVal);
+				if ($Loc->ConvUrl === 2)	$CurrVal = strtolower(urlencode(rtrim(substr($CurrVal, 0, 20))));
+				if ($Loc->ConvUrl === 3)	$CurrVal = rawurlencode($CurrVal);
+				if ($Loc->ConvUrl === 4)	$CurrVal = strtolower(rawurlencode(rtrim(substr($CurrVal, 0, 20))));
 
 				if ($Loc->ConvJS) {
 					$CurrVal = str_replace(
@@ -2000,9 +2002,21 @@ class clsTinyButXtreme {
 				$part->ConvProtect	= false;
 			break;
 
-			case 'raw':
+			case 'urlid':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 2;
+				$part->ConvProtect	= false;
+			break;
+
+			case 'raw':
+				$this->_safe_default($part);
+				$part->ConvUrl		= 3;
+				$part->ConvProtect	= false;
+			break;
+
+			case 'rawid':
+				$this->_safe_default($part);
+				$part->ConvUrl		= 4;
 				$part->ConvProtect	= false;
 			break;
 
