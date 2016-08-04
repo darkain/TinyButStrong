@@ -109,8 +109,10 @@ trait tbx_xml {
 		if ($MoveLocLst) return self::f_Xml_AttMove($Txt,$Loc,$AttDelim,$MoveLocLst);
 
 		return true;
-
 	}
+
+
+
 
 	static function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim=false, &$MoveLocLst) {
 
@@ -188,6 +190,9 @@ trait tbx_xml {
 		return true;
 	}
 
+
+
+
 	static function f_Xml_Max(&$Txt,&$Nbr,$MaxEnd) {
 	// Limit the number of HTML chars
 
@@ -220,6 +225,9 @@ trait tbx_xml {
 		if (($n>=$Nbr) && ($p<$pMax)) $Txt = substr($Txt,0,$p).$MaxEnd;
 
 	}
+
+
+
 
 	static function f_Xml_GetPart(&$Txt, $TagLst, $AllIfNothing=false) {
 	// Returns parts of the XML/HTML content, default is BODY.
@@ -299,6 +307,9 @@ trait tbx_xml {
 
 	}
 
+
+
+
 	/**
 	 * Find the start of an XML tag. Used by OpenTBS.
 	 * $Case=false can be useful for HTML.
@@ -332,6 +343,9 @@ trait tbx_xml {
 		return $p;
 
 	}
+
+
+
 
 	/**
 	 * This function is a smart solution to find an XML tag.
@@ -446,6 +460,9 @@ trait tbx_xml {
 		}
 
 	}
+
+
+
 
 	static function f_Xml_FindNewLine(&$Txt,$PosBeg,$Forward,$IsRef) {
 
