@@ -21,7 +21,11 @@ function tbxTest($expected) {
 	echo "EXPECTED:\n";
 	echo "'" . (is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
 	echo "TEMPLATE:\n";
-	echo "'" . ((string)$tbx) . "'\n\n";
+	if (php_sapi_name() === 'cli') {
+		echo "'" . ((string)$tbx) . "'\n\n";
+	} else {
+		echo "'" . htmlspecialchars((string)$tbx) . "'\n\n";
+	}
 	exit;
 }
 
@@ -31,3 +35,4 @@ function tbxTest($expected) {
 require('date.php');
 require('format.php');
 require('convert.php');
+require('magnet.php');
