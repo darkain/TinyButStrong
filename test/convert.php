@@ -36,7 +36,6 @@ $tbx->loadString('[x;convert=addslashes]')
 	->field('x', 'te"st');
 
 tbxTest('te\\"st');
-///
 
 
 
@@ -58,9 +57,17 @@ tbxTest("this is a very long string that is about to be broken apart into two di
 
 
 $tbx->loadString('[x;convert=crc32]')
-	->field('x', 'testing');
+	->field('x', 'hello');
 
-tbxTest('3908262406');
+tbxTest('3d653119');
+
+
+
+
+$tbx->loadString('[x;convert=crc32b]')
+	->field('x', 'hello');
+
+tbxTest('3610a686');
 
 
 
@@ -121,10 +128,26 @@ tbxTest('text  with  space');
 
 
 
-$tbx->loadString('[x;convert=md5]')
-	->field('x', 'testing');
+$tbx->loadString('[x;convert=md2]')
+	->field('x', 'hello');
 
-tbxTest('ae2b1fca515949e5d54fb22b8ed95575');
+tbxTest('a9046c73e00331af68917d3804f70655');
+
+
+
+
+$tbx->loadString('[x;convert=md4]')
+	->field('x', 'hello');
+
+tbxTest('866437cb7a794bce2b727acc0362ee27');
+
+
+
+
+$tbx->loadString('[x;convert=md5]')
+	->field('x', 'hello');
+
+tbxTest('5d41402abc4b2a76b9719d911017c592');
 
 
 
@@ -162,9 +185,33 @@ tbxTest('97');
 
 
 $tbx->loadString('[x;convert=sha1]')
-	->field('x', 'testing');
+	->field('x', 'hello');
 
-tbxTest('dc724af18fbdd4e59189f5fe768a5f8311527050');
+tbxTest('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
+
+
+
+
+$tbx->loadString('[x;convert=sha256]')
+	->field('x', 'hello');
+
+tbxTest('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+
+
+
+
+$tbx->loadString('[x;convert=sha384]')
+	->field('x', 'hello');
+
+tbxTest('59e1748777448c69de6b800d7a33bbfb9ff1b463e44354c3553bcdb9c666fa90125a3c79f90397bdf5f6a13de828684f');
+
+
+
+
+$tbx->loadString('[x;convert=sha512]')
+	->field('x', 'hello');
+
+tbxTest('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
 
 
 

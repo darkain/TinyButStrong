@@ -779,7 +779,8 @@ class clsTinyButXtreme {
 					case 'bin2hex':				$CurrVal = bin2hex($CurrVal);				break;
 					case 'chr':					$CurrVal = chr($CurrVal);					break;
 					case 'chunk_split':			$CurrVal = chunk_split($CurrVal);			break;
-					case 'crc32':				$CurrVal = crc32($CurrVal);					break;
+					case 'crc32':				$CurrVal = hash('crc32',$CurrVal);			break;
+					case 'crc32b':				$CurrVal = hash('crc32b',$CurrVal);			break;
 					case 'hebrev':				$CurrVal = hebrev($CurrVal);				break;
 					case 'hebrevc':				$CurrVal = hebrevc($CurrVal);				break;
 					case 'hex':					$CurrVal = bin2hex($CurrVal);				break;
@@ -790,6 +791,8 @@ class clsTinyButXtreme {
 					case 'lcfirst':				$CurrVal = lcfirst($CurrVal);				break;
 					case 'lower':				$CurrVal = strtolower($CurrVal);			break;
 					case 'ltrim':				$CurrVal = ltrim($CurrVal);					break;
+					case 'md2':					$CurrVal = hash('md2',$CurrVal);			break;
+					case 'md4':					$CurrVal = hash('md4',$CurrVal);			break;
 					case 'md5':					$CurrVal = md5($CurrVal);					break;
 					case 'metaphone':			$CurrVal = metaphone($CurrVal);				break;
 					case 'nl2br':				$CurrVal = nl2br($CurrVal);					break;
@@ -797,6 +800,9 @@ class clsTinyButXtreme {
 					case 'ord':					$CurrVal = ord($CurrVal);					break;
 					case 'rtrim':				$CurrVal = rtrim($CurrVal);					break;
 					case 'sha1':				$CurrVal = sha1($CurrVal);					break;
+					case 'sha256':				$CurrVal = hash('sha256',$CurrVal);			break;
+					case 'sha384':				$CurrVal = hash('sha384',$CurrVal);			break;
+					case 'sha512':				$CurrVal = hash('sha512',$CurrVal);			break;
 					case 'soundex':				$CurrVal = soundex($CurrVal);				break;
 					case 'strip_tags':			$CurrVal = strip_tags($CurrVal);			break;
 					case 'stripcslashes':		$CurrVal = stripcslashes($CurrVal);			break;
