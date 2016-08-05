@@ -122,7 +122,12 @@ trait tbx_function {
 
 
 			case 'rawid':
-				$value = strtolower(rawurlencode(rtrim(substr($CurrVal, 0, 20))));
+				$value = strtolower(rawurlencode(rtrim(substr($value, 0, 20))));
+			break;
+
+
+			case 'rawname':
+				$value = strtolower(rawurlencode($value));
 			break;
 
 
@@ -236,7 +241,12 @@ trait tbx_function {
 
 
 			case 'urlid':
-				$value = strtolower(urlencode(rtrim(substr($CurrVal, 0, 20))));
+				$value = strtolower(urlencode(rtrim(substr($value, 0, 20))));
+			break;
+
+
+			case 'urlname':
+				$value = strtolower(urlencode($value));
 			break;
 
 
