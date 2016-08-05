@@ -18,13 +18,12 @@ function tbxTest($expected) {
 	echo "ERROR: FAILED!!\n\n";
 	echo "FILE: $trace[file]\n";
 	echo "LINE: $trace[line]\n\n";
-	echo "EXPECTED:\n";
-	echo "'" . (is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
-	echo "TEMPLATE:\n";
 	if (php_sapi_name() === 'cli') {
-		echo "'" . ((string)$tbx) . "'\n\n";
+		echo "EXPECTED:\n'" . (is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
+		echo "TEMPLATE:\n'" . ((string)$tbx) . "'\n\n";
 	} else {
-		echo "'" . htmlspecialchars((string)$tbx) . "'\n\n";
+		echo "EXPECTED:\n'" . htmlspecialchars(is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
+		echo "TEMPLATE:\n'" . htmlspecialchars((string)$tbx) . "'\n\n";
 	}
 	exit;
 }
