@@ -1,7 +1,7 @@
 <?php
 
 
-$tbx->loadString("[x;format=%d]")
+$tbx->loadString('[x;format=%d]')
 	->field('x', 56);
 
 tbxTest('56');
@@ -9,7 +9,7 @@ tbxTest('56');
 
 
 
-$tbx->loadString("[x;format=%05d]")
+$tbx->loadString('[x;format=%05d]')
 	->field('x', 56);
 
 tbxTest('00056');
@@ -17,7 +17,7 @@ tbxTest('00056');
 
 
 
-$tbx->loadString("[x;format=%b]")
+$tbx->loadString('[x;format=%b]')
 	->field('x', 56);
 
 tbxTest('111000');
@@ -25,7 +25,7 @@ tbxTest('111000');
 
 
 
-$tbx->loadString("[x;format=%c]")
+$tbx->loadString('[x;format=%c]')
 	->field('x', 56);
 
 tbxTest('8');
@@ -33,7 +33,7 @@ tbxTest('8');
 
 
 
-$tbx->loadString("[x;format=%e]")
+$tbx->loadString('[x;format=%e]')
 	->field('x', 56);
 
 tbxTest('5.600000e+1');
@@ -41,7 +41,7 @@ tbxTest('5.600000e+1');
 
 
 
-$tbx->loadString("[x;format=%0.1e]")
+$tbx->loadString('[x;format=%0.1e]')
 	->field('x', 56);
 
 tbxTest('5.6e+1');
@@ -49,7 +49,7 @@ tbxTest('5.6e+1');
 
 
 
-$tbx->loadString("[x;format=%f]")
+$tbx->loadString('[x;format=%f]')
 	->field('x', 56);
 
 tbxTest('56.000000');
@@ -57,7 +57,7 @@ tbxTest('56.000000');
 
 
 
-$tbx->loadString("[x;format=%0.1f]")
+$tbx->loadString('[x;format=%0.1f]')
 	->field('x', 56);
 
 tbxTest('56.0');
@@ -65,7 +65,7 @@ tbxTest('56.0');
 
 
 
-$tbx->loadString("[x;format=%o]")
+$tbx->loadString('[x;format=%o]')
 	->field('x', 56);
 
 tbxTest('70');
@@ -73,7 +73,7 @@ tbxTest('70');
 
 
 
-$tbx->loadString("[x;format=%s]")
+$tbx->loadString('[x;format=%s]')
 	->field('x', 56);
 
 tbxTest('56');
@@ -81,7 +81,7 @@ tbxTest('56');
 
 
 
-$tbx->loadString("[x;format=%u]")
+$tbx->loadString('[x;format=%u]')
 	->field('x', 1);
 
 tbxTest('1');
@@ -89,7 +89,7 @@ tbxTest('1');
 
 
 
-$tbx->loadString("[x;format=%u]")
+$tbx->loadString('[x;format=%u]')
 	->field('x', -1);
 
 tbxTest('18446744073709551615');
@@ -97,7 +97,7 @@ tbxTest('18446744073709551615');
 
 
 
-$tbx->loadString("[x;format=%X]")
+$tbx->loadString('[x;format=%X]')
 	->field('x', 220);
 
 tbxTest('DC');
@@ -105,7 +105,7 @@ tbxTest('DC');
 
 
 
-$tbx->loadString("[x;format=%x]")
+$tbx->loadString('[x;format=%x]')
 	->field('x', 220);
 
 tbxTest('dc');
@@ -113,7 +113,7 @@ tbxTest('dc');
 
 
 
-$tbx->loadString("[x;format=%x]")
+$tbx->loadString('[x;format=%x]')
 	->field('x', 'string');
 
 tbxTest('0');
