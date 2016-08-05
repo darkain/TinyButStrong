@@ -11,7 +11,7 @@ class tbxLocator {
 	public $SubNbr		= 0;
 	public $PrmLst		= [];
 	public $PrmIfNbr	= false;
-	public $MagnetId	= false;
+	public $MagnetId	= TBX_MAGNET_NONE;
 	public $BlockFound	= false;
 	public $FirstMerge	= true;
 	public $ConvProtect	= true;

@@ -25,3 +25,16 @@ define('TBX_DS_SUB0',			0);
 define('TBX_DS_SUB1',			1);
 define('TBX_DS_SUB2',			2);
 define('TBX_DS_SUB3',			3);
+
+
+//MAGNETS
+define('TBX_MAGNET_NONE',		0);
+define('TBX_MAGNET_ZERO',		1);
+define('TBX_MAGNET_TAG',		2);
+define('TBX_MAGNET_PLUS',		3);
+define('TBX_MAGNET_SUFFIX',		4);
+define('TBX_MAGNET_PREFIX',		5);
+define('TBX_MAGNET_ATTADD',		6);
+define('TBX_MAGNET_ATTR',		7);
+define('TBX_MAGNET_IFEMPTY',	8);
+define('TBX_MAGNET_NBSP',		9);

@@ -692,12 +692,12 @@ class clsTinyButXtreme {
 							$CurrVal = (in_array($this->_string($CurrVal),$Loc->OpeMKO)) ? '' : ' ';
 						} // no break here
 					case 11:
-						if ($this->_string($CurrVal)==='') {
-							if ($Loc->MagnetId===0) $Loc->MagnetId = $Loc->MSave;
+						if ($this->_string($CurrVal) === '') {
+							if ($Loc->MagnetId === TBX_MAGNET_ZERO) $Loc->MagnetId = $Loc->MSave;
 						} else {
-							if ($Loc->MagnetId!==0) {
+							if ($Loc->MagnetId !== TBX_MAGNET_ZERO) {
 								$Loc->MSave = $Loc->MagnetId;
-								$Loc->MagnetId = 0;
+								$Loc->MagnetId = TBX_MAGNET_ZERO;
 							}
 							$CurrVal = '';
 						}
@@ -907,73 +907,82 @@ class clsTinyButXtreme {
 		// Case when it's an empty string
 		if ($CurrVal==='') {
 
-			if ($Loc->MagnetId===false) {
+			if ($Loc->MagnetId === TBX_MAGNET_NONE) {
+
 				if (isset($Loc->PrmLst['.'])) {
-					$Loc->MagnetId = -1;
+					$Loc->MagnetId = TBX_MAGNET_NBSP;
+
 				} elseif (isset($Loc->PrmLst['ifempty'])) {
-					$Loc->MagnetId = -2;
+					$Loc->MagnetId = TBX_MAGNET_IFEMPTY;
+
 				} elseif (isset($Loc->PrmLst['magnet'])) {
-					$Loc->MagnetId = 1;
+					$Loc->MagnetId = TBX_MAGNET_TAG;
 					$Loc->PosBeg0 = $Loc->PosBeg;
 					$Loc->PosEnd0 = $Loc->PosEnd;
-					if ($Loc->PrmLst['magnet']==='#') {
+
+					if ($Loc->PrmLst['magnet'] === '#') {
 						if (!isset($Loc->AttBeg)) {
 							$Loc->PrmLst['att'] = '.';
 							$this->f_Xml_AttFind($Txt, $Loc, true, false);
 						}
+
 						if (isset($Loc->AttBeg)) {
-							$Loc->MagnetId = -3;
+							$Loc->MagnetId = TBX_MAGNET_ATTR;
 						} else {
-							$this->meth_Misc_Alert($Loc,'parameter \'magnet=#\' cannot be processed because the corresponding attribute is not found.',true);
+							$this->meth_Misc_Alert($Loc, "'magnet=#' invalid, attribute not found.", true);
 						}
+
 					} elseif (isset($Loc->PrmLst['mtype'])) {
 						switch ($Loc->PrmLst['mtype']) {
-							case 'm+m': $Loc->MagnetId = 2; break;
-							case 'm*': $Loc->MagnetId = 3; break;
-							case '*m': $Loc->MagnetId = 4; break;
+							case 'm+m':	$Loc->MagnetId = TBX_MAGNET_PLUS;	break;
+							case 'm*':	$Loc->MagnetId = TBX_MAGNET_SUFFIX;	break;
+							case '*m':	$Loc->MagnetId = TBX_MAGNET_PREFIX;	break;
 						}
 					}
+
 				} elseif (isset($Loc->PrmLst['attadd'])) {
 					// In order to delete extra space
 					$Loc->PosBeg0 = $Loc->PosBeg;
 					$Loc->PosEnd0 = $Loc->PosEnd;
-					$Loc->MagnetId = 5;
+					$Loc->MagnetId = TBX_MAGNET_ATTADD;
+
 				} else {
-					$Loc->MagnetId = 0;
+					$Loc->MagnetId = TBX_MAGNET_ZERO;
 				}
-			} else if ($Loc->MagnetId === -3) {
+
+			} else if ($Loc->MagnetId === TBX_MAGNET_ATTR) {
 				$Loc->PrmLst['att'] = '.';
 				self::f_Xml_AttFind($Txt, $Loc, false, true);
 			}
 
 			switch ($Loc->MagnetId) {
-				case 0: break;
+				case TBX_MAGNET_ZERO: break;
 
-				case -1:
+				case TBX_MAGNET_NBSP:
 					$CurrVal		= '&nbsp;';		// Enables to avoid null cells in HTML tables
 				break;
 
-				case -2:
+				case TBX_MAGNET_IFEMPTY:
 					$CurrVal		= $Loc->PrmLst['ifempty'];
 				break;
 
-				case -3:
+				case TBX_MAGNET_ATTR:
 					$Loc->Enlarged	= true;
 					$Loc->PosBeg	= $Loc->AttBegM;
 					$Loc->PosEnd	= $Loc->AttEnd;
 				break;
 
-				case 1:
+				case TBX_MAGNET_TAG:
 					$Loc->Enlarged	= true;
 					$this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],false);
 				break;
 
-				case 2:
+				case TBX_MAGNET_PLUS:
 					$Loc->Enlarged	= true;
 					$CurrVal = $this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],true);
 				break;
 
-				case 3:
+				case TBX_MAGNET_SUFFIX:
 					$Loc->Enlarged	= true;
 					$Loc2 = $this->f_Xml_FindTag($Txt,$Loc->PrmLst['magnet'],true,$Loc->PosBeg,false,false,false);
 					if ($Loc2!==false) {
@@ -982,13 +991,13 @@ class clsTinyButXtreme {
 					}
 				break;
 
-				case 4:
+				case TBX_MAGNET_PREFIX:
 					$Loc->Enlarged	= true;
 					$Loc2 = $this->f_Xml_FindTag($Txt,$Loc->PrmLst['magnet'],true,$Loc->PosBeg,true,false,false);
 					if ($Loc2!==false) $Loc->PosEnd = $Loc2->PosEnd;
 				break;
 
-				case 5:
+				case TBX_MAGNET_ATTADD:
 					$Loc->Enlarged	= true;
 					if (substr($Txt,$Loc->PosBeg-1,1)==' ') $Loc->PosBeg--;
 				break;
