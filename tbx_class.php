@@ -922,9 +922,9 @@ class clsTinyButXtreme {
 						}
 					} elseif (isset($Loc->PrmLst['mtype'])) {
 						switch ($Loc->PrmLst['mtype']) {
-						case 'm+m': $Loc->MagnetId = 2; break;
-						case 'm*': $Loc->MagnetId = 3; break;
-						case '*m': $Loc->MagnetId = 4; break;
+							case 'm+m': $Loc->MagnetId = 2; break;
+							case 'm*': $Loc->MagnetId = 3; break;
+							case '*m': $Loc->MagnetId = 4; break;
 						}
 					}
 				} elseif (isset($Loc->PrmLst['attadd'])) {
@@ -935,26 +935,40 @@ class clsTinyButXtreme {
 				} else {
 					$Loc->MagnetId = 0;
 				}
+			} else if ($Loc->MagnetId === -3) {
+				$Loc->PrmLst['att'] = '.';
+				self::f_Xml_AttFind($Txt, $Loc, false, true);
 			}
 
 			switch ($Loc->MagnetId) {
 				case 0: break;
-				case -1: $CurrVal = '&nbsp;'; break; // Enables to avoid null cells in HTML tables
-				case -2: $CurrVal = $Loc->PrmLst['ifempty']; break;
-				case -3: $Loc->Enlarged = true; $Loc->PosBeg = $Loc->AttBegM; $Loc->PosEnd = $Loc->AttEnd; break;
+
+				case -1:
+					$CurrVal		= '&nbsp;';		// Enables to avoid null cells in HTML tables
+				break;
+
+				case -2:
+					$CurrVal		= $Loc->PrmLst['ifempty'];
+				break;
+
+				case -3:
+					$Loc->Enlarged	= true;
+					$Loc->PosBeg	= $Loc->AttBegM;
+					$Loc->PosEnd	= $Loc->AttEnd;
+				break;
 
 				case 1:
-					$Loc->Enlarged = true;
+					$Loc->Enlarged	= true;
 					$this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],false);
 				break;
 
 				case 2:
-					$Loc->Enlarged = true;
+					$Loc->Enlarged	= true;
 					$CurrVal = $this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],true);
 				break;
 
 				case 3:
-					$Loc->Enlarged = true;
+					$Loc->Enlarged	= true;
 					$Loc2 = $this->f_Xml_FindTag($Txt,$Loc->PrmLst['magnet'],true,$Loc->PosBeg,false,false,false);
 					if ($Loc2!==false) {
 						$Loc->PosBeg = $Loc2->PosBeg;
@@ -963,13 +977,13 @@ class clsTinyButXtreme {
 				break;
 
 				case 4:
-					$Loc->Enlarged = true;
+					$Loc->Enlarged	= true;
 					$Loc2 = $this->f_Xml_FindTag($Txt,$Loc->PrmLst['magnet'],true,$Loc->PosBeg,true,false,false);
 					if ($Loc2!==false) $Loc->PosEnd = $Loc2->PosEnd;
 				break;
 
 				case 5:
-					$Loc->Enlarged = true;
+					$Loc->Enlarged	= true;
 					if (substr($Txt,$Loc->PosBeg-1,1)==' ') $Loc->PosBeg--;
 				break;
 			}
