@@ -5,6 +5,7 @@
 *	Version		: 3.10.0-beta-2015-10-01 for PHP 5                             *
 *	Date		: 2015-10-01                                                   *
 *	Web site	: http://www.tinybutstrong.com                                 *
+*	GitHub		: https://github.com/Skrol29/tinybutstrong                     *
 *	Author		: http://www.tinybutstrong.com/onlyyou.html                    *
 ********************************************************************************
 *	This library is free software.                                             *
@@ -12,10 +13,11 @@
 *	but you must accept and respect the LPGL License version 3.                *
 ********************************************************************************
 *	TinyButXtreme - Heavily modified fork of TinyButStrong                     *
+*	This TBX library is --NOT-- backwards compatible with the original TBS     *
 *	------------------------                                                   *
-*	Version		: 10.0.3 for PHP 5.4+ and HHVM 3.6+                            *
-*	Date		: 2015-12-19                                                   *
-*	Web site	: https://github.com/darkain/TinyButXtreme                     *
+*	Version		: 10.0.4 for PHP 5.4+ and HHVM 3.6+                            *
+*	Date		: 2016-08-05                                                   *
+*	GitHub		: https://github.com/darkain/TinyButXtreme                     *
 *	Author		: Darkain Multimedia                                           *
 \******************************************************************************/
 
@@ -34,8 +36,8 @@ if (!version_compare(PHP_VERSION,'5.4.0', '>=')) {
 
 
 require_once('tbx_constants.php.inc');
-require_once('tbx_locator.php.inc');
 require_once('tbx_datasource.php.inc');
+require_once('tbx_locator.php.inc');
 
 //TRAITS (separated out to help organize code)
 require_once('tbx_api.php.inc');
@@ -90,13 +92,13 @@ class clsTinyButXtreme {
 			$PosX = $Pos + strlen($Start);
 			$x = $Txt[$PosX];
 
-			if ($x===']') {
+			if ($x === ']') {
 				$PosEnd = $PosX;
-			} elseif ($x===$ChrSub) {
+			} elseif ($x === $ChrSub) {
 				$Loc->SubOk = true; // it is no longer the false value
 				$ReadPrm = true;
 				$PosX++;
-			} elseif (strpos(';',$x)!==false) {
+			} elseif (strpos(';', $x) !== false) {
 				$ReadPrm = true;
 				$PosX++;
 			} else {
@@ -105,30 +107,33 @@ class clsTinyButXtreme {
 
 			$Loc->PosBeg = $Pos;
 			if ($ReadPrm) {
-				self::f_Loc_PrmRead($Txt, $PosX, false, '\'', '[', ']', $Loc, $PosEnd);
-				if ($PosEnd===false) {
-					$this->meth_Misc_Alert('','can\'t found the end of the tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.');
+				$Loc->PrmRead($Txt, $PosX, false, '\'', '[', ']', $PosEnd);
+				if ($PosEnd === false) {
+					$this->meth_Misc_Alert('',
+						'can\'t find end of tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.'
+					);
 					$Pos++;
 				}
 			}
-		} while ($PosEnd===false);
+		} while ($PosEnd === false);
 
 		$Loc->PosEnd = $PosEnd;
 		if ($Loc->SubOk) {
-			$Loc->FullName = $Name.'.'.$Loc->SubName;
-			$Loc->SubLst = explode('.',$Loc->SubName);
-			$Loc->SubNbr = count($Loc->SubLst);
+			$Loc->FullName		= $Name.'.'.$Loc->SubName;
+			$Loc->SubLst		= explode('.',$Loc->SubName);
+			$Loc->SubNbr		= count($Loc->SubLst);
 		} else {
-			$Loc->FullName = $Name;
+			$Loc->FullName		= $Name;
 		}
+
 		if ( $ReadPrm && ( isset($Loc->PrmLst['enlarge']) || isset($Loc->PrmLst['comm']) ) ) {
-			$Loc->PosBeg0 = $Loc->PosBeg;
-			$Loc->PosEnd0 = $Loc->PosEnd;
+			$Loc->PosBeg0		= $Loc->PosBeg;
+			$Loc->PosEnd0		= $Loc->PosEnd;
 			$enlarge = (isset($Loc->PrmLst['enlarge'])) ? $Loc->PrmLst['enlarge'] : $Loc->PrmLst['comm'];
-			if (($enlarge===true) || ($enlarge==='')) {
-				$Loc->Enlarged = self::f_Loc_EnlargeToStr($Txt,$Loc,'<!--' ,'-->');
+			if (($enlarge === true)  ||  ($enlarge === '')) {
+				$Loc->Enlarged	= $Loc->EnlargeToStr($Txt, '<!--', '-->');
 			} else {
-				$Loc->Enlarged = self::f_Loc_EnlargeToTag($Txt,$Loc,$enlarge,false);
+				$Loc->Enlarged	= $Loc->EnlargeToTag($Txt, $enlarge);
 			}
 		}
 
@@ -206,7 +211,7 @@ class clsTinyButXtreme {
 			}
 
 			// Re-order loc
-			self::f_Loc_Sort($LocLst, 1);
+			tbxLocator::Sort($LocLst, 1);
 		}
 
 		// Create the object
@@ -463,7 +468,6 @@ class clsTinyButXtreme {
 								case 'msk:':	$Loc->OpeAct[$i]	=13;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 								case 'chk:':	$Loc->OpeAct[$i]	=60;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 								case 'sel:':	$Loc->OpeAct[$i]	=61;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
-								case 'cus:':	$Loc->OpeAct[$i]	=999999; $Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 
 								default:
 									if (!isset($Loc->PrmLst['noerr'])) {
@@ -545,7 +549,7 @@ class clsTinyButXtreme {
 						break;
 					case 12: if ($this->_string($CurrVal)===$Loc->OpePrm[$i]) $CurrVal = ''; break;
 					case 13: $CurrVal = str_replace('*',$CurrVal,$Loc->OpePrm[$i]); break;
-					case 14: $CurrVal = self::f_Loc_AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName); break;
+					case 14: $CurrVal = tbxLocator::AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName); break;
 					case 15: $CurrVal = strtoupper($CurrVal); break;
 					case 16: $CurrVal = strtolower($CurrVal); break;
 					case 17: $CurrVal = ucfirst($CurrVal); break;
@@ -569,8 +573,6 @@ class clsTinyButXtreme {
 
 					case 60: $CurrVal = $Loc->OpePrm[$i] == $CurrVal ? 'checked' : ''; break;
 					case 61: $CurrVal = $Loc->OpePrm[$i] == $CurrVal ? 'selected' : ''; break;
-
-					case 999999: $this->_customFormat($CurrVal, $Loc->OpePrm[$i]); break;
 				}
 			}
 		}
@@ -703,7 +705,7 @@ class clsTinyButXtreme {
 		if (isset($Loc->PrmLst['att'])) {
 			$this->f_Xml_AttFind($Txt, $Loc, true, false);
 			if (isset($Loc->PrmLst['atttrue'])) {
-				$CurrVal = self::f_Loc_AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName);
+				$CurrVal = tbxLocator::AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName);
 				$Loc->PrmLst['magnet'] = '#';
 			}
 		}
@@ -778,12 +780,12 @@ class clsTinyButXtreme {
 
 				case TBX_MAGNET_TAG:
 					$Loc->Enlarged	= true;
-					$this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],false);
+					$Loc->EnlargeToTag($Txt, $Loc->PrmLst['magnet']);
 				break;
 
 				case TBX_MAGNET_PLUS:
 					$Loc->Enlarged	= true;
-					$CurrVal = $this->f_Loc_EnlargeToTag($Txt,$Loc,$Loc->PrmLst['magnet'],true);
+					$CurrVal = $Loc->EnlargeToTag($Txt, $Loc->PrmLst['magnet'], true);
 				break;
 
 				case TBX_MAGNET_SUFFIX:
@@ -893,7 +895,7 @@ class clsTinyButXtreme {
 		} else {
 			$beg = $Loc->PosBeg;
 			$end = $Loc->PosEnd;
-			if ($this->f_Loc_EnlargeToTag($Txt,$Loc,$Block,false)===false) return $this->meth_Misc_Alert($Loc,'at least one tag corresponding to &lt;'.$Loc->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+			if ($Loc->EnlargeToTag($Txt, $Block)===false) return $this->meth_Misc_Alert($Loc,'at least one tag corresponding to &lt;'.$Loc->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
 			if ($Loc->SubOk || ($Mode===3)) {
 				$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$Loc->PosEnd-$Loc->PosBeg+1);
 				$Loc->PosDefBeg = $beg - $Loc->PosBeg;
@@ -1402,7 +1404,7 @@ class clsTinyButXtreme {
 			if ($LocR->NoData!==false) {
 				$SecSrc = $LocR->NoData->Src;
 			} elseif(isset($LocR->PrmLst['bmagnet'])) {
-				$this->f_Loc_EnlargeToTag($Txt,$LocR,$LocR->PrmLst['bmagnet'],false);
+				$LocR->EnlargeToTag($Txt, $LocR->PrmLst['bmagnet']);
 			}
 		}
 
@@ -1714,7 +1716,7 @@ class clsTinyButXtreme {
 					$Pos = $LocA->PosBeg;
 				} else {
 					if ($LocA->PosBeg2===false) {
-						if ($this->f_Loc_EnlargeToTag($Txt,$LocA,$LocA->PrmLst['block'],false)===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to &lt;'.$LocA->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+						if ($LocA->EnlargeToTag($Txt, $LocA->PrmLst['block'])===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to &lt;'.$LocA->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
 					} else {
 						$LocA->PosEnd = $LocA->PosEnd2;
 					}
@@ -1937,441 +1939,5 @@ class clsTinyButXtreme {
 	}
 
 
-
-
-	static function f_Loc_PrmRead(&$Txt,$Pos,$XmlTag,$DelimChrs,$BegStr,$EndStr,&$Loc,&$PosEnd,$WithPos=false) {
-
-		$BegLen = strlen($BegStr);
-		$BegChr = $BegStr[0];
-		$BegIs1 = ($BegLen===1);
-
-		$DelimIdx = false;
-		$DelimCnt = 0;
-		$DelimChr = '';
-		$BegCnt = 0;
-		$SubName = $Loc->SubOk;
-
-		$Status = 0; // 0: name not started, 1: name started, 2: name ended, 3: equal found, 4: value started
-		$PosName = 0;
-		$PosNend = 0;
-		$PosVal = 0;
-
-		// Variables for checking the loop
-		$PosEnd = strpos($Txt,$EndStr,$Pos);
-		if ($PosEnd===false) return;
-		$Continue = ($Pos<$PosEnd);
-
-		while ($Continue) {
-
-			$Chr = $Txt[$Pos];
-
-			if ($DelimIdx) { // Reading in the string
-
-				if ($Chr===$DelimChr) { // Quote found
-					if ($Chr===$Txt[$Pos+1]) { // Double Quote => the string continue with un-double the quote
-						$Pos++;
-					} else { // Simple Quote => end of string
-						$DelimIdx = false;
-					}
-				}
-
-			} else { // Reading outside the string
-
-				if ($BegCnt===0) {
-
-					// Analyzing parameters
-					$CheckChr = false;
-					if (($Chr===' ') || ($Chr==="\r") || ($Chr==="\n")) {
-						if ($Status===1) {
-							if ($SubName && ($XmlTag===false)) {
-								// Accept spaces in TBS subname.
-							} else {
-								$Status = 2;
-								$PosNend = $Pos;
-							}
-						} elseif ($XmlTag && ($Status===4)) {
-							self::f_Loc_PrmCompute($Txt,$Loc,$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos);
-							$Status = 0;
-						}
-					} elseif (($XmlTag===false) && ($Chr===';')) {
-						self::f_Loc_PrmCompute($Txt,$Loc,$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos);
-						$Status = 0;
-					} elseif ($Status===4) {
-						$CheckChr = true;
-					} elseif ($Status===3) {
-						$Status = 4;
-						$DelimCnt = 0;
-						$PosVal = $Pos;
-						$CheckChr = true;
-					} elseif ($Status===2) {
-						if ($Chr==='=') {
-							$Status = 3;
-						} elseif ($XmlTag) {
-							self::f_Loc_PrmCompute($Txt,$Loc,$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos);
-							$Status = 1;
-							$PosName = $Pos;
-							$CheckChr = true;
-						} else {
-							$Status = 4;
-							$DelimCnt = 0;
-							$PosVal = $Pos;
-							$CheckChr = true;
-						}
-					} elseif ($Status===1) {
-						if ($Chr==='=') {
-							$Status = 3;
-							$PosNend = $Pos;
-						} else {
-							$CheckChr = true;
-						}
-					} else {
-						$Status = 1;
-						$PosName = $Pos;
-						$CheckChr = true;
-					}
-
-					if ($CheckChr) {
-						$DelimIdx = strpos($DelimChrs,$Chr);
-						if ($DelimIdx===false) {
-							if ($Chr===$BegChr) {
-								if ($BegIs1) {
-									$BegCnt++;
-								} elseif(substr($Txt,$Pos,$BegLen)===$BegStr) {
-									$BegCnt++;
-								}
-							}
-						} else {
-							$DelimChr = $DelimChrs[$DelimIdx];
-							$DelimCnt++;
-							$DelimIdx = true;
-						}
-					}
-
-				} else {
-					if ($Chr===$BegChr) {
-						if ($BegIs1) {
-							$BegCnt++;
-						} elseif(substr($Txt,$Pos,$BegLen)===$BegStr) {
-							$BegCnt++;
-						}
-					}
-				}
-
-			}
-
-			// Next char
-			$Pos++;
-
-			// We check if it's the end
-			if ($Pos===$PosEnd) {
-				if ($XmlTag) {
-					$Continue = false;
-				} elseif ($DelimIdx===false) {
-					if ($BegCnt>0) {
-						$BegCnt--;
-					} else {
-						$Continue = false;
-					}
-				}
-				if ($Continue) {
-					$PosEnd = strpos($Txt,$EndStr,$PosEnd+1);
-					if ($PosEnd===false) return;
-				} else {
-					if ($XmlTag && ($Txt[$Pos-1]==='/')) $Pos--; // In case last attribute is stuck to "/>"
-					self::f_Loc_PrmCompute($Txt,$Loc,$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos);
-				}
-			}
-
-		}
-
-		$PosEnd = $PosEnd + (strlen($EndStr)-1);
-
-	}
-
-
-
-
-	static function f_Loc_PrmCompute(&$Txt,&$Loc,&$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos) {
-
-		if ($Status===0) {
-			$SubName = false;
-		} else {
-			if ($Status===1) {
-				$x = substr($Txt,$PosName,$Pos-$PosName);
-			} else {
-				$x = substr($Txt,$PosName,$PosNend-$PosName);
-			}
-			if ($XmlTag) $x = strtolower($x);
-			if ($SubName) {
-				$Loc->SubName = trim($x);
-				$SubName = false;
-			} else {
-				if ($Status===4) {
-					$v = trim(substr($Txt,$PosVal,$Pos-$PosVal));
-					if ($DelimCnt===1) { // Delete quotes inside the value
-						if ($v[0]===$DelimChr) {
-							$len = strlen($v);
-							if ($v[$len-1]===$DelimChr) {
-								$v = substr($v,1,$len-2);
-								$v = str_replace($DelimChr.$DelimChr,$DelimChr,$v);
-							}
-						}
-					}
-				} else {
-					$v = true;
-				}
-				if ($x==='if') {
-					self::f_Loc_PrmIfThen($Loc,true,$v);
-				} elseif ($x==='then') {
-					self::f_Loc_PrmIfThen($Loc,false,$v);
-				} else {
-					$Loc->PrmLst[$x] = $v;
-					if ($WithPos) $Loc->PrmPos[$x] = array($PosName,$PosNend,$PosVal,$Pos,$DelimChr,$DelimCnt);
-				}
-			}
-		}
-
-	}
-
-
-
-
-	static function f_Loc_PrmIfThen(&$Loc,$IsIf,$Val) {
-		$nbr = &$Loc->PrmIfNbr;
-		if ($nbr===false) {
-			$nbr = 0;
-			$Loc->PrmIf = [];
-			$Loc->PrmIfVar = [];
-			$Loc->PrmThen = [];
-			$Loc->PrmThenVar = [];
-			$Loc->PrmElseVar = true;
-		}
-		if ($IsIf) {
-			$nbr++;
-			$Loc->PrmIf[$nbr] = $Val;
-			$Loc->PrmIfVar[$nbr] = true;
-		} else {
-			$nbr2 = $nbr;
-			if ($nbr2===false) $nbr2 = 1; // Only the first 'then' can be placed before its 'if'. This is for compatibility.
-			$Loc->PrmThen[$nbr2] = $Val;
-			$Loc->PrmThenVar[$nbr2] = true;
-		}
-	}
-
-
-
-
-	static function f_Loc_EnlargeToStr(&$Txt,&$Loc,$StrBeg,$StrEnd) {
-	/*
-	This function enables to enlarge the pos limits of the Locator.
-	If the search result is not correct, $PosBeg must not change its value, and $PosEnd must be False.
-	This is because of the calling function.
-	*/
-
-		// Search for the begining string
-		$Pos = $Loc->PosBeg;
-		$Ok = false;
-		do {
-			$Pos = strrpos(substr($Txt,0,$Pos),$StrBeg[0]);
-			if ($Pos!==false) {
-				if (substr($Txt,$Pos,strlen($StrBeg))===$StrBeg) $Ok = true;
-			}
-		} while ( (!$Ok) && ($Pos!==false) );
-
-		if ($Ok) {
-			$PosEnd = strpos($Txt,$StrEnd,$Loc->PosEnd + 1);
-			if ($PosEnd===false) {
-				$Ok = false;
-			} else {
-				$Loc->PosBeg = $Pos;
-				$Loc->PosEnd = $PosEnd + strlen($StrEnd) - 1;
-			}
-		}
-
-		return $Ok;
-
-	}
-
-
-
-
-	static function f_Loc_EnlargeToTag(&$Txt,&$Loc,$TagStr,$RetInnerSrc) {
-	//Modify $Loc, return false if tags not found, returns the inner source of tag if $RetInnerSrc=true
-
-		// Analyze string
-		$Ref = 0;
-		$LevelStop = 0;
-		$i = 0;
-		$TagLst = [];
-		$TagBnd = [];
-		while ($TagStr!=='') {
-			// get next tag
-			$p = strpos($TagStr, '+');
-			if ($p===false) {
-				$t = $TagStr;
-				$TagStr = '';
-			} else {
-				$t = substr($TagStr,0,$p);
-				$TagStr = substr($TagStr,$p+1);
-			}
-			// Check parentheses, relative position and single tag
-			do {
-				$t = trim($t);
-				$e = strlen($t) - 1; // pos of last char
-				if (($e>1) && ($t[0]==='(') && ($t[$e]===')')) {
-					if ($Ref===0) $Ref = $i;
-					if ($Ref===$i) $LevelStop++;
-					$t = substr($t,1,$e-1);
-				} else {
-					if (($e>=0) && ($t[$e]==='/')) $t = substr($t,0,$e); // for compatibilty
-					$e = false;
-				}
-			} while ($e!==false);
-
-			// Check for multiples
-			$p = strpos($t, '*');
-			if ($p!==false) {
-				$n = intval(substr($t, 0, $p));
-				$t = substr($t, $p + 1);
-				$n = max($n ,1); // prevent for error: minimum value is 1
-				$TagStr = str_repeat($t . '+', $n-1) . $TagStr;
-			}
-
-			// Reference
-			if (($t==='.') && ($Ref===0)) $Ref = $i;
-			// Take off the (!) prefix
-			$b = '';
-			if (($t!=='') && ($t[0]==='!')) {
-				$t = substr($t, 1);
-				$b = '!';
-			}
-
-			if ($t!==false) {
-				$TagLst[$i] = $t; // with prefix ! if specified
-				$TagBnd[$i] = ($b==='');
-				$i++;
-			}
-		}
-
-		$TagMax = $i-1;
-
-		// Find tags that embeds the locator
-		if ($LevelStop===0) $LevelStop = 1;
-
-		// First tag of reference
-		if ($TagLst[$Ref] === '.') {
-			$TagO = new tbxLocator;
-			$TagO->PosBeg = $Loc->PosBeg;
-			$TagO->PosEnd = $Loc->PosEnd;
-			$PosBeg = $Loc->PosBeg;
-			$PosEnd = $Loc->PosEnd;
-		} else {
-			$TagO = self::f_Loc_Enlarge_Find($Txt,$TagLst[$Ref],$Loc->PosBeg-1,false,$LevelStop);
-			if ($TagO===false) return false;
-			$PosBeg = $TagO->PosBeg;
-			$LevelStop += -$TagO->RightLevel; // RightLevel=1 only if the tag is single and embeds $Loc, otherwise it is 0
-			if ($LevelStop>0) {
-				$TagC = self::f_Loc_Enlarge_Find($Txt,$TagLst[$Ref],$Loc->PosEnd+1,true,-$LevelStop);
-				if ($TagC==false) return false;
-				$PosEnd = $TagC->PosEnd;
-				$InnerLim = $TagC->PosBeg;
-				if ((!$TagBnd[$Ref]) && ($TagMax==0)) {
-					$PosBeg = $TagO->PosEnd + 1;
-					$PosEnd = $TagC->PosBeg - 1;
-				}
-			} else {
-				$PosEnd = $TagO->PosEnd;
-				$InnerLim = $PosEnd + 1;
-			}
-		}
-
-		$RetVal = true;
-		if ($RetInnerSrc) {
-			$RetVal = '';
-			if ($Loc->PosBeg>$TagO->PosEnd) {
-				$RetVal .= substr($Txt,$TagO->PosEnd+1,min($Loc->PosBeg,$InnerLim)-$TagO->PosEnd-1);
-			}
-			if ($Loc->PosEnd<$InnerLim) {
-				$RetVal .= substr($Txt,max($Loc->PosEnd,$TagO->PosEnd)+1,$InnerLim-max($Loc->PosEnd,$TagO->PosEnd)-1);
-			}
-		}
-
-		// Other tags forward
-		$TagC = true;
-		for ($i=$Ref+1;$i<=$TagMax;$i++) {
-			$x = $TagLst[$i];
-			if (($x!=='') && ($TagC!==false)) {
-				$level = ($TagBnd[$i]) ? 0 : 1;
-				$TagC = self::f_Loc_Enlarge_Find($Txt,$x,$PosEnd+1,true,$level);
-				if ($TagC!==false) {
-					$PosEnd = ($TagBnd[$i]) ? $TagC->PosEnd : $TagC->PosBeg -1 ;
-				}
-			}
-		}
-
-		// Other tags backward
-		$TagO = true;
-		for ($i=$Ref-1;$i>=0;$i--) {
-			$x = $TagLst[$i];
-			if (($x!=='') && ($TagO!==false)) {
-				$level = ($TagBnd[$i]) ? 0 : -1;
-				$TagO = self::f_Loc_Enlarge_Find($Txt,$x,$PosBeg-1,false,$level);
-				if ($TagO!==false) {
-					$PosBeg = ($TagBnd[$i]) ? $TagO->PosBeg : $TagO->PosEnd + 1;
-				}
-			}
-		}
-
-		$Loc->PosBeg = $PosBeg;
-		$Loc->PosEnd = $PosEnd;
-		return $RetVal;
-
-	}
-
-
-
-
-	static function f_Loc_Enlarge_Find($Txt, $Tag, $Pos, $Forward, $LevelStop) {
-		return self::f_Xml_FindTag($Txt,$Tag,(!$Forward),$Pos,$Forward,$LevelStop,false);
-	}
-
-
-
-
-	static function f_Loc_AttBoolean($CurrVal, $AttTrue, $AttName) {
-	// Return the good value for a boolean attribute
-		if ($AttTrue===true) {
-			if (self::_string($CurrVal)==='') {
-				return '';
-			} else {
-				return $AttName;
-			}
-		} elseif (self::_string($CurrVal)===$AttTrue) {
-			return $AttName;
-		} else {
-			return '';
-		}
-	}
-
-
-
-
-	// Sort the locators in the list. Apply the bubble algorithm.
-	static function f_Loc_Sort(&$LocLst, $iFirst = 0) {
-		$iEnd = count($LocLst) + $iFirst;
-		for ($i = $iFirst+1 ; $i<$iEnd ; $i++) {
-			$Loc = $LocLst[$i];
-			$p = $Loc->PosBeg;
-			for ($j=$i-1; $j>=$iFirst ; $j--) {
-				if ($p < $LocLst[$j]->PosBeg) {
-					$LocLst[$j+1] = $LocLst[$j];
-					$LocLst[$j] = $Loc;
-				} else {
-					$j = -1; // quit the loop
-				}
-			}
-		}
-		return true;
-	}
 
 }

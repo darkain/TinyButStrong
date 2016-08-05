@@ -3,23 +3,6 @@
 trait tbx_xml {
 
 
-	// Affects the positions of a list of locators regarding to a specific moving locator.
-	static function f_Loc_Moving(&$moving, &$list) {
-		foreach ($list as &$part) {
-			if ($part === $moving) continue;
-			if ($part->PosBeg >= $moving->InsPos) {
-				$part->PosBeg += $moving->InsLen;
-				$part->PosEnd += $moving->InsLen;
-			}
-			if ($part->PosBeg > $moving->DelPos) {
-				$part->PosBeg -= $moving->DelLen;
-				$part->PosEnd -= $moving->DelLen;
-			}
-		}
-	}
-
-
-
 
 	/**
 	 * Prepare all informations to move a locator according to parameter "att".
@@ -184,7 +167,7 @@ trait tbx_xml {
 			$Loc->DelPos = $DelPos;
 			if ($Loc->InsPos < $Loc->DelPos) $Loc->DelPos += $InsLen;
 			$Loc->DelLen = $DelLen;
-			self::f_Loc_Moving($Loc, $MoveLocLst);
+			$Loc->Moving($MoveLocLst);
 		}
 
 		return true;
@@ -354,7 +337,7 @@ trait tbx_xml {
 	 * To ignore encapsulation and opengin/closing just set $LevelStop=false.
 	 * $Opening is used only when $LevelStop=false.
 	 */
-	static function f_Xml_FindTag(&$Txt,$Tag,$Opening,$PosBeg,$Forward,$LevelStop,$WithPrm,$WithPos=false) {
+	static function f_Xml_FindTag(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $LevelStop, $WithPrm, $WithPos=false) {
 		if ($Tag==='_') { // New line
 			$p = self::f_Xml_FindNewLine($Txt,$PosBeg,$Forward,($LevelStop!==0));
 			$Loc = new tbxLocator;
@@ -440,10 +423,10 @@ trait tbx_xml {
 		if ($TagOk) {
 			$Loc = new tbxLocator;
 			if ($WithPrm) {
-				self::f_Loc_PrmRead($Txt,$PosX,true,'\'"','<','>',$Loc,$PosEnd,$WithPos);
-			} elseif ($PosEnd===false) {
-				$PosEnd = strpos($Txt,'>',$PosX);
-				if ($PosEnd===false) {
+				$Loc->PrmRead($Txt, $PosX, true, '\'"', '<', '>', $PosEnd, $WithPos);
+			} elseif ($PosEnd === false) {
+				$PosEnd = strpos($Txt, '>', $PosX);
+				if ($PosEnd === false) {
 					$TagOk = false;
 				}
 			}
