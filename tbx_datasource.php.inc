@@ -15,28 +15,32 @@ class tbxDatasource {
 	public $RecSaved		= false;
 	public $RecBuffer		= false;
 	public $CurrRec			= false;
-	public $TBS				= false;
+	public $TBX				= false;
 	public $OnDataOk		= false;
 	public $OnDataPrm		= false;
-	public $OnDataPrmDone	= array();
+	public $OnDataPrmDone	= [];
+
+
 
 
 	public function DataAlert($Msg) {
-		if (is_array($this->TBS->_CurrBlock)) {
-			return $this->TBS->meth_Misc_Alert(
-				'when merging block "'.implode(',',$this->TBS->_CurrBlock).'"', $Msg
+		if (is_array($this->TBX->_CurrBlock)) {
+			return $this->TBX->meth_Misc_Alert(
+				'when merging block "'.implode(',',$this->TBX->_CurrBlock).'"', $Msg
 			);
 		} else {
-			return $this->TBS->meth_Misc_Alert(
-				'when merging block '.$this->TBS->_ChrOpen.$this->TBS->_CurrBlock.$this->TBS->_ChrClose, $Msg
+			return $this->TBX->meth_Misc_Alert(
+				'when merging block '.$this->TBX->_ChrOpen.$this->TBX->_CurrBlock.$this->TBX->_ChrClose, $Msg
 			);
 		}
 	}
 
 
-	public function DataPrepare(&$SrcId, &$TBS) {
+
+
+	public function DataPrepare(&$SrcId, &$TBX) {
 		$this->SrcId		= &$SrcId;
-		$this->TBS			= &$TBS;
+		$this->TBX			= &$TBX;
 		$FctInfo			= false;
 		$FctObj				= false;
 
@@ -95,6 +99,8 @@ class tbxDatasource {
 	}
 
 
+
+
 	public function DataOpen(&$Query) {
 
 		// Init values
@@ -112,10 +118,10 @@ class tbxDatasource {
 
 		if ($this->OnDataOk) {
 			$this->OnDataArgs = array();
-			$this->OnDataArgs[0] = &$this->TBS->_CurrBlock;
+			$this->OnDataArgs[0] = &$this->TBX->_CurrBlock;
 			$this->OnDataArgs[1] = &$this->CurrRec;
 			$this->OnDataArgs[2] = &$this->RecNum;
-			$this->OnDataArgs[3] = &$this->TBS;
+			$this->OnDataArgs[3] = &$this->TBX;
 		}
 
 		switch ($this->Type) {
@@ -133,7 +139,7 @@ class tbxDatasource {
 						$this->DataAlert('type \''.gettype($Query).'\' not supported for the Query Parameter going with \'array\' Source Type.');
 					}
 				} elseif ($this->SubType===TBX_DS_SUB2) {
-					// TBS query string for array and objects, syntax: "var[item1][item2]->item3[item4]..."
+					// TBX query string for array and objects, syntax: "var[item1][item2]->item3[item4]..."
 					$x = trim($Query);
 					$z = chr(0);
 					$x = str_replace(array(']->','][','->','['),$z,$x);
@@ -144,8 +150,8 @@ class tbxDatasource {
 					// Check first item
 					if ($Item0[0]==='~') {
 						$Item0 = substr($Item0,1);
-						if ($this->TBS->ObjectRef!==false) {
-							$Var = &$this->TBS->ObjectRef;
+						if ($this->TBX->ObjectRef!==false) {
+							$Var = &$this->TBX->ObjectRef;
 							$i = 0;
 						} else {
 							$i = $this->DataAlert('invalid query \''.$Query.'\' because property ObjectRef is not set.');
@@ -169,7 +175,7 @@ class tbxDatasource {
 								$Empty = true;
 							}
 						} elseif (is_object($Var)) {
-							$ArgLst = $this->TBS->f_Misc_CheckArgLst($x);
+							$ArgLst = $this->TBX->f_Misc_CheckArgLst($x);
 							if (method_exists($Var,$x)) {
 								$f = array(&$Var,$x); unset($Var);
 								$Var = call_user_func_array($f,$ArgLst);
@@ -242,7 +248,7 @@ class tbxDatasource {
 				if (is_string($Query)) {
 					$this->RecSet = &$Query;
 				} else {
-					$this->RecSet = $this->TBS->meth_Misc_ToStr($Query);
+					$this->RecSet = $this->TBX->meth_Misc_ToStr($Query);
 				}
 			break;
 
@@ -268,6 +274,8 @@ class tbxDatasource {
 
 		return ($this->RecSet!==false);
 	}
+
+
 
 
 	public function DataFetch() {
@@ -344,7 +352,7 @@ class tbxDatasource {
 			break;
 
 			case TBX_DS_OBJECT:
-				$this->CurrRec = $this->SrcId->tbsdb_fetch($this->RecSet,$this->RecNum+1);
+				$this->CurrRec = $this->SrcId->tbxdb_fetch($this->RecSet,$this->RecNum+1);
 			break;
 
 			case TBX_DS_ITERATOR:
@@ -369,6 +377,8 @@ class tbxDatasource {
 	}
 
 
+
+
 	public function DataClose() {
 		$this->OnDataOk		= false;
 		$this->OnDataPrm	= false;
@@ -377,8 +387,8 @@ class tbxDatasource {
 		switch ($this->Type) {
 			case TBX_DS_PUDL:		$this->RecSet->free(); break;
 			case TBX_DS_FUNCTION:	$FctClose=$this->FctClose; $FctClose($this->RecSet); break;
-			case TBX_DS_OBJECTREF:	call_user_func_array($this->FctClose,array(&$this->RecSet)); break;
-			case TBX_DS_OBJECT:		$this->SrcId->tbsdb_close($this->RecSet); break;
+			case TBX_DS_OBJECTREF:	call_user_func_array($this->FctClose, [&$this->RecSet]); break;
+			case TBX_DS_OBJECT:		$this->SrcId->tbxdb_close($this->RecSet); break;
 		}
 
 		if ($this->RecSaving) {

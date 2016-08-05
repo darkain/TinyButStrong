@@ -9,7 +9,7 @@ trait tbx_xml {
 	 * @param mixed $MoveLocLst true to simple move the loc, or an array of loc to rearrange the list after the move.
 	 *              Note: rearrange doest not work with PHP4.
 	 */
-	static function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $AttDelim=false) {
+	function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $AttDelim=false) {
 	// att=div#class ; att=((div))#class ; att=+((div))#class
 
 		$Att = $Loc->PrmLst['att'];
@@ -41,7 +41,7 @@ trait tbx_xml {
 			if ($i==$iMax) $WithPrm = true;
 			$Pos = ($Forward) ? $LocO->PosEnd+1 : $LocO->PosBeg-1;
 			unset($LocO);
-			$LocO = self::f_Xml_FindTag($Txt,$Tag,true,$Pos,$Forward,$LevelStop,$WithPrm,$WithPrm);
+			$LocO = $this->f_Xml_FindTag($Txt,$Tag,true,$Pos,$Forward,$LevelStop,$WithPrm,$WithPrm);
 			if ($LocO===false) return false;
 		}
 
@@ -51,7 +51,7 @@ trait tbx_xml {
 		$Loc->AttDelimChr = false;
 
 		if ($Att==='.') {
-			// this indicates that the TBS field is supposed to be inside an attribute's value
+			// this indicates that the TBX field is supposed to be inside an attribute's value
 			foreach ($LocO->PrmPos as $a=>$p ) {
 				if ( ($p[0]<$Loc->PosBeg) && ($Loc->PosEnd<$p[3]) ) $Att = $a;
 			}
@@ -89,7 +89,7 @@ trait tbx_xml {
 			}
 		}
 
-		if ($MoveLocLst) return self::f_Xml_AttMove($Txt,$Loc,$AttDelim,$MoveLocLst);
+		if ($MoveLocLst) return $this->f_Xml_AttMove($Txt,$Loc,$AttDelim,$MoveLocLst);
 
 		return true;
 	}
@@ -97,7 +97,7 @@ trait tbx_xml {
 
 
 
-	static function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim=false, &$MoveLocLst) {
+	function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim=false, &$MoveLocLst) {
 
 		if ($AttDelim===false) $AttDelim = $Loc->AttDelimChr;
 		if ($AttDelim===false) $AttDelim = '"';
@@ -176,7 +176,7 @@ trait tbx_xml {
 
 
 
-	static function f_Xml_Max(&$Txt,&$Nbr,$MaxEnd) {
+	function f_Xml_Max(&$Txt,&$Nbr,$MaxEnd) {
 	// Limit the number of HTML chars
 
 		$pMax =  strlen($Txt)-1;
@@ -212,7 +212,7 @@ trait tbx_xml {
 
 
 
-	static function f_Xml_GetPart(&$Txt, $TagLst, $AllIfNothing=false) {
+	function f_Xml_GetPart(&$Txt, $TagLst, $AllIfNothing=false) {
 	// Returns parts of the XML/HTML content, default is BODY.
 
 		if (($TagLst===true) || ($TagLst==='')) $TagLst = 'body';
@@ -243,7 +243,7 @@ trait tbx_xml {
 			$PosMin = $PosOut; // pos of the tag at first position
 			foreach ($TagLst as $i=>$Tag) {
 				if ($Tag['b']<$Pos) {
-					$Loc = self::f_Xml_FindTag($Txt,$Tag['t'],true,$Pos,true,false,false);
+					$Loc = $this->f_Xml_FindTag($Txt,$Tag['t'],true,$Pos,true,false,false);
 					if ($Loc===false) {
 						$Tag['b'] = $PosOut; // tag not found, no more search on this tag
 					} else {
@@ -268,7 +268,7 @@ trait tbx_xml {
 					if ($Tag['k']) $x .= substr($Txt,$Tag['b']  ,$Tag['e'] - $Tag['b'] + 1);
 				} else {
 					// search the closing tag
-					$Loc = self::f_Xml_FindTag($Txt,$Tag['t'],false,$Pos,true,false,false);
+					$Loc = $this->f_Xml_FindTag($Txt,$Tag['t'],false,$Pos,true,false,false);
 					if ($Loc===false) {
 						$Tag['b'] = $PosOut; // closing tag not found, no more search on this tag
 					} else {
@@ -294,13 +294,13 @@ trait tbx_xml {
 
 
 	/**
-	 * Find the start of an XML tag. Used by OpenTBS.
+	 * Find the start of an XML tag.
 	 * $Case=false can be useful for HTML.
 	 * $Tag='' should work and found the start of the first tag.
 	 * $Tag='/' should work and found the start of the first closing tag.
 	 * Encapsulation levels are not featured yet.
 	 */
-	static function f_Xml_FindTagStart(&$Txt,$Tag,$Opening,$PosBeg,$Forward,$Case=true) {
+	function f_Xml_FindTagStart(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $Case=true) {
 		if ($Txt==='') return false;
 
 		$x = '<'.(($Opening) ? '' : '/').$Tag;
@@ -337,10 +337,10 @@ trait tbx_xml {
 	 * To ignore encapsulation and opengin/closing just set $LevelStop=false.
 	 * $Opening is used only when $LevelStop=false.
 	 */
-	static function f_Xml_FindTag(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $LevelStop, $WithPrm, $WithPos=false) {
+	function f_Xml_FindTag(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $LevelStop, $WithPrm, $WithPos=false) {
 		if ($Tag==='_') { // New line
-			$p = self::f_Xml_FindNewLine($Txt,$PosBeg,$Forward,($LevelStop!==0));
-			$Loc = new tbxLocator;
+			$p = $this->f_Xml_FindNewLine($Txt,$PosBeg,$Forward,($LevelStop!==0));
+			$Loc = new tbxLocator($this);
 			$Loc->PosBeg = ($Forward) ? $PosBeg : $p;
 			$Loc->PosEnd = ($Forward) ? $p : $PosBeg;
 			$Loc->RightLevel = 0;
@@ -421,7 +421,7 @@ trait tbx_xml {
 
 		// Search for the end of the tag
 		if ($TagOk) {
-			$Loc = new tbxLocator;
+			$Loc = new tbxLocator($this);
 			if ($WithPrm) {
 				$Loc->PrmRead($Txt, $PosX, true, '\'"', '<', '>', $PosEnd, $WithPos);
 			} elseif ($PosEnd === false) {
@@ -447,7 +447,7 @@ trait tbx_xml {
 
 
 
-	static function f_Xml_FindNewLine(&$Txt,$PosBeg,$Forward,$IsRef) {
+	function f_Xml_FindNewLine(&$Txt, $PosBeg, $Forward, $IsRef) {
 
 		$p = $PosBeg;
 		if ($Forward) {

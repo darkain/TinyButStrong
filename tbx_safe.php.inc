@@ -130,7 +130,7 @@ trait tbx_safe {
 
 
 
-	// PROTECT TBS LOCATORS
+	// PROTECT TBX LOCATORS
 	function _protect($string) {
 		return str_replace(
 			['[',		']'],

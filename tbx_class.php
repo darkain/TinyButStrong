@@ -73,7 +73,7 @@ class clsTinyButXtreme {
 
 
 	function _find(&$Txt, $Name, $Pos, $ChrSub) {
-	// Find a TBS Locator
+	// Find a TBX Locator
 
 		$PosEnd = false;
 		$PosMax = strlen($Txt) -1;
@@ -87,7 +87,7 @@ class clsTinyButXtreme {
 			// If found => next chars are analyzed
 			if ($Pos===false) return false;
 
-			$Loc = new tbxLocator;
+			$Loc = new tbxLocator($this);
 			$ReadPrm = false;
 			$PosX = $Pos + strlen($Start);
 			$x = $Txt[$PosX];
@@ -138,135 +138,6 @@ class clsTinyButXtreme {
 		}
 
 		return $Loc;
-
-	}
-
-
-
-
-	function &meth_Locator_SectionNewBDef(&$LocR,$BlockName,$Txt,$PrmLst,$Cache) {
-
-		$Chk	= true;
-		$LocLst	= [];
-		$LocNbr	= 0;
-		$Pos	= 0;
-
-		// Cache TBS locators
-		if ($Cache) {
-			$Chk = false;
-			$PosEndPrec = -1;
-			while ($Loc = $this->_find($Txt,$BlockName,$Pos,'.')) {
-
-				// Delete embeding fields
-				if ($Loc->PosBeg<$PosEndPrec) {
-					unset($LocLst[$LocNbr]);
-					$Chk = true;
-				}
-
-				$LocNbr = 1 + count($LocLst);
-				$LocLst[$LocNbr] = &$Loc;
-
-				// Next search position : always ("original PosBeg" + 1).
-				// Must be done here because loc can be moved by the plug-in.
-				if ($Loc->Enlarged) {
-					// Enlarged
-					$Pos = $Loc->PosBeg0 + 1;
-					$PosEndPrec = $Loc->PosEnd0;
-					$Loc->Enlarged = false;
-				} else {
-					// Normal
-					$Pos = $Loc->PosBeg + 1;
-					$PosEndPrec = $Loc->PosEnd;
-				}
-				if (($Loc->SubName==='#') || ($Loc->SubName==='$')) {
-					$Loc->IsRecInfo = true;
-					$Loc->RecInfo = $Loc->SubName;
-					$Loc->SubName = '';
-				} else {
-					$Loc->IsRecInfo = false;
-				}
-
-				// Process parameter att for new added locators.
-				$NewNbr = count($LocLst);
-				for ($i=$LocNbr;$i<=$NewNbr;$i++) {
-					$li = &$LocLst[$i];
-					if (isset($li->PrmLst['att'])) {
-						$LocSrc = substr($Txt,$li->PosBeg,$li->PosEnd-$li->PosBeg+1); // for error message
-						if ($this->f_Xml_AttFind($Txt, $li, $LocLst, false)) {
-							if (isset($Loc->PrmLst['atttrue'])) {
-								$li->PrmLst['magnet'] = '#';
-								$li->PrmLst['ope'] = (isset($li->PrmLst['ope'])) ? $li->PrmLst['ope'].',attbool' : 'attbool';
-							}
-							if ($i==$LocNbr) {
-								$Pos = $Loc->DelPos;
-								$PosEndPrec = -1;
-							}
-						} else {
-							$this->meth_Misc_Alert('','TBS is not able to merge the field '.$LocSrc.' because the entity targeted by parameter \'att\' cannot be found.');
-						}
-					}
-				}
-				unset($Loc);
-
-			}
-
-			// Re-order loc
-			tbxLocator::Sort($LocLst, 1);
-		}
-
-		// Create the object
-		$o = (object) null;
-		$o->Prm = $PrmLst;
-		$o->LocLst = $LocLst;
-		$o->LocNbr = $LocNbr;
-		$o->Name = $BlockName;
-		$o->Src = $Txt;
-		$o->Chk = $Chk;
-		$o->IsSerial = false;
-		$o->AutoSub = false;
-		$i = 1;
-		while (isset($PrmLst['sub'.$i])) {
-			$o->AutoSub = $i;
-			$i++;
-		}
-
-		$LocR->BDefLst[] = &$o; // Can be usefull for plug-in
-		return $o;
-
-	}
-
-
-
-
-	function meth_Locator_SectionAddGrp(&$LocR,$BlockName,&$BDef,$Type,$Field,$Prm) {
-
-		$BDef->PrevValue = false;
-		$BDef->Type = $Type;
-
-		// Save sub items in a structure near to Locator.
-		$Field0 = $Field;
-		if (strpos($Field,'[')===false) $Field = '['.$BlockName.'.'.$Field.';tbstype='.$Prm.']'; // tbstype is an internal parameter for catching errors
-		$BDef->FDef = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,$Field,[],true);
-		if ($BDef->FDef->LocNbr==0)	$this->meth_Misc_Alert('Parameter '.$Prm,'The value \''.$Field0.'\' is unvalide for this parameter.');
-
-		if ($Type==='H') {
-			if ($LocR->HeaderFound===false) {
-				$LocR->HeaderFound = true;
-				$LocR->HeaderNbr = 0;
-				$LocR->HeaderDef = []; // 1 to HeaderNbr
-			}
-			$i = ++$LocR->HeaderNbr;
-			$LocR->HeaderDef[$i] = &$BDef;
-		} else {
-			if ($LocR->FooterFound===false) {
-				$LocR->FooterFound = true;
-				$LocR->FooterNbr = 0;
-				$LocR->FooterDef = []; // 1 to FooterNbr
-			}
-			$BDef->AddLastGrp = ($Type==='F');
-			$i = ++$LocR->FooterNbr;
-			$LocR->FooterDef[$i] = &$BDef;
-		}
 
 	}
 
@@ -758,7 +629,7 @@ class clsTinyButXtreme {
 
 			} else if ($Loc->MagnetId === TBX_MAGNET_ATTR) {
 				$Loc->PrmLst['att'] = '.';
-				self::f_Xml_AttFind($Txt, $Loc, false, true);
+				$this->f_Xml_AttFind($Txt, $Loc, false, true);
 			}
 
 			switch ($Loc->MagnetId) {
@@ -826,9 +697,9 @@ class clsTinyButXtreme {
 
 	function meth_Locator_FindBlockNext(&$Txt,$BlockName,$PosBeg,$ChrSub,$Mode,&$P1,&$FieldBefore) {
 	// Return the first block locator just after the PosBeg position
-	// Mode = 1 : Merge_Auto => doesn't save $Loc->BlockSrc, save the bounds of TBS Def tags instead, return also fields
-	// Mode = 2 : FindBlockLst or GetBlockSource => save $Loc->BlockSrc without TBS Def tags
-	// Mode = 3 : GetBlockSource => save $Loc->BlockSrc with TBS Def tags
+	// Mode = 1 : Merge_Auto => doesn't save $Loc->BlockSrc, save the bounds of TBX Def tags instead, return also fields
+	// Mode = 2 : FindBlockLst or GetBlockSource => save $Loc->BlockSrc without TBX Def tags
+	// Mode = 3 : GetBlockSource => save $Loc->BlockSrc with TBX Def tags
 
 		$SearchDef = true;
 		$FirstField = false;
@@ -917,7 +788,7 @@ class clsTinyButXtreme {
 	function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
 	// Return a locator object covering all block definitions, even if there is no block definition found.
 
-		$LocR = new tbxLocator;
+		$LocR = new tbxLocator($this);
 		$LocR->P1 = false;
 		$LocR->FieldOutside = false;
 		$LocR->FOStop = false;
@@ -957,8 +828,8 @@ class clsTinyButXtreme {
 						// Redefine the Header block
 						$Parent->Src = substr($Src,0,$LocR->PosBeg);
 						// Add a Footer block
-						$BDef = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,substr($Src,$LocR->PosEnd+1),$Parent->Prm,true);
-						$this->meth_Locator_SectionAddGrp($LocR,$BlockName,$BDef,'F',$Parent->Fld,'parentgrp');
+						$BDef = &$LocR->SectionNewBDef($BlockName, substr($Src,$LocR->PosEnd+1), $Parent->Prm, true);
+						$LocR->SectionAddGrp($BlockName, $BDef, 'F', $Parent->Fld, 'parentgrp');
 					}
 					// Now go down to previous level
 					$Pos = $Parent->Pos;
@@ -1006,7 +877,7 @@ class clsTinyButXtreme {
 				}
 				// Save the block and cache its tags
 				$IsParentGrp = isset($Loc->PrmLst['parentgrp']);
-				$BDef = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,$Loc->BlockSrc,$Loc->PrmLst,!$IsParentGrp);
+				$BDef = &$LocR->SectionNewBDef($BlockName, $Loc->BlockSrc, $Loc->PrmLst, !$IsParentGrp);
 
 				// Add the text in the list of blocks
 				if (isset($Loc->PrmLst['nodata'])) { // Nodata section
@@ -1020,7 +891,7 @@ class clsTinyButXtreme {
 						$LocR->WhenNbr = 0;
 						$LocR->WhenLst = [];
 					}
-					$BDef->WhenCond = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,$Loc->PrmLst['when'],[],true);
+					$BDef->WhenCond = &$LocR->SectionNewBDef($BlockName, $Loc->PrmLst['when'], [], true);
 					$BDef->WhenBeforeNS = ($LocR->SectionNbr===0);
 					$i = ++$LocR->WhenNbr;
 					$LocR->WhenLst[$i] = &$BDef;
@@ -1029,13 +900,13 @@ class clsTinyButXtreme {
 					$LocR->WhenDefault = &$BDef;
 					$LocR->WhenDefaultBeforeNS = ($LocR->SectionNbr===0);
 				} elseif (isset($Loc->PrmLst['headergrp'])) {
-					$this->meth_Locator_SectionAddGrp($LocR,$BlockName,$BDef,'H',$Loc->PrmLst['headergrp'],'headergrp');
+					$LocR->SectionAddGrp($BlockName, $BDef, 'H', $Loc->PrmLst['headergrp'], 'headergrp');
 				} elseif (isset($Loc->PrmLst['footergrp'])) {
-					$this->meth_Locator_SectionAddGrp($LocR,$BlockName,$BDef,'F',$Loc->PrmLst['footergrp'],'footergrp');
+					$LocR->SectionAddGrp($BlockName, $BDef, 'F', $Loc->PrmLst['footergrp'], 'footergrp');
 				} elseif (isset($Loc->PrmLst['splittergrp'])) {
-					$this->meth_Locator_SectionAddGrp($LocR,$BlockName,$BDef,'S',$Loc->PrmLst['splittergrp'],'splittergrp');
+					$LocR->SectionAddGrp($BlockName, $BDef, 'S', $Loc->PrmLst['splittergrp'], 'splittergrp');
 				} elseif ($IsParentGrp) {
-					$this->meth_Locator_SectionAddGrp($LocR,$BlockName,$BDef,'H',$Loc->PrmLst['parentgrp'],'parentgrp');
+					$LocR->SectionAddGrp($BlockName, $BDef, 'H', $Loc->PrmLst['parentgrp'], 'parentgrp');
 					$BDef->Fld = $Loc->PrmLst['parentgrp'];
 					$BDef->Txt = &$Txt;
 					$BDef->Pos = $Pos;
@@ -1068,7 +939,7 @@ class clsTinyButXtreme {
 						$SrId = 1;
 						do {
 							// Save previous subsection
-							$SrBDef = &$this->meth_Locator_SectionNewBDef($LocR,$SrName,$SrLoc->BlockSrc,$SrLoc->PrmLst,true);
+							$SrBDef = &$LocR->SectionNewBDef($SrName, $SrLoc->BlockSrc, $SrLoc->PrmLst, true);
 							$SrBDef->SrBeg = $SrLoc->PosBeg;
 							$SrBDef->SrLen = $SrLoc->PosEnd - $SrLoc->PosBeg + 1;
 							$SrBDef->SrTxt = false;
@@ -1104,7 +975,7 @@ class clsTinyButXtreme {
 
 		if ($LocR->WhenFound && ($LocR->SectionNbr===0)) {
 			// Add a blank section if When is used without a normal section
-			$BDef = &$this->meth_Locator_SectionNewBDef($LocR,$BlockName,'',[],false);
+			$BDef = &$LocR->SectionNewBDef($BlockName, '', [], false);
 			$LocR->SectionNbr = 1;
 			$LocR->SectionLst[1] = &$BDef;
 		}
@@ -1752,9 +1623,9 @@ class clsTinyButXtreme {
 
 		if (!is_string($Src)) {
 			if ($SrcType===false) $SrcType='in field';
-			if (isset($Src->PrmLst['tbstype'])) {
+			if (isset($Src->PrmLst['tbxtype'])) {
 				$Msg = 'Column \''.$Src->SubName.'\' is expected but missing in the current record.';
-				$Src = 'Parameter \''.$Src->PrmLst['tbstype'].'='.$Src->SubName.'\'';
+				$Src = 'Parameter \''.$Src->PrmLst['tbxtype'].'='.$Src->SubName.'\'';
 				$NoErrMsg = false;
 			} else {
 				$Src = $SrcType.' ['.$Src->FullName.'...]';

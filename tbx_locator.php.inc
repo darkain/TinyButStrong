@@ -1,6 +1,7 @@
 <?php
 
 class tbxLocator {
+	private $tbx;
 	public $PosBeg		= false;
 	public $PosEnd		= false;
 	public $Enlarged	= false;
@@ -20,6 +21,14 @@ class tbxLocator {
 	public $ConvPhone	= false;		//THIS IS DEPRECATED
 	public $mode		= TBX_CONVERT_DEFAULT;
 	public $break		= true;
+
+
+
+
+	public function __construct($tbx) {
+		$this->tbx = $tbx;
+	}
+
 
 
 
@@ -68,7 +77,7 @@ class tbxLocator {
 					if (($Chr===' ') || ($Chr==="\r") || ($Chr==="\n")) {
 						if ($Status===1) {
 							if ($SubName && ($XmlTag===false)) {
-								// Accept spaces in TBS subname.
+								// Accept spaces in TBX subname.
 							} else {
 								$Status = 2;
 								$PosNend = $Pos;
@@ -357,18 +366,18 @@ class tbxLocator {
 
 		// First tag of reference
 		if ($TagLst[$Ref] === '.') {
-			$TagO = new tbxLocator;
+			$TagO = new tbxLocator($this->tbx);
 			$TagO->PosBeg = $this->PosBeg;
 			$TagO->PosEnd = $this->PosEnd;
 			$PosBeg = $this->PosBeg;
 			$PosEnd = $this->PosEnd;
 		} else {
-			$TagO = self::Enlarge_Find($Txt,$TagLst[$Ref],$this->PosBeg-1,false,$LevelStop);
+			$TagO = $this->Enlarge_Find($Txt,$TagLst[$Ref],$this->PosBeg-1,false,$LevelStop);
 			if ($TagO===false) return false;
 			$PosBeg = $TagO->PosBeg;
 			$LevelStop += -$TagO->RightLevel; // RightLevel=1 only if the tag is single and embeds $this, otherwise it is 0
 			if ($LevelStop>0) {
-				$TagC = self::Enlarge_Find($Txt,$TagLst[$Ref],$this->PosEnd+1,true,-$LevelStop);
+				$TagC = $this->Enlarge_Find($Txt,$TagLst[$Ref],$this->PosEnd+1,true,-$LevelStop);
 				if ($TagC==false) return false;
 				$PosEnd = $TagC->PosEnd;
 				$InnerLim = $TagC->PosBeg;
@@ -399,7 +408,7 @@ class tbxLocator {
 			$x = $TagLst[$i];
 			if (($x!=='') && ($TagC!==false)) {
 				$level = ($TagBnd[$i]) ? 0 : 1;
-				$TagC = self::Enlarge_Find($Txt,$x,$PosEnd+1,true,$level);
+				$TagC = $this->Enlarge_Find($Txt,$x,$PosEnd+1,true,$level);
 				if ($TagC!==false) {
 					$PosEnd = ($TagBnd[$i]) ? $TagC->PosEnd : $TagC->PosBeg -1 ;
 				}
@@ -412,7 +421,7 @@ class tbxLocator {
 			$x = $TagLst[$i];
 			if (($x!=='') && ($TagO!==false)) {
 				$level = ($TagBnd[$i]) ? 0 : -1;
-				$TagO = self::Enlarge_Find($Txt,$x,$PosBeg-1,false,$level);
+				$TagO = $this->Enlarge_Find($Txt,$x,$PosBeg-1,false,$level);
 				if ($TagO!==false) {
 					$PosBeg = ($TagBnd[$i]) ? $TagO->PosBeg : $TagO->PosEnd + 1;
 				}
@@ -446,6 +455,153 @@ class tbxLocator {
 
 
 
+	function SectionAddGrp($BlockName, &$BDef, $Type, $Field, $Prm) {
+
+		$BDef->PrevValue = false;
+		$BDef->Type = $Type;
+
+		// Save sub items in a structure near to Locator.
+		$Field0 = $Field;
+		if (strpos($Field,'[')===false) $Field = '['.$BlockName.'.'.$Field.';tbxtype='.$Prm.']'; // tbxtype is an internal parameter for catching errors
+		$BDef->FDef = &$this->SectionNewBDef($BlockName, $Field, [], true);
+
+		if ($BDef->FDef->LocNbr == 0) {
+			$this->tbx->meth_Misc_Alert('Parameter '.$Prm,'The value \''.$Field0.'\' is unvalide for this parameter.');
+		}
+
+		if ($Type==='H') {
+			if ($this->HeaderFound===false) {
+				$this->HeaderFound = true;
+				$this->HeaderNbr = 0;
+				$this->HeaderDef = []; // 1 to HeaderNbr
+			}
+			$i = ++$this->HeaderNbr;
+			$this->HeaderDef[$i] = &$BDef;
+		} else {
+			if ($this->FooterFound===false) {
+				$this->FooterFound = true;
+				$this->FooterNbr = 0;
+				$this->FooterDef = []; // 1 to FooterNbr
+			}
+			$BDef->AddLastGrp = ($Type==='F');
+			$i = ++$this->FooterNbr;
+			$this->FooterDef[$i] = &$BDef;
+		}
+
+	}
+
+
+
+
+	function &SectionNewBDef($BlockName, $Txt, $PrmLst, $Cache) {
+
+		$Chk	= true;
+		$LocLst	= [];
+		$LocNbr	= 0;
+		$Pos	= 0;
+
+		// Cache TBX locators
+		if ($Cache) {
+			$Chk = false;
+			$PosEndPrec = -1;
+			while ($Loc = $this->tbx->_find($Txt,$BlockName,$Pos,'.')) {
+
+				// Delete embeding fields
+				if ($Loc->PosBeg<$PosEndPrec) {
+					unset($LocLst[$LocNbr]);
+					$Chk = true;
+				}
+
+				$LocNbr = 1 + count($LocLst);
+				$LocLst[$LocNbr] = &$Loc;
+
+				// Next search position : always ("original PosBeg" + 1).
+				// Must be done here because loc can be moved by the plug-in.
+				if ($Loc->Enlarged) {
+					// Enlarged
+					$Pos = $Loc->PosBeg0 + 1;
+					$PosEndPrec = $Loc->PosEnd0;
+					$Loc->Enlarged = false;
+				} else {
+					// Normal
+					$Pos = $Loc->PosBeg + 1;
+					$PosEndPrec = $Loc->PosEnd;
+				}
+				if (($Loc->SubName==='#') || ($Loc->SubName==='$')) {
+					$Loc->IsRecInfo = true;
+					$Loc->RecInfo = $Loc->SubName;
+					$Loc->SubName = '';
+				} else {
+					$Loc->IsRecInfo = false;
+				}
+
+				// Process parameter att for new added locators.
+				$NewNbr = count($LocLst);
+				for ($i=$LocNbr;$i<=$NewNbr;$i++) {
+					$li = &$LocLst[$i];
+					if (isset($li->PrmLst['att'])) {
+						$LocSrc = substr($Txt,$li->PosBeg,$li->PosEnd-$li->PosBeg+1); // for error message
+						if ($this->tbx->f_Xml_AttFind($Txt, $li, $LocLst, false)) {
+							if (isset($Loc->PrmLst['atttrue'])) {
+								$li->PrmLst['magnet'] = '#';
+								$li->PrmLst['ope'] = (isset($li->PrmLst['ope'])) ? $li->PrmLst['ope'].',attbool' : 'attbool';
+							}
+							if ($i==$LocNbr) {
+								$Pos = $Loc->DelPos;
+								$PosEndPrec = -1;
+							}
+						} else {
+							$this->tbx->meth_Misc_Alert('','TBX is not able to merge the field '.$LocSrc.' because the entity targeted by parameter \'att\' cannot be found.');
+						}
+					}
+				}
+				unset($Loc);
+
+			}
+
+			// Re-order loc
+			tbxLocator::Sort($LocLst, 1);
+		}
+
+		// Create the object
+		$o = (object) null;
+		$o->Prm = $PrmLst;
+		$o->LocLst = $LocLst;
+		$o->LocNbr = $LocNbr;
+		$o->Name = $BlockName;
+		$o->Src = $Txt;
+		$o->Chk = $Chk;
+		$o->IsSerial = false;
+		$o->AutoSub = false;
+		$i = 1;
+		while (isset($PrmLst['sub'.$i])) {
+			$o->AutoSub = $i;
+			$i++;
+		}
+
+		$this->BDefLst[] = &$o; // Can be usefull for plug-in
+		return $o;
+
+	}
+
+
+
+
+	function Enlarge_Find($Txt, $Tag, $Pos, $Forward, $LevelStop) {
+		return $this->tbx->f_Xml_FindTag(
+			$Txt,
+			$Tag,
+			!$Forward,
+			$Pos,
+			$Forward,
+			$LevelStop,
+			false
+		);
+	}
+
+
+
+
 	static function AttBoolean($CurrVal, $AttTrue, $AttName) {
 	// Return the good value for a boolean attribute
 		if ($AttTrue===true) {
@@ -459,21 +615,6 @@ class tbxLocator {
 		} else {
 			return '';
 		}
-	}
-
-
-
-
-	static function Enlarge_Find($Txt, $Tag, $Pos, $Forward, $LevelStop) {
-		return clsTinyButXtreme::f_Xml_FindTag(
-			$Txt,
-			$Tag,
-			(!$Forward),
-			$Pos,
-			$Forward,
-			$LevelStop,
-			false
-		);
 	}
 
 
