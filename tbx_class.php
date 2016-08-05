@@ -36,20 +36,27 @@ if (!version_compare(PHP_VERSION,'5.4.0', '>=')) {
 require_once('tbx_constants.php.inc');
 require_once('tbx_locator.php.inc');
 require_once('tbx_datasource.php.inc');
+
+//TRAITS (separated out to help organize code)
+require_once('tbx_function.php.inc');
+require_once('tbx_safe.php.inc');
 require_once('tbx_xml.php.inc');
 
 
 
 
 class clsTinyButXtreme {
+	use tbx_function;
+	use tbx_safe;
 	use tbx_xml;
+
 
 	// Public properties
 	public	$Source			= '';
 	public	$ErrCount		= 0;
 
 	// Undocumented (can change at any version)
-	public	$Version		= '10.0.3';
+	public	$Version		= '10.0.4';
 	public	$filepath		= '';
 
 	// Private
@@ -524,48 +531,55 @@ class clsTinyButXtreme {
 		}
 
 		if ($Loc->FirstMerge) {
-			if (isset($Loc->PrmLst['date'])) {
-				$Loc->mode			= TBX_CONVERT_DATE;
-				$Loc->ConvProtect	= false;
+			switch (true) {
+				case isset($Loc->PrmLst['date']):
+					$Loc->mode			= TBX_CONVERT_DATE;
+					$Loc->ConvProtect	= false;
+				break;
 
-			} else if (isset($Loc->PrmLst['sprintf'])) {
-				$Loc->mode			= TBX_CONVERT_SPRINTF;
-				$Loc->ConvProtect	= false;
+				case isset($Loc->PrmLst['format']):
+				case isset($Loc->PrmLst['sprintf']):
+					$Loc->mode			= TBX_CONVERT_FORMAT;
+					$Loc->ConvProtect	= false;
+				break;
 
-			} else if (isset($Loc->PrmLst['format'])) {
-				$Loc->mode			= TBX_CONVERT_FORMAT;
-				$Loc->ConvProtect	= false;
+				case isset($Loc->PrmLst['function']):
+				case isset($Loc->PrmLst['f']):
+				case isset($Loc->PrmLst['convert']):
+					$Loc->mode			= TBX_CONVERT_FUNCTION;
+					$Loc->ConvProtect	= false;
+				break;
 
-			} else if (isset($Loc->PrmLst['convert'])) {
-				$Loc->mode			= TBX_CONVERT_FUNCTION;
-				$Loc->ConvProtect	= false;
+				case isset($Loc->PrmLst['safe']):
+					$this->_safe($Loc, $Loc->PrmLst['safe']);
+				break;
 
-			} else if (isset($Loc->PrmLst['safe'])) {
-				$this->_safe($Loc, $Loc->PrmLst['safe']);
+				case isset($Loc->PrmLst['checked']):
+					$Loc->mode			= TBX_CONVERT_CHECKED;
+					$Loc->ConvProtect	= false;
+				break;
 
-			} else if (isset($Loc->PrmLst['checked'])) {
-				$Loc->mode			= TBX_CONVERT_CHECKED;
-				$Loc->ConvProtect	= false;
+				case isset($Loc->PrmLst['selected']):
+					$Loc->mode			= TBX_CONVERT_SELECTED;
+					$Loc->ConvProtect	= false;
+				break;
 
-			} else if (isset($Loc->PrmLst['selected'])) {
-				$Loc->mode			= TBX_CONVERT_SELECTED;
-				$Loc->ConvProtect	= false;
-
-			} else {
-				// Analyze parameter 'strconv'
-				if (isset($Loc->PrmLst['strconv'])) {
-					$this->_safe($Loc, $Loc->PrmLst['strconv']);
-				}
-
-				// Analyze parameter 'protect'
-				if (isset($Loc->PrmLst['protect'])) {
-					$x = strtolower($Loc->PrmLst['protect']);
-					if ($x==='no') {
-						$Loc->ConvProtect = false;
-					} elseif ($x==='yes') {
-						$Loc->ConvProtect = true;
+				default:
+					// Analyze parameter 'strconv'
+					if (isset($Loc->PrmLst['strconv'])) {
+						$this->_safe($Loc, $Loc->PrmLst['strconv']);
 					}
-				}
+
+					// Analyze parameter 'protect'
+					if (isset($Loc->PrmLst['protect'])) {
+						$x = strtolower($Loc->PrmLst['protect']);
+						if ($x==='no') {
+							$Loc->ConvProtect = false;
+						} elseif ($x==='yes') {
+							$Loc->ConvProtect = true;
+						}
+					}
+				break;
 			}
 
 			if ($Loc->Ope = isset($Loc->PrmLst['ope'])) {
@@ -642,7 +656,7 @@ class clsTinyButXtreme {
 		if ($Loc->Ope) {
 			foreach ($Loc->OpeAct as $i=>$ope) {
 				switch ($ope) {
-					case 0:
+					case  0:
 						$Loc->PrmLst['ope'] = $Loc->OpePrm[$i]; // for compatibility
 						$OpeArg		= &$Loc->OpeArg[$i];
 						$OpeArg[1]	= &$CurrVal;
@@ -650,7 +664,7 @@ class clsTinyButXtreme {
 					break;
 
 					case  1:
-						if ($Loc->mode===TBX_CONVERT_UNKNOWN) {
+						if ($Loc->mode === TBX_CONVERT_UNKNOWN) {
 							if (is_array($CurrVal)) {
 								foreach ($CurrVal as &$v) {
 									$v = $this->_string($v);
@@ -756,12 +770,14 @@ class clsTinyButXtreme {
 				$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
 			break;
 
-			case TBX_CONVERT_SPRINTF:
-				$CurrVal = sprintf($Loc->PrmLst['sprintf'], $this->_string($CurrVal));
-			break;
-
 			case TBX_CONVERT_FORMAT:
-				$CurrVal = sprintf($Loc->PrmLst['format'], $this->_string($CurrVal));
+				if (isset($Loc->PrmLst['format'])) {
+					$CurrVal = sprintf($Loc->PrmLst['format'], $this->_string($CurrVal));
+				} else if (isset($Loc->PrmLst['sprintf'])) {
+					$CurrVal = sprintf($Loc->PrmLst['sprintf'], $this->_string($CurrVal));
+				} else {
+					$this->meth_Misc_Alert($Loc, 'Invalid Format');
+				}
 			break;
 
 			case TBX_CONVERT_SELECTED:
@@ -773,53 +789,14 @@ class clsTinyButXtreme {
 			break;
 
 			case TBX_CONVERT_FUNCTION:
-				$list = explode(',', strtolower($Loc->PrmLst['convert']));
-				foreach ($list as $item) switch (trim($item)) {
-					case 'addslashes':			$CurrVal = addslashes($CurrVal);			break;
-					case 'bin2hex':				$CurrVal = bin2hex($CurrVal);				break;
-					case 'chr':					$CurrVal = chr($CurrVal);					break;
-					case 'chunk_split':			$CurrVal = chunk_split($CurrVal);			break;
-					case 'crc32':				$CurrVal = hash('crc32',$CurrVal);			break;
-					case 'crc32b':				$CurrVal = hash('crc32b',$CurrVal);			break;
-					case 'hebrev':				$CurrVal = hebrev($CurrVal);				break;
-					case 'hebrevc':				$CurrVal = hebrevc($CurrVal);				break;
-					case 'hex':					$CurrVal = bin2hex($CurrVal);				break;
-					case 'hex2bin':				$CurrVal = hex2bin($CurrVal);				break;
-					case 'html_entity_decode':	$CurrVal = html_entity_decode($CurrVal);	break;
-					case 'htmlentities':		$CurrVal = htmlentities($CurrVal);			break;
-					case 'htmlspecialchars':	$CurrVal = htmlspecialchars($CurrVal);		break;
-					case 'lcfirst':				$CurrVal = lcfirst($CurrVal);				break;
-					case 'lower':				$CurrVal = strtolower($CurrVal);			break;
-					case 'ltrim':				$CurrVal = ltrim($CurrVal);					break;
-					case 'md2':					$CurrVal = hash('md2',$CurrVal);			break;
-					case 'md4':					$CurrVal = hash('md4',$CurrVal);			break;
-					case 'md5':					$CurrVal = md5($CurrVal);					break;
-					case 'metaphone':			$CurrVal = metaphone($CurrVal);				break;
-					case 'nl2br':				$CurrVal = nl2br($CurrVal);					break;
-					case 'number_format':		$CurrVal = number_format($CurrVal);			break;
-					case 'ord':					$CurrVal = ord($CurrVal);					break;
-					case 'rtrim':				$CurrVal = rtrim($CurrVal);					break;
-					case 'sha1':				$CurrVal = sha1($CurrVal);					break;
-					case 'sha256':				$CurrVal = hash('sha256',$CurrVal);			break;
-					case 'sha384':				$CurrVal = hash('sha384',$CurrVal);			break;
-					case 'sha512':				$CurrVal = hash('sha512',$CurrVal);			break;
-					case 'soundex':				$CurrVal = soundex($CurrVal);				break;
-					case 'strip_tags':			$CurrVal = strip_tags($CurrVal);			break;
-					case 'stripcslashes':		$CurrVal = stripcslashes($CurrVal);			break;
-					case 'stripslashes':		$CurrVal = stripslashes($CurrVal);			break;
-					case 'strlen':				$CurrVal = strlen($CurrVal);				break;
-					case 'strrev':				$CurrVal = strrev($CurrVal);				break;
-					case 'strtolower':			$CurrVal = strtolower($CurrVal);			break;
-					case 'strtoupper':			$CurrVal = strtoupper($CurrVal);			break;
-					case 'trim':				$CurrVal = trim($CurrVal);					break;
-					case 'ucfirst':				$CurrVal = ucfirst($CurrVal);				break;
-					case 'ucwords':				$CurrVal = ucwords($CurrVal);				break;
-					case 'unhex':				$CurrVal = hex2bin($CurrVal);				break;
-					case 'uudecode':			$CurrVal = convert_uudecode($CurrVal);		break;
-					case 'uuencode':			$CurrVal = convert_uuencode($CurrVal);		break;
-					case 'upper':				$CurrVal = strtoupper($CurrVal);			break;
-					case 'wordwrap':			$CurrVal = wordwrap($CurrVal);				break;
-					default: $this->_customFormat($CurrVal, $Loc->PrmLst['convert']);
+				if (isset($Loc->PrmLst['function'])) {
+					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['function']);
+				} else if (isset($Loc->PrmLst['f'])) {
+					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['f']);
+				} else if (isset($Loc->PrmLst['convert'])) {
+					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['convert']);
+				} else {
+					$this->meth_Misc_Alert($Loc, 'Invalid Function');
 				}
 			break;
 
@@ -2006,98 +1983,6 @@ class clsTinyButXtreme {
 		);
 	}
 
-
-
-
-	// PREPARE SAFETY
-	function _safe(&$part, $safe) {
-		$part->ConvStr				= false;
-
-		switch (trim(strtolower($safe))) {
-			case 'js':
-				$this->_safe_default($part);
-				$part->ConvJS		= true;
-			break;
-
-			case 'json':
-				$this->_safe_default($part);
-				$part->ConvJson		= true;
-				$part->ConvProtect	= false;
-			break;
-
-			case 'url':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 1;
-				$part->ConvProtect	= false;
-			break;
-
-			case 'urlid':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 2;
-				$part->ConvProtect	= false;
-			break;
-
-			case 'raw':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 3;
-				$part->ConvProtect	= false;
-			break;
-
-			case 'rawid':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 4;
-				$part->ConvProtect	= false;
-			break;
-
-			case 'hex':
-				$part->ConvHex		= true;
-			break;
-
-			case 'phone':
-				$part->ConvPhone	= true;
-			break;
-
-			//HANDLED BY DEFAULT OPTION ABOVE
-			case 'no':
-			case 'none':
-			//	$part->ConvStr		= false;
-			break;
-
-			//HANDLED BY DEFAULT CASE BELOW
-			//case 'yes':
-			//	$part->ConvStr		= true;
-			//break;
-
-			case 'nobr':
-			case 'pre':
-			case 'textarea':
-				$part->break		= false;
-			//Intentionally falling through case
-
-			default:
-				$part->ConvStr		= true;
-		}
-	}
-
-
-
-
-	function _safe_default(&$part) {
-		if ($part->mode === TBX_CONVERT_SPECIAL) return;
-		$part->mode					= TBX_CONVERT_SPECIAL;
-		$part->ConvJS				= false;
-		$part->ConvJson				= false;
-		$part->ConvUrl				= false;
-	}
-
-
-
-
-	// Escape HTML special characters
-	function _htmlsafe(&$value, $break=true) {
-		$value = htmlspecialchars($value, ENT_QUOTES);
-		if ($break) $value			= nl2br($value);
-	}
 
 
 
