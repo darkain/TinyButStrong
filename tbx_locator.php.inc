@@ -17,7 +17,7 @@ class tbxLocator {
 	public $ConvProtect	= true;
 	public $ConvStr		= true;
 	public $ConvHex		= false;
-	public $ConvPhone	= false;
+	public $ConvPhone	= false;		//THIS IS DEPRECATED
 	public $mode		= TBX_CONVERT_DEFAULT;
 	public $break		= true;
 }

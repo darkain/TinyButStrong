@@ -20,6 +20,7 @@ trait tbx_safe {
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'url':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 1;
@@ -27,6 +28,7 @@ trait tbx_safe {
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'urlid':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 2;
@@ -34,6 +36,7 @@ trait tbx_safe {
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'raw':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 3;
@@ -41,6 +44,7 @@ trait tbx_safe {
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'rawid':
 				$this->_safe_default($part);
 				$part->ConvUrl		= 4;
@@ -48,11 +52,13 @@ trait tbx_safe {
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'hex':
 				$part->ConvHex		= true;
 			break;
 
 
+			//THIS IS DEPRECATED
 			case 'phone':
 				$part->ConvPhone	= true;
 			break;
@@ -101,6 +107,36 @@ trait tbx_safe {
 	function _htmlsafe(&$value, $break=true) {
 		$value = htmlspecialchars($value, ENT_QUOTES);
 		if ($break) $value			= nl2br($value);
+	}
+
+
+
+
+	// Convert a value to a string
+	static function _string($value) {
+		if (is_a($value, 'DateTime')) return $value->format('c');
+		return @(string)$value;
+	}
+
+
+
+
+
+	// Convert a value to a string and trim it
+	static function _trim($value) {
+		return trim(self::_string($value));
+	}
+
+
+
+
+	// PROTECT TBS LOCATORS
+	function _protect($string) {
+		return str_replace(
+			['[',		']'],
+			['&#91;',	'&#93;'],
+			$string
+		);
 	}
 
 }

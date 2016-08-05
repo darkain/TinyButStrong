@@ -116,6 +116,11 @@ trait tbx_function {
 			break;
 
 
+			case 'phone':
+				$value = $this->tbxPhone($value);
+			break;
+
+
 			case 'rawid':
 				$value = strtolower(rawurlencode(rtrim(substr($CurrVal, 0, 20))));
 			break;
@@ -251,6 +256,47 @@ trait tbx_function {
 
 
 			default: $this->_customFormat($value, $function);
+		}
+
+		return $value;
+	}
+
+
+
+
+	// Clean up a phone number
+	static function tbxPhone($value) {
+		$phone		=	preg_replace('/[^\d]/', '', $value);
+
+		//USA/CANADA
+		if (preg_match('/^\d{10}$/', $phone)) {
+			return		substr($phone, 0, 3) . '-'
+					.	substr($phone, 3, 3) . '-'
+					.	substr($phone, 6, 4);
+		}
+
+		//USA/CANADA
+		if (preg_match('/^1\d{10}$/', $phone)) {
+			return		substr($phone, 1, 3) . '-'
+					.	substr($phone, 4, 3) . '-'
+					.	substr($phone, 7, 4);
+		}
+
+		//CZECH REPUBLIC
+		if (preg_match('/^00420\d{9}$/', $phone)) {
+			return	'00420 '
+					.	substr($phone,  5, 3) . ' '
+					.	substr($phone,  8, 3) . ' '
+					.	substr($phone, 11, 3);
+		}
+
+		//FRANCE
+		if (preg_match('/^0033\d{9}$/', $phone)) {
+			return	'0033 '
+					.	substr($phone,  4, 3) . ' '
+					.	substr($phone,  7, 2) . ' '
+					.	substr($phone,  9, 2) . ' '
+					.	substr($phone, 11, 2);
 		}
 
 		return $value;
