@@ -31,6 +31,8 @@ function tbxTest($expected) {
 
 
 
+require('field-item.php');
+require('field-array.php');
 require('date.php');
 require('format.php');
 require('convert.php');
