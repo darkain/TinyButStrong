@@ -33,6 +33,7 @@ function tbxTest($expected) {
 
 require('field-item.php');
 require('field-array.php');
+require('block-basic.php');
 require('date.php');
 require('format.php');
 require('convert.php');
