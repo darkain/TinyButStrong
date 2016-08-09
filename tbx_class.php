@@ -582,7 +582,7 @@ class clsTinyButXtreme {
 		}
 
 		// Case when it's an empty string
-		if ($CurrVal==='') {
+		if ($CurrVal === ''  ||  $CurrVal === false  ||  is_null($CurrVal)) {
 
 			if ($Loc->MagnetId === TBX_MAGNET_NONE) {
 
