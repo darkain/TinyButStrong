@@ -80,6 +80,8 @@ trait tbx_api {
 
 	//Custom merger - both field and block supported!
 	public function merge($data) {
+		if (empty($data)) return $this;
+
 		foreach ($data as $key => $value) {
 			if (is_object($value)) {
 				trigger_error('tbx::merge does not support type Object for key: ' . $key);
@@ -93,6 +95,7 @@ trait tbx_api {
 				$this->field($key, $value);
 			}
 		}
+
 		return $this;
 	}
 
