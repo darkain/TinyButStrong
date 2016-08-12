@@ -152,7 +152,7 @@ class clsTinyButXtreme {
 		if (($SubStart!==false) && $Loc->SubOk) {
 			for ($i=$SubStart;$i<$Loc->SubNbr;$i++) {
 				$x = $Loc->SubLst[$i]; // &$Loc... brings an error with Event Example, I don't know why.
-				if (is_array($Value)) {
+				if (tbx_array($Value)) {
 					if (isset($Value[$x])) {
 						$Value = &$Value[$x];
 					} elseif (array_key_exists($x,$Value)) {// can happens when value is NULL
@@ -367,7 +367,7 @@ class clsTinyButXtreme {
 
 					case  1:
 						if ($Loc->mode === TBX_CONVERT_UNKNOWN) {
-							if (is_array($CurrVal)) {
+							if (tbx_array($CurrVal)) {
 								foreach ($CurrVal as &$v) {
 									$v = $this->_string($v);
 									$this->_htmlsafe($v, $Loc->break);
@@ -378,7 +378,7 @@ class clsTinyButXtreme {
 								$this->_htmlsafe($CurrVal, $Loc->break);
 							}
 						}
-						if (is_array($CurrVal)) {
+						if (tbx_array($CurrVal)) {
 							$CurrVal = implode($Loc->OpePrm[$i], $CurrVal);
 						}
 					break;
@@ -461,9 +461,9 @@ class clsTinyButXtreme {
 			break;
 
 			case TBX_CONVERT_DATE:
-				if (!is_array($CurrVal)	&&
-					!is_int($CurrVal)	&&
-					!is_float($CurrVal)	&&
+				if (!tbx_array($CurrVal)	&&
+					!is_int($CurrVal)		&&
+					!is_float($CurrVal)		&&
 					!ctype_digit($CurrVal)) {
 					$CurrVal = strtotime($CurrVal);
 				}
@@ -1659,7 +1659,7 @@ class clsTinyButXtreme {
 
 	// Simply update an array
 	static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
-		if (!is_array($v)) {
+		if (!tbx_array($v)) {
 			if (is_null($v)) {
 				$array = [];
 				return;

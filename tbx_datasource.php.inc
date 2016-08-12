@@ -24,7 +24,7 @@ class tbxDatasource {
 
 
 	public function DataAlert($Msg) {
-		if (is_array($this->TBX->_CurrBlock)) {
+		if (tbx_array($this->TBX->_CurrBlock)) {
 			return $this->TBX->meth_Misc_Alert(
 				'when merging block "'.implode(',',$this->TBX->_CurrBlock).'"', $Msg
 			);
@@ -44,7 +44,7 @@ class tbxDatasource {
 		$FctInfo			= false;
 		$FctObj				= false;
 
-		if (is_array($SrcId)) {
+		if (tbx_array($SrcId)) {
 			$this->Type		= TBX_DS_ARRAY;
 
 		} elseif (is_resource($SrcId)) {
@@ -133,7 +133,7 @@ class tbxDatasource {
 				if ($this->SubType===TBX_DS_SUB0) {
 					$this->RecSet = &$this->SrcId;
 				} elseif ($this->SubType===TBX_DS_SUB1) {
-					if (is_array($Query)) {
+					if (tbx_array($Query)) {
 						$this->RecSet = &$Query;
 					} else {
 						$this->DataAlert('type \''.gettype($Query).'\' not supported for the Query Parameter going with \'array\' Source Type.');
@@ -168,7 +168,7 @@ class tbxDatasource {
 					$Empty = false;
 					while (($i!==false) && ($i<$ItemNbr) && ($Empty===false)) {
 						$x = $ItemLst[$i];
-						if (is_array($Var)) {
+						if (tbx_array($Var)) {
 							if (isset($Var[$x])) {
 								$Var = &$Var[$x];
 							} else {
@@ -217,7 +217,7 @@ class tbxDatasource {
 				$this->NumMin = 1;
 				$this->NumMax = 1;
 				$this->NumStep = 1;
-				if (is_array($Query)) {
+				if (tbx_array($Query)) {
 					if (isset($Query['min'])) $this->NumMin = $Query['min'];
 					if (isset($Query['step'])) $this->NumStep = $Query['step'];
 					if (isset($Query['max'])) {

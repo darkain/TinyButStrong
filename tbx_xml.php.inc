@@ -161,7 +161,7 @@ trait tbx_xml {
 		$Loc->AttBegM = ($Txt[$Loc->AttBeg-1]===' ') ? $Loc->AttBeg-1 : $Loc->AttBeg; // for magnet=#
 
 		// for CacheField
-		if (is_array($MoveLocLst)) {
+		if (tbx_array($MoveLocLst)) {
 			$Loc->InsPos = $InsPos;
 			$Loc->InsLen = $InsLen;
 			$Loc->DelPos = $DelPos;

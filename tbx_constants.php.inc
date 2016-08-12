@@ -37,3 +37,10 @@ define('TBX_MAGNET_ATTADD',		6);
 define('TBX_MAGNET_ATTR',		7);
 define('TBX_MAGNET_IFEMPTY',	8);
 define('TBX_MAGNET_NBSP',		9);
+
+
+//SUPPORT FOR ARRAYACCESS INTERFACE
+function tbx_array($item) {
+	if (is_array($item)) return true;
+	return ($item instanceof ArrayAccess);
+}
