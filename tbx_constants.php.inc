@@ -44,3 +44,9 @@ function tbx_array($item) {
 	if (is_array($item)) return true;
 	return ($item instanceof ArrayAccess);
 }
+
+
+//PHP 5.x COMPATIBILITY
+if (!defined('PHP_INT_MIN')) {
+	define('PHP_INT_MIN', ~PHP_INT_MAX);
+}
