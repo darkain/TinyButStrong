@@ -38,3 +38,4 @@ require('date.php');
 require('format.php');
 require('convert.php');
 require('magnet.php');
+require('altaform.php');

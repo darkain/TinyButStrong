@@ -152,11 +152,14 @@ class clsTinyButXtreme {
 		if (($SubStart!==false) && $Loc->SubOk) {
 			for ($i=$SubStart;$i<$Loc->SubNbr;$i++) {
 				$x = $Loc->SubLst[$i]; // &$Loc... brings an error with Event Example, I don't know why.
-				if (tbx_array($Value)) {
+
+				if (is_array($Value)) {
 					if (isset($Value[$x])) {
 						$Value = &$Value[$x];
+
 					} elseif (array_key_exists($x,$Value)) {// can happens when value is NULL
 						$Value = &$Value[$x];
+
 					} else {
 						if (!isset($Loc->PrmLst['noerr'])) {
 							$this->meth_Misc_Alert(
@@ -171,8 +174,8 @@ class clsTinyButXtreme {
 						$Value = '';
 						break;
 					}
-				} elseif (is_object($Value)) {
 
+				} elseif (is_object($Value)) {
 					if (property_exists($Value,$x)) {
 						$prop = new ReflectionProperty($Value,$x);
 						if ($prop->isStatic()) {
@@ -183,6 +186,9 @@ class clsTinyButXtreme {
 
 					} elseif (isset($Value->$x)) {
 						$x = $Value->$x; // useful for overloaded property
+
+					} elseif (is_a($Value, 'af_object_array')  &&  $Value->offsetExists($x, false)) {
+						$x = &$Value->$x;
 
 					} else {
 						if (!isset($Loc->PrmLst['noerr'])) {
