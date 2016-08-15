@@ -152,7 +152,7 @@ class clsTinyButXtreme {
 		if (($SubStart!==false) && $Loc->SubOk) {
 			for ($i=$SubStart;$i<$Loc->SubNbr;$i++) {
 				$x = $Loc->SubLst[$i]; // &$Loc... brings an error with Event Example, I don't know why.
-				if (is_array($Value)) {
+				if (tbx_array($Value)) {
 					if (isset($Value[$x])) {
 						$Value = &$Value[$x];
 					} elseif (array_key_exists($x,$Value)) {// can happens when value is NULL
