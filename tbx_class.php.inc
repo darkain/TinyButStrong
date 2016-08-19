@@ -1,41 +1,6 @@
 <?php
-/*******************************************************************************
-*	TinyButStrong - Template Engine for Pro and Beginners                      *
-*	------------------------                                                   *
-*	Version		: 3.10.0-beta-2015-10-01 for PHP 5                             *
-*	Date		: 2015-10-01                                                   *
-*	Web site	: http://www.tinybutstrong.com                                 *
-*	GitHub		: https://github.com/Skrol29/tinybutstrong                     *
-*	Author		: http://www.tinybutstrong.com/onlyyou.html                    *
-********************************************************************************
-*	This library is free software.                                             *
-*	You can redistribute and modify it even for commercial usage,              *
-*	but you must accept and respect the LPGL License version 3.                *
-********************************************************************************
-*	TinyButXtreme - Heavily modified fork of TinyButStrong                     *
-*	This TBX library is --NOT-- backwards compatible with the original TBS     *
-*	------------------------                                                   *
-*	Version		: 10.0.4 for PHP 5.4+ and HHVM 3.6+                            *
-*	Date		: 2016-08-05                                                   *
-*	GitHub		: https://github.com/darkain/TinyButXtreme                     *
-*	Author		: Darkain Multimedia                                           *
-\******************************************************************************/
 
 
-
-
-// Check PHP version
-if (!version_compare(PHP_VERSION,'5.4.0', '>=')) {
-	trigger_error(
-		'TinyButXtreme Error: PHP 5.4+ or HHVM required, but version '.PHP_VERSION.' detected',
-		E_USER_ERROR
-	);
-}
-
-
-
-
-require_once('tbx_constants.php.inc');
 require_once('tbx_datasource.php.inc');
 require_once('tbx_locator.php.inc');
 
@@ -49,7 +14,7 @@ require_once('tbx_xml.php.inc');
 
 
 
-class clsTinyButXtreme {
+class tbx {
 	use tbx_api;
 	use tbx_function;
 	use tbx_interface;
@@ -1623,7 +1588,7 @@ class clsTinyButXtreme {
 
 
 
-	// Standard alert message provided by TinyButXtreme, return False is the message is cancelled.
+	// Standard alert message provided by TinyButXtreme, return False if the message is cancelled.
 	function meth_Misc_Alert($Src, $Msg, $NoErrMsg=false, $SrcType=false, $data='') {
 		$this->ErrCount++;
 
@@ -1808,7 +1773,7 @@ class clsTinyButXtreme {
 		}
 
 		if ($data === false) {
-			trigger_error('Unable to load template file: '.$file, E_USER_ERROR);
+			throw tbxException('Unable to load template file: '.$file);
 			return false;
 		}
 
