@@ -3,7 +3,7 @@
 if (empty($tbx)) {
 	if (empty($af)) {
 		date_default_timezone_set('GMT');
-		$tbx = new clsTinyButXtreme;
+		$tbx = new tbx;
 	} else {
 		$tbx = $af;
 	}

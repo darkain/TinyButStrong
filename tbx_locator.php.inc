@@ -605,12 +605,12 @@ class tbxLocator {
 	static function AttBoolean($CurrVal, $AttTrue, $AttName) {
 	// Return the good value for a boolean attribute
 		if ($AttTrue===true) {
-			if (clsTinyButXtreme::_string($CurrVal)==='') {
+			if (tbx::_string($CurrVal)==='') {
 				return '';
 			} else {
 				return $AttName;
 			}
-		} elseif (clsTinyButXtreme::_string($CurrVal)===$AttTrue) {
+		} elseif (tbx::_string($CurrVal)===$AttTrue) {
 			return $AttName;
 		} else {
 			return '';
