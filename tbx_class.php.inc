@@ -1773,7 +1773,7 @@ class tbx {
 		}
 
 		if ($data === false) {
-			throw tbxException('Unable to load template file: '.$file);
+			throw new tbxException('Unable to load template file: '.$file);
 			return false;
 		}
 

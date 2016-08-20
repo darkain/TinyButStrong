@@ -84,7 +84,7 @@ trait tbx_api {
 
 		foreach ($data as $key => $value) {
 			if (is_object($value)) {
-				throw tbxException('merge does not support Object data type for key: ' . $key);
+				throw new tbxException('merge does not support Object data type for key: ' . $key);
 			} else if (is_string($value)  ||  is_int($value)  ||  is_float($value)) {
 				$this->field($key, $value);
 			} else if ($value === false) {

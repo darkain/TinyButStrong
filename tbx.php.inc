@@ -29,7 +29,7 @@ require_once('tbx_constants.php.inc');
 
 // Check PHP version
 if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-	throw tbxException(
+	throw new tbxException(
 		'PHP 5.4+ or HHVM required, but version '.PHP_VERSION.' detected'
 	);
 }
