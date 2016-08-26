@@ -1,7 +1,7 @@
 <?php
 
 chdir(__DIR__);
-require_once('../tbx_class.php');
+require_once('../tbx.php.inc');
 
 require('all.php');
 
