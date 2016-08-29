@@ -399,4 +399,16 @@ class tbxDatasource {
 		}
 	}
 
+
+
+
+	public function __debugInfo() {
+		$return = [];
+		foreach ($this as $key => $value) {
+			if (!is_object($value)) {
+				$return[$key] = $value;
+			}
+		}
+		return $return;
+	}
 }

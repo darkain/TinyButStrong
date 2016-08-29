@@ -59,3 +59,26 @@ $tbx->loadString('<elem>[x.data;block=elem]</elem>')
 	]);
 
 tbxTest('<elem>0</elem><elem>1</elem><elem>2</elem><elem>3</elem><elem>-1</elem><elem>-2</elem><elem>-3</elem><elem>9223372036854775807</elem><elem>-9223372036854775808</elem>');
+
+
+
+
+$tbx->loadString('<elem>[x.a;noerr;block=elem;ifempty=[x.b;noerr;ifempty=[x.c]]]</elem>')
+	->block('x', [
+		['c'=>'zzzz', 'r'=>'', 't'=>''],
+		['b'=>'yyyy', 'c'=>'zzzz', 't'=>''],
+		['a'=>'xxxx', 'b'=>'yyyy', 'c'=>'zzzz'],
+	]);
+
+tbxTest('<elem>zzzz</elem><elem>yyyy</elem><elem>xxxx</elem>');
+
+
+
+
+$tbx->loadString('<elem param="[x.param;block=elem;noerr;ifempty=\'[x.alternate]\']">data</elem>')
+	->block('x', [
+		['param'=>'a', 'alternate'=>'b'],
+		['alternate'=>'c'],
+	]);
+
+tbxTest('<elem param="a">data</elem><elem param="c">data</elem>');

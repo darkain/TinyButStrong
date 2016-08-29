@@ -32,12 +32,9 @@ class tbxLocator {
 
 
 
-	function PrmRead(&$Txt, $Pos, $XmlTag, $DelimChrs, $BegStr, $EndStr, &$PosEnd, $WithPos=false) {
+	function PrmRead(&$Txt, $Pos, $DelimChrs, $BegStr, $EndStr, &$PosEnd, $WithPos=false) {
 
-		$BegLen		= strlen($BegStr);
-		$BegChr		= $BegStr[0];
-		$BegIs1		= ($BegLen===1);
-
+		$XmlTag		= ($BegStr === '<');
 		$DelimIdx	= false;
 		$DelimCnt	= 0;
 		$DelimChr	= '';
@@ -50,7 +47,7 @@ class tbxLocator {
 		$PosVal		= 0;
 
 		// Variables for checking the loop
-		$PosEnd = strpos($Txt,$EndStr,$Pos);
+		$PosEnd = strpos($Txt, $EndStr, $Pos);
 		if ($PosEnd===false) return;
 		$Continue = ($Pos<$PosEnd);
 
@@ -126,12 +123,8 @@ class tbxLocator {
 					if ($CheckChr) {
 						$DelimIdx = strpos($DelimChrs,$Chr);
 						if ($DelimIdx===false) {
-							if ($Chr===$BegChr) {
-								if ($BegIs1) {
-									$BegCnt++;
-								} elseif(substr($Txt,$Pos,$BegLen)===$BegStr) {
-									$BegCnt++;
-								}
+							if ($Chr===$BegStr) {
+								$BegCnt++;
 							}
 						} else {
 							$DelimChr = $DelimChrs[$DelimIdx];
@@ -141,12 +134,8 @@ class tbxLocator {
 					}
 
 				} else {
-					if ($Chr===$BegChr) {
-						if ($BegIs1) {
-							$BegCnt++;
-						} elseif(substr($Txt,$Pos,$BegLen)===$BegStr) {
-							$BegCnt++;
-						}
+					if ($Chr===$BegStr) {
+						$BegCnt++;
 					}
 				}
 
@@ -167,7 +156,7 @@ class tbxLocator {
 					}
 				}
 				if ($Continue) {
-					$PosEnd = strpos($Txt,$EndStr,$PosEnd+1);
+					$PosEnd = strpos($Txt, $EndStr, $PosEnd+1);
 					if ($PosEnd===false) return;
 				} else {
 					if ($XmlTag && ($Txt[$Pos-1]==='/')) $Pos--; // In case last attribute is stuck to "/>"
@@ -176,9 +165,6 @@ class tbxLocator {
 			}
 
 		}
-
-		$PosEnd = $PosEnd + (strlen($EndStr)-1);
-
 	}
 
 
@@ -641,4 +627,16 @@ class tbxLocator {
 		return true;
 	}
 
+
+
+
+	public function __debugInfo() {
+		$return = [];
+		foreach ($this as $key => $value) {
+			if (!is_object($value)) {
+				$return[$key] = $value;
+			}
+		}
+		return $return;
+	}
 }

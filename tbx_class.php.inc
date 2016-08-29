@@ -40,42 +40,56 @@ class tbx {
 	function _find(&$Txt, $Name, $Pos, $ChrSub) {
 	// Find a TBX Locator
 
-		$PosEnd = false;
-		$PosMax = strlen($Txt) -1;
-		$Start = '['.$Name;
+		$PosEnd			= false;
+		$PosMax			= strlen($Txt) -1;
+		$Start			= '['.$Name;
 
 		do {
 			// Search for the opening char
 			if ($Pos>$PosMax) return false;
-			$Pos = strpos($Txt,$Start,$Pos);
+			$Pos		= strpos($Txt, $Start, $Pos);
 
 			// If found => next chars are analyzed
 			if ($Pos===false) return false;
 
-			$Loc = new tbxLocator($this);
-			$ReadPrm = false;
-			$PosX = $Pos + strlen($Start);
-			$x = $Txt[$PosX];
+			$Loc		= new tbxLocator($this);
+			$ReadPrm	= false;
+			$PosX		= $Pos + strlen($Start);
+			$depth		= 1;
 
-			if ($x === ']') {
-				$PosEnd = $PosX;
-			} elseif ($x === $ChrSub) {
-				$Loc->SubOk = true; // it is no longer the false value
-				$ReadPrm = true;
-				$PosX++;
-			} elseif (strpos(';', $x) !== false) {
-				$ReadPrm = true;
-				$PosX++;
-			} else {
-				$Pos++;
+			switch ($Txt[$PosX]) {
+				case '[':
+					$depth++;
+				break;
+
+				case ']':
+					$depth--;
+					if ($depth === 0) {
+						$PosEnd	= $PosX;
+					}
+				break;
+
+				case ';':
+					$ReadPrm	= true;
+					$PosX++;
+				break;
+
+				case $ChrSub:
+					$Loc->SubOk	= true; // it is no longer the false value
+					$ReadPrm	= true;
+					$PosX++;
+				break;
+
+				default:
+					$Pos++;
 			}
 
 			$Loc->PosBeg = $Pos;
 			if ($ReadPrm) {
-				$Loc->PrmRead($Txt, $PosX, false, '\'', '[', ']', $PosEnd);
+				$Loc->PrmRead($Txt, $PosX, '\'', '[', ']', $PosEnd);
 				if ($PosEnd === false) {
 					$this->meth_Misc_Alert('',
-						'can\'t find end of tag \''.substr($Txt,$Pos,$PosX-$Pos+50).'...\'.'
+						'can\'t find end of tag \''.substr($Txt,$Pos,$PosX-$Pos+100).'...\'.'
 					);
 					$Pos++;
 				}
@@ -91,38 +105,28 @@ class tbx {
 			$Loc->FullName		= $Name;
 		}
 
-		if ( $ReadPrm && ( isset($Loc->PrmLst['enlarge']) || isset($Loc->PrmLst['comm']) ) ) {
-			$Loc->PosBeg0		= $Loc->PosBeg;
-			$Loc->PosEnd0		= $Loc->PosEnd;
-			$enlarge = (isset($Loc->PrmLst['enlarge'])) ? $Loc->PrmLst['enlarge'] : $Loc->PrmLst['comm'];
-			if (($enlarge === true)  ||  ($enlarge === '')) {
-				$Loc->Enlarged	= $Loc->EnlargeToStr($Txt, '<!--', '-->');
-			} else {
-				$Loc->Enlarged	= $Loc->EnlargeToTag($Txt, $enlarge);
-			}
-		}
-
 		return $Loc;
-
 	}
 
 
 
 
-	function _replace(&$Txt, &$Loc, &$Value, $SubStart, $Src=false) {
+	function _replace(&$Txt, &$Loc, &$Value, $SubStart=false, $Src=false) {
 	// This function enables to merge a locator with a text and returns the position just after the replaced block
 	// This position can be useful because we don't know in advance how $Value will be replaced.
 
 		// Found the value if there is a subname
-		if (($SubStart!==false) && $Loc->SubOk) {
+		if ($SubStart!==false  &&  $Loc->SubOk) {
 			for ($i=$SubStart;$i<$Loc->SubNbr;$i++) {
-				$x = $Loc->SubLst[$i]; // &$Loc... brings an error with Event Example, I don't know why.
+				$x = $Loc->SubLst[$i];
+				// &$Loc... brings an error with Event Example, I don't know why.
 
 				if (is_array($Value)) {
 					if (isset($Value[$x])) {
 						$Value = &$Value[$x];
 
-					} elseif (array_key_exists($x,$Value)) {// can happens when value is NULL
+					} elseif (array_key_exists($x,$Value)) {
+						// can happens when value is NULL
 						$Value = &$Value[$x];
 
 					} else {
@@ -1276,18 +1280,18 @@ class tbx {
 
 			} elseif ($Loc->SubLst[0][0]==='~') {
 				if (isset($Loc->PrmLst['noerr'])) {
-					$Pos = $this->_replace($Txt,$Loc,$x,false);
+					$Pos = $this->_replace($Txt,$Loc,$x);
 				} else {
 					$this->meth_Misc_Alert($Loc,'property is neither an object nor an array.',true);
 					$Pos = $Loc->PosEnd + 1;
 				}
 
 			} elseif (isset($GLOBALS[$Loc->SubLst[0]])) {
-				$Pos = $this->_replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]],1);
+				$Pos = $this->_replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]], 1);
 
 			} else {
 				if (isset($Loc->PrmLst['noerr'])) {
-					$Pos = $this->_replace($Txt,$Loc,$x,false);
+					$Pos = $this->_replace($Txt,$Loc,$x);
 				} else {
 					$Pos = $Loc->PosEnd + 1;
 					$this->meth_Misc_Alert($Loc,'the key \''.$Loc->SubLst[0].'\' does not exist',true);
@@ -1303,8 +1307,6 @@ class tbx {
 
 	// Merge Special Var Fields ([var..*])
 	protected function _mergeSpecial(&$Txt,&$Loc) {
-		$SubStart = false;
-
 		if (!isset($Loc->SubLst[1])) {
 			$error = 'missing subname.';
 		} else {
@@ -1337,7 +1339,7 @@ class tbx {
 		}
 
 		if ($Loc->PosBeg === false) return $Loc->PosEnd;
-		return $this->_replace($Txt,$Loc,$x,$SubStart);
+		return $this->_replace($Txt, $Loc, $x);
 	}
 
 
@@ -1368,20 +1370,18 @@ class tbx {
 
 
 	function meth_Merge_SectionNormal(&$BDef,&$Src) {
-
-		$Txt = $BDef->Src;
-		$LocLst = &$BDef->LocLst;
-		$iMax = $BDef->LocNbr;
-		$PosMax = strlen($Txt);
+		$Txt		= $BDef->Src;
+		$LocLst		= &$BDef->LocLst;
+		$PosMax		= strlen($Txt);
 
 		if ($Src===false) { // Erase all fields
 
 			$x = '';
 
 			// Chached locators
-			for ($i=$iMax;$i>0;$i--) {
+			for ($i=$BDef->LocNbr; $i>0; $i--) {
 				if ($LocLst[$i]->PosBeg<$PosMax) {
-					$this->_replace($Txt,$LocLst[$i],$x,false);
+					$this->_replace($Txt,$LocLst[$i],$x);
 					if ($LocLst[$i]->Enlarged) {
 						$PosMax = $LocLst[$i]->PosBeg;
 						$LocLst[$i]->PosBeg = $LocLst[$i]->PosBeg0;
@@ -1395,23 +1395,31 @@ class tbx {
 			if ($BDef->Chk) {
 				$BlockName = &$BDef->Name;
 				$Pos = 0;
-				while ($Loc = $this->_find($Txt,$BlockName,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$x,false);
+				while ($Loc = $this->_find($Txt,$BlockName,$Pos,'.')) {
+					$Pos = $this->_replace($Txt,$Loc,$x);
+				}
 			}
 
 		} else {
 
 			// Cached locators
-			for ($i=$iMax;$i>0;$i--) {
+			for ($i=$BDef->LocNbr; $i>0; $i--) {
 				if ($LocLst[$i]->PosBeg<$PosMax) {
 					if ($LocLst[$i]->IsRecInfo) {
-						if ($LocLst[$i]->RecInfo==='#') {
-							$this->_replace($Txt,$LocLst[$i],$Src->RecNum,false);
-						} else {
-							$this->_replace($Txt,$LocLst[$i],$Src->RecKey,false);
-						}
+						$this->_replace(
+							$Txt,
+							$LocLst[$i],
+							$LocLst[$i]->RecInfo==='#' ? $Src->RecNum : $Src->RecKey
+						);
 					} else {
-						$this->_replace($Txt,$LocLst[$i],$Src->CurrRec,0);
+						$this->_replace(
+							$Txt,
+							$LocLst[$i],
+							$Src->CurrRec,
+							0
+						);
 					}
+
 					if ($LocLst[$i]->Enlarged) {
 						$PosMax = $LocLst[$i]->PosBeg;
 						$LocLst[$i]->PosBeg = $LocLst[$i]->PosBeg0;
@@ -1423,18 +1431,19 @@ class tbx {
 
 			// Unchached locators
 			if ($BDef->Chk) {
-				$BlockName = &$BDef->Name;
-				foreach ($Src->CurrRec as $key => $val) {
-					$Pos = 0;
-					$Name = $BlockName.'.'.$key;
-					while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$val,0);
+				$Pos = 0;
+				while ($Loc = $this->_find($Txt,$BDef->Name.'.#',$Pos,'.')) {
+					$Pos = $this->_replace($Txt,$Loc,$Src->RecNum, 0);
 				}
+
 				$Pos = 0;
-				$Name = $BlockName.'.#';
-				while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$Src->RecNum,0);
-				$Pos = 0;
-				$Name = $BlockName.'.$';
-				while ($Loc = $this->_find($Txt,$Name,$Pos,'.')) $Pos = $this->_replace($Txt,$Loc,$Src->RecKey,0);
+				while ($Loc = $this->_find($Txt,$BDef->Name.'.$',$Pos,'.')) {
+					$Pos = $this->_replace($Txt,$Loc,$Src->RecKey, 0);
+				}
+
+				while ($Loc = $this->_find($Txt, $BDef->Name, 0, '.')) {
+					$this->_replace($Txt, $Loc, $Src->CurrRec, 0);
+				}
 			}
 
 		}
@@ -1567,14 +1576,14 @@ class tbx {
 					} else {
 						// Merge the block as if it was a field
 						$x = '';
-						$this->_replace($Txt,$LocA,$x,false);
+						$this->_replace($Txt,$LocA,$x);
 					}
 					$Pos = $LocA->PosBeg;
 				}
 
 			} else { // Field (has no subname at this point)
 				$x = '';
-				$Pos = $this->_replace($Txt,$LocA,$x,false);
+				$Pos = $this->_replace($Txt,$LocA,$x);
 				$Pos = $LocA->PosBeg;
 			}
 

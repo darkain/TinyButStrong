@@ -423,7 +423,7 @@ trait tbx_xml {
 		if ($TagOk) {
 			$Loc = new tbxLocator($this);
 			if ($WithPrm) {
-				$Loc->PrmRead($Txt, $PosX, true, '\'"', '<', '>', $PosEnd, $WithPos);
+				$Loc->PrmRead($Txt, $PosX, '\'"', '<', '>', $PosEnd, $WithPos);
 			} elseif ($PosEnd === false) {
 				$PosEnd = strpos($Txt, '>', $PosX);
 				if ($PosEnd === false) {
