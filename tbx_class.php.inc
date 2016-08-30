@@ -1405,19 +1405,12 @@ class tbx {
 			// Cached locators
 			for ($i=$BDef->LocNbr; $i>0; $i--) {
 				if ($LocLst[$i]->PosBeg<$PosMax) {
-					if ($LocLst[$i]->IsRecInfo) {
-						$this->_replace(
-							$Txt,
-							$LocLst[$i],
-							$LocLst[$i]->RecInfo==='#' ? $Src->RecNum : $Src->RecKey
-						);
+					if ($LocLst[$i]->IsRecInfo  &&  $LocLst[$i]->RecInfo==='#') {
+						$this->_replace($Txt, $LocLst[$i], $Src->RecNum);
+					} else if ($LocLst[$i]->IsRecInfo) {
+						$this->_replace($Txt, $LocLst[$i], $Src->RecKey);
 					} else {
-						$this->_replace(
-							$Txt,
-							$LocLst[$i],
-							$Src->CurrRec,
-							0
-						);
+						$this->_replace($Txt, $LocLst[$i], $Src->CurrRec, 0);
 					}
 
 					if ($LocLst[$i]->Enlarged) {
