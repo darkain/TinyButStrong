@@ -31,6 +31,12 @@ class tbxLocator {
 
 
 
+	public function noerr() {
+		return  isset($this->PrmLst['noerr'])
+			||  isset($this->PrmLst['ifempty']);
+	}
+
+
 
 	public function PrmRead(&$Txt, $Pos, $DelimChrs, $BegStr, $EndStr, &$PosEnd, $WithPos=false) {
 

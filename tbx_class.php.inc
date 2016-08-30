@@ -130,7 +130,7 @@ class tbx {
 						$Value = &$Value[$x];
 
 					} else {
-						if (!isset($Loc->PrmLst['noerr'])) {
+						if (!$Loc->noerr()) {
 							$this->meth_Misc_Alert(
 								$Loc,
 								'item \''.$x.'\' is not an existing key in the array',
@@ -160,7 +160,7 @@ class tbx {
 						$x = &$Value->$x;
 
 					} else {
-						if (!isset($Loc->PrmLst['noerr'])) {
+						if (!$Loc->noerr()) {
 							$this->meth_Misc_Alert(
 								$Loc,
 								'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',
@@ -179,7 +179,13 @@ class tbx {
 					$x = '';
 
 				} else {
-					if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'item before \''.$x.'\' is neither an object nor an array. Its type is '.gettype($Value).'.',true);
+					if (!$Loc->noerr()) {
+						$this->meth_Misc_Alert(
+							$Loc,
+							'item before \''.$x.'\' is neither an object nor an array. Its type is '.gettype($Value).'.',
+							true
+						);
+					}
 					unset($Value);
 					$Value = '';
 					break;
@@ -316,7 +322,7 @@ class tbx {
 								case 'sel:':	$Loc->OpeAct[$i]	=61;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
 
 								default:
-									if (!isset($Loc->PrmLst['noerr'])) {
+									if (!$Loc->noerr()) {
 										$this->meth_Misc_Alert($Loc,'parameter ope doesn\'t support value \''.$ope.'\'.',true);
 									}
 								continue;
@@ -1279,7 +1285,7 @@ class tbx {
 				$Pos = $this->_mergeSpecial($Txt,$Loc);
 
 			} elseif ($Loc->SubLst[0][0]==='~') {
-				if (isset($Loc->PrmLst['noerr'])) {
+				if ($Loc->noerr()) {
 					$Pos = $this->_replace($Txt,$Loc,$x);
 				} else {
 					$this->meth_Misc_Alert($Loc,'property is neither an object nor an array.',true);
@@ -1290,7 +1296,7 @@ class tbx {
 				$Pos = $this->_replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]], 1);
 
 			} else {
-				if (isset($Loc->PrmLst['noerr'])) {
+				if ($Loc->noerr()) {
 					$Pos = $this->_replace($Txt,$Loc,$x);
 				} else {
 					$Pos = $Loc->PosEnd + 1;
