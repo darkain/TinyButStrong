@@ -32,7 +32,7 @@ class tbxLocator {
 
 
 
-	function PrmRead(&$Txt, $Pos, $DelimChrs, $BegStr, $EndStr, &$PosEnd, $WithPos=false) {
+	public function PrmRead(&$Txt, $Pos, $DelimChrs, $BegStr, $EndStr, &$PosEnd, $WithPos=false) {
 
 		$XmlTag		= ($BegStr === '<');
 		$DelimIdx	= false;
@@ -170,7 +170,7 @@ class tbxLocator {
 
 
 
-	function PrmCompute(&$Txt,&$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos) {
+	public function PrmCompute(&$Txt,&$SubName,$Status,$XmlTag,$DelimChr,$DelimCnt,$PosName,$PosNend,$PosVal,$Pos,$WithPos) {
 
 		if ($Status===0) {
 			$SubName = false;
@@ -225,7 +225,7 @@ class tbxLocator {
 
 
 
-	function PrmIfThen($IsIf,$Val) {
+	public function PrmIfThen($IsIf,$Val) {
 		$nbr = &$this->PrmIfNbr;
 
 		if ($nbr === false) {
@@ -253,7 +253,7 @@ class tbxLocator {
 
 
 
-	function EnlargeToStr(&$Txt, $StrBeg, $StrEnd) {
+	public function EnlargeToStr(&$Txt, $StrBeg, $StrEnd) {
 	/*
 	This function enables to enlarge the pos limits of the Locator.
 	If the search result is not correct, $PosBeg must not change its value, and $PosEnd must be False.
@@ -287,7 +287,7 @@ class tbxLocator {
 
 
 
-	function EnlargeToTag(&$Txt, $TagStr, $RetInnerSrc=false) {
+	public function EnlargeToTag(&$Txt, $TagStr, $RetInnerSrc=false) {
 	//return false if tags not found, returns the inner source of tag if $RetInnerSrc=true
 
 		// Analyze string
@@ -424,7 +424,7 @@ class tbxLocator {
 
 
 	// Affects the positions of a list of locators regarding to a specific moving locator.
-	function Moving(&$list) {
+	public function Moving(&$list) {
 		foreach ($list as &$part) {
 			if ($part === $this) continue;
 			if ($part->PosBeg >= $this->InsPos) {
@@ -441,7 +441,7 @@ class tbxLocator {
 
 
 
-	function SectionAddGrp($BlockName, &$BDef, $Type, $Field, $Prm) {
+	public function SectionAddGrp($BlockName, &$BDef, $Type, $Field, $Prm) {
 
 		$BDef->PrevValue = false;
 		$BDef->Type = $Type;
@@ -479,7 +479,7 @@ class tbxLocator {
 
 
 
-	function &SectionNewBDef($BlockName, $Txt, $PrmLst, $Cache) {
+	public function &SectionNewBDef($BlockName, $Txt, $PrmLst, $Cache) {
 
 		$Chk	= true;
 		$LocLst	= [];
@@ -573,7 +573,7 @@ class tbxLocator {
 
 
 
-	function Enlarge_Find($Txt, $Tag, $Pos, $Forward, $LevelStop) {
+	public function Enlarge_Find($Txt, $Tag, $Pos, $Forward, $LevelStop) {
 		return $this->tbx->f_Xml_FindTag(
 			$Txt,
 			$Tag,
@@ -588,7 +588,7 @@ class tbxLocator {
 
 
 
-	static function AttBoolean($CurrVal, $AttTrue, $AttName) {
+	public static function AttBoolean($CurrVal, $AttTrue, $AttName) {
 	// Return the good value for a boolean attribute
 		if ($AttTrue===true) {
 			if (tbx::_string($CurrVal)==='') {
@@ -607,7 +607,7 @@ class tbxLocator {
 
 
 	// Sort the locators in the list. Apply the bubble algorithm.
-	static function Sort(&$list, $first=0) {
+	public static function Sort(&$list, $first=0) {
 		$last = count($list) + $first;
 
 		for ($i=$first+1 ; $i<$last; $i++) {
