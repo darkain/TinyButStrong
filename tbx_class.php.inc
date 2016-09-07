@@ -1,6 +1,7 @@
 <?php
 
 
+require_once('tbx_constants.php.inc');
 require_once('tbx_datasource.php.inc');
 require_once('tbx_locator.php.inc');
 
@@ -88,8 +89,8 @@ class tbx {
 			if ($ReadPrm) {
 				$Loc->PrmRead($Txt, $PosX, '\'', '[', ']', $PosEnd);
 				if ($PosEnd === false) {
-					$this->meth_Misc_Alert('',
-						'can\'t find end of tag \''.substr($Txt,$Pos,$PosX-$Pos+100).'...\'.'
+					throw new tbxLocException($Loc,
+						'cant find end of tag <'.substr($Txt,$Pos,$PosX-$Pos+100).'>'
 					);
 					$Pos++;
 				}
@@ -131,12 +132,8 @@ class tbx {
 
 					} else {
 						if (!$Loc->noerr()) {
-							$this->meth_Misc_Alert(
-								$Loc,
-								'item \''.$x.'\' is not an existing key in the array',
-								true,
-								false,
-								$Value
+							throw new tbxLocException($Loc, $Value,
+								'key not found'
 							);
 						}
 						unset($Value);
@@ -161,12 +158,8 @@ class tbx {
 
 					} else {
 						if (!$Loc->noerr()) {
-							$this->meth_Misc_Alert(
-								$Loc,
-								'item '.$x.'\' is not a property of class \''.get_class($Value).'\'.',
-								true,
-								false,
-								$Value
+							throw new tbxLocException($Loc, $Value,
+								'property not found'
 							);
 						}
 						unset($Value);
@@ -180,33 +173,27 @@ class tbx {
 
 				} else {
 					if (!$Loc->noerr()) {
-						$this->meth_Misc_Alert(
-							$Loc,
-							'item before \''.$x.'\' is neither an object nor an array. Its type is '.gettype($Value).'.',
-							true
+						throw new tbxLocException($Loc,
+							'invalid data type: ' . gettype($Value)
 						);
 					}
 					unset($Value);
 					$Value = '';
 					break;
 				}
+			}
 
-				if (tbx_array($Value)) {
-					if (isset($Loc->PrmLst['implode'])) {
-						if ($Loc->PrmLst['implode'] === true) {
-							$Loc->PrmLst['implode'] = '';
-						}
-						$Value = implode($Loc->PrmLst['implode'], $Value);
-
-					} else {
-						$this->meth_Misc_Alert(
-							$Loc,
-							'item \''.$x.'\' is in array with no parameters on how to process it',
-							true,
-							false,
-							$Value
-						);
+			if (tbx_array($Value)) {
+				if (isset($Loc->PrmLst['implode'])) {
+					if ($Loc->PrmLst['implode'] === true) {
+						$Loc->PrmLst['implode'] = '';
 					}
+					$Value = implode($Loc->PrmLst['implode'], $Value);
+
+				} else {
+					throw new tbxLocException($Loc, $Value,
+						'no processing instructions'
+					);
 				}
 			}
 		}
@@ -341,7 +328,9 @@ class tbx {
 
 								default:
 									if (!$Loc->noerr()) {
-										$this->meth_Misc_Alert($Loc,'parameter ope doesn\'t support value \''.$ope.'\'.',true);
+										throw new tbxLocException($Loc,
+											'ope doesnt support: ' . $ope
+										);
 									}
 								continue;
 							}
@@ -475,7 +464,7 @@ class tbx {
 				} else if (isset($Loc->PrmLst['sprintf'])) {
 					$CurrVal = sprintf($Loc->PrmLst['sprintf'], $this->_string($CurrVal));
 				} else {
-					$this->meth_Misc_Alert($Loc, 'Invalid Format');
+					throw new tbxLocException($Loc, 'invalid format');
 				}
 			break;
 
@@ -495,7 +484,7 @@ class tbx {
 				} else if (isset($Loc->PrmLst['convert'])) {
 					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['convert']);
 				} else {
-					$this->meth_Misc_Alert($Loc, 'Invalid Function');
+					throw new tbxLocException($Loc, 'invalid function');
 				}
 			break;
 
@@ -605,7 +594,9 @@ class tbx {
 						if (isset($Loc->AttBeg)) {
 							$Loc->MagnetId = TBX_MAGNET_ATTR;
 						} else {
-							$this->meth_Misc_Alert($Loc, "'magnet=#' invalid, attribute not found.", true);
+							throw new tbxLocException($Loc,
+								"attribute not found for 'magnet=#'"
+							);
 						}
 
 					} elseif (isset($Loc->PrmLst['mtype'])) {
@@ -756,8 +747,10 @@ class tbx {
 				$PosBeg = $Loc2->PosEnd;
 			}
 
-			return $this->meth_Misc_Alert($Loc,'a least one tag with parameter \'block=end\' is missing.',false,'in block\'s definition');
-
+			throw new tbxLocException($Loc,
+				"a least one tag with parameter 'block=end' is missing"
+			);
+			return;
 		}
 
 		if ($Mode===1) {
@@ -765,7 +758,12 @@ class tbx {
 		} else {
 			$beg = $Loc->PosBeg;
 			$end = $Loc->PosEnd;
-			if ($Loc->EnlargeToTag($Txt, $Block)===false) return $this->meth_Misc_Alert($Loc,'at least one tag corresponding to &lt;'.$Loc->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+			if ($Loc->EnlargeToTag($Txt, $Block)===false) {
+				throw new tbxLocException($Loc,
+					'<' . $Loc->PrmLst['block'] . '> not found'
+				);
+				return;
+			}
 			if ($Loc->SubOk || ($Mode===3)) {
 				$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$Loc->PosEnd-$Loc->PosBeg+1);
 				$Loc->PosDefBeg = $beg - $Loc->PosBeg;
@@ -1026,11 +1024,10 @@ class tbx {
 				// OnData
 				if ($Src->OnDataPrm = isset($LocR->PrmLst['ondata'])) {
 					$Src->OnDataPrmRef = $LocR->PrmLst['ondata'];
-					if (isset($Src->OnDataPrmDone[$Src->OnDataPrmRef])) {
-						$Src->OnDataPrm = false;
-					} else {
+					$Src->OnDataPrm = false;
+					if (!isset($Src->OnDataPrmDone[$Src->OnDataPrmRef])) {
 						$LocR->FullName = $this->_CurrBlock;
-						$Src->OnDataPrm = $this->meth_Misc_Alert($LocR,'(parameter ondata) ',false,'block');
+						throw new tbxLocException($LocR, 'parameter ondata error');
 					}
 				}
 				// Dynamic query
@@ -1088,7 +1085,7 @@ class tbx {
 						$Src->RecNum = 1;
 						$Src->CurrRec = false;
 					} else {
-						$Src->DataAlert('can\'t merge the block with a text value because the block definition is not found.');
+						$Src->DataAlert('can\'t merge the block with a text value because the block definition is not found');
 					}
 				} elseif ($LocR->BlockFound===false) {
 					$Src->DataFetch(); // Merge first record only
@@ -1306,7 +1303,9 @@ class tbx {
 				if ($Loc->noerr()) {
 					$Pos = $this->_replace($Txt,$Loc,$x);
 				} else {
-					$this->meth_Misc_Alert($Loc,'property is neither an object nor an array.',true);
+					throw new tbxLocException($Loc,
+						'property is neither an object nor an array'
+					);
 					$Pos = $Loc->PosEnd + 1;
 				}
 
@@ -1315,10 +1314,12 @@ class tbx {
 
 			} else {
 				if ($Loc->noerr()) {
-					$Pos = $this->_replace($Txt,$Loc,$x);
+					$Pos = $this->_replace($Txt, $Loc, $x);
 				} else {
 					$Pos = $Loc->PosEnd + 1;
-					$this->meth_Misc_Alert($Loc,'the key \''.$Loc->SubLst[0].'\' does not exist',true);
+					throw new tbxLocException($Loc,
+						"the key '" . $Loc->SubLst[0] . "' does not exist"
+					);
 				}
 			}
 		}
@@ -1358,7 +1359,7 @@ class tbx {
 		}
 
 		if (!empty($error)) {
-			$this->meth_Misc_Alert($Loc,$error);
+			throw new tbxLocException($Loc, $error);
 			$x = '';
 		}
 
@@ -1483,7 +1484,11 @@ class tbx {
 					if (array_key_exists($col, $Src->CurrRec)) {
 						$data = &$Src->CurrRec[$col];
 					} else {
-						if (!$col_opt) $this->meth_Misc_Alert('for merging the automatic sub-block ['.$name.']','key \''.$col.'\' is not found in record #'.$Src->RecNum.' of block ['.$BDef->Name.']. This key can become optional if you designate it with parenthesis in the main block, i.e.: sub'.$i.'=('.$col.')');
+						if (!$col_opt) {
+							throw new tbxException(
+								'for merging the automatic sub-block ['.$name.']','key \''.$col.'\' is not found in record #'.$Src->RecNum.' of block ['.$BDef->Name.']. This key can become optional if you designate it with parenthesis in the main block, i.e.: sub'.$i.'=('.$col.')'
+							);
+						}
 						unset($data); $data = [];
 					}
 				}
@@ -1584,7 +1589,11 @@ class tbx {
 					$Pos = $LocA->PosBeg;
 				} else {
 					if ($LocA->PosBeg2===false) {
-						if ($LocA->EnlargeToTag($Txt, $LocA->PrmLst['block'])===false) $this->meth_Misc_Alert($LocA,'at least one tag corresponding to &lt;'.$LocA->PrmLst['block'].'&gt; is not found. Check opening tags, closing tags and embedding levels.',false,'in block\'s definition');
+						if ($LocA->EnlargeToTag($Txt, $LocA->PrmLst['block'])===false) {
+							throw new tbxLocException($LocA,
+								'<' . $LocA->PrmLst['block'] . '> not found'
+							);
+						}
 					} else {
 						$LocA->PosEnd = $LocA->PosEnd2;
 					}
@@ -1608,30 +1617,6 @@ class tbx {
 
 		// merge other fields (must have subnames)
 		$this->_mergeAuto($this->Source, $Name);
-	}
-
-
-
-
-
-	// Standard alert message provided by TinyButXtreme, return False if the message is cancelled.
-	function meth_Misc_Alert($Src, $Msg, $NoErrMsg=false, $SrcType=false, $data='') {
-		$this->ErrCount++;
-
-		if (!is_string($Src)) {
-			if ($SrcType===false) $SrcType='in field';
-			if (isset($Src->PrmLst['tbxtype'])) {
-				$Msg = 'Column \''.$Src->SubName.'\' is expected but missing in the current record.';
-				$Src = 'Parameter \''.$Src->PrmLst['tbxtype'].'='.$Src->SubName.'\'';
-				$NoErrMsg = false;
-			} else {
-				$Src = $SrcType.' ['.$Src->FullName.'...]';
-			}
-		}
-
-		echo "TinyButXtreme Error $Src: $Msg";
-
-		return false;
 	}
 
 
@@ -1798,12 +1783,10 @@ class tbx {
 			$data = @file_get_contents($path.$file, true);
 		}
 
-		if ($data === false) {
-			throw new tbxException('Unable to load template file: '.$file);
-			return false;
-		}
+		if ($data !== false) return true;
 
-		return true;
+		throw new tbxException('Unable to load template file: '.$file);
+		return false;
 	}
 
 

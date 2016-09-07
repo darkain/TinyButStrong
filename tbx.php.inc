@@ -23,7 +23,7 @@
 
 
 
-require_once('tbx_constants.php.inc');
+require_once('tbx_exception.php.inc');
 
 
 

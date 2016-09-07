@@ -29,6 +29,20 @@ function tbxTest($expected) {
 }
 
 
+function tbxError($exception, $expected) {
+	if ($exception->getMessage() === $expected) return;
+	$trace = debug_backtrace()[0];
+	echo "ERROR: FAILED!!\n\n";
+	echo "FILE: $trace[file]\n";
+	echo "LINE: $trace[line]\n\n";
+	echo "EXPECTED:\n";
+	echo "'" . $expected . "'\n\n";
+	echo "ERROR:\n";
+	echo "'" . $exception->getMessage() . "'\n\n";
+	exit;
+}
+
+
 
 
 require('field-item.php');
@@ -39,3 +53,4 @@ require('format.php');
 require('convert.php');
 require('magnet.php');
 require('altaform.php');
+require('errors.php');

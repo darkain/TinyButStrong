@@ -25,12 +25,19 @@ class tbxDatasource {
 
 	public function DataAlert($Msg) {
 		if (tbx_array($this->TBX->_CurrBlock)) {
-			return $this->TBX->meth_Misc_Alert(
-				'when merging block "'.implode(',',$this->TBX->_CurrBlock).'"', $Msg
+			throw new tbxException(
+				$Msg .
+				' when merging block "' .
+				implode(',', $this->TBX->_CurrBlock) .
+				'"'
 			);
 		} else {
-			return $this->TBX->meth_Misc_Alert(
-				'when merging block '.$this->TBX->_ChrOpen.$this->TBX->_CurrBlock.$this->TBX->_ChrClose, $Msg
+			throw new tbxException(
+				$Msg .
+				' when merging block ' .
+				$this->TBX->_ChrOpen .
+				$this->TBX->_CurrBlock .
+				$this->TBX->_ChrClose
 			);
 		}
 	}

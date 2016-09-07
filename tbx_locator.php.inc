@@ -458,7 +458,9 @@ class tbxLocator {
 		$BDef->FDef = &$this->SectionNewBDef($BlockName, $Field, [], true);
 
 		if ($BDef->FDef->LocNbr == 0) {
-			$this->tbx->meth_Misc_Alert('Parameter '.$Prm,'The value \''.$Field0.'\' is unvalide for this parameter.');
+			throw new tbxException(
+				'Parameter '.$Prm.': The value \''.$Field0.'\' is not valid for this parameter.'
+			);
 		}
 
 		if ($Type==='H') {
@@ -543,7 +545,11 @@ class tbxLocator {
 								$PosEndPrec = -1;
 							}
 						} else {
-							$this->tbx->meth_Misc_Alert('','TBX is not able to merge the field '.$LocSrc.' because the entity targeted by parameter \'att\' cannot be found.');
+							throw new tbxException(
+								'TBX is not able to merge the field ' .
+								$LocSrc .
+								' because the entity targeted by parameter \'att\' cannot be found.'
+							);
 						}
 					}
 				}

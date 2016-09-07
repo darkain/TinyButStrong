@@ -50,7 +50,3 @@ function tbx_array($item) {
 if (!defined('PHP_INT_MIN')) {
 	define('PHP_INT_MIN', ~PHP_INT_MAX);
 }
-
-
-//CUSTOM EXCEPTION CLASS FOR TBX
-class tbxException extends Exception {}
