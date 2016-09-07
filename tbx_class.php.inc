@@ -190,6 +190,24 @@ class tbx {
 					$Value = '';
 					break;
 				}
+
+				if (tbx_array($Value)) {
+					if (isset($Loc->PrmLst['implode'])) {
+						if ($Loc->PrmLst['implode'] === true) {
+							$Loc->PrmLst['implode'] = '';
+						}
+						$Value = implode($Loc->PrmLst['implode'], $Value);
+
+					} else {
+						$this->meth_Misc_Alert(
+							$Loc,
+							'item \''.$x.'\' is in array with no parameters on how to process it',
+							true,
+							false,
+							$Value
+						);
+					}
+				}
 			}
 		}
 

@@ -97,24 +97,47 @@ tbxTest('ab');
 
 
 
-//TODO: ADD CONVERTER FOR ARRAYS
-$tbx->loadString('a[x.item]b')
+$tbx->loadString('a[x.item;implode=,]b')
 	->field('x', ['item' => [1]]);
 
-tbxTest('aArrayb');
+tbxTest('a1b');
 
 
 
 
-$tbx->loadString('a[x.item]b')
+$tbx->loadString('a[x.item;implode=,]b')
 	->field('x', ['item' => [0]]);
 
-tbxTest('aArrayb');
+tbxTest('a0b');
 
 
 
 
-$tbx->loadString('a[x.item]b')
-	->field('x', ['item' => [0,1]]);
+$tbx->loadString('a[x.item;implode=]b')
+	->field('x', ['item' => [0,1,2,3,4,5]]);
 
-tbxTest('aArrayb');
+tbxTest('a012345b');
+
+
+
+
+$tbx->loadString('a[x.item;implode=,]b')
+	->field('x', ['item' => [0,1,2,3,4,5]]);
+
+tbxTest('a0,1,2,3,4,5b');
+
+
+
+
+$tbx->loadString('a[x.item;implode=,]b')
+	->field('x', ['item' => [0,1,2,3,4,5]]);
+
+tbxTest('a0,1,2,3,4,5b');
+
+
+
+
+$tbx->loadString("a[x.item;implode=';']b")
+	->field('x', ['item' => [0,1,2,3,4,5]]);
+
+tbxTest('a0;1;2;3;4;5b');
