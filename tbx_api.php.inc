@@ -177,4 +177,47 @@ trait tbx_api {
 		return $this->load($filename)->renderToString();
 	}
 
+
+
+
+	//INHERIT THIS FUNCTION TO WRITE YOUR OWN ARRAY PARSER
+	//REMEMBER TO CALL UP TO THIS CLASS TO HANDLE DEFAULT PROCESSING TOO
+	protected function tbxArray($locator, $value) {
+		if (isset($locator->PrmLst['implode'])  &&
+			!isset($locator->PrmLst['encase'])) {
+			if ($locator->PrmLst['implode'] === true) {
+				$locator->PrmLst['implode'] = '';
+			}
+			return implode($locator->PrmLst['implode'], $value);
+		}
+
+
+		if (!isset($locator->PrmLst['encase'])) return false;
+
+		$encase = str_getcsv($locator->PrmLst['encase'], ',', "'");
+
+		if (is_string($locator->PrmLst['encase'])  &&  count($encase) === 1) {
+			if (empty($value)) return '';
+			return $encase[0] . implode($encase[0], $value) . $encase[0];
+		}
+
+		if (count($encase) === 2) {
+			$encase[] = isset($locator->PrmLst['implode'])
+				? $locator->PrmLst['implode']
+				: '';
+		}
+
+		if (count($encase) !== 3) {
+			throw new tbxLocException($locator, $value,
+				'wrong number of parts for encase'
+			);
+		}
+
+		if (empty($value)) return '';
+
+		$seperator = $encase[1] . $encase[2] . $encase[0];
+
+		return $encase[0] . implode($seperator, $value) . $encase[1];
+	}
+
 }

@@ -237,3 +237,27 @@ $tbx->loadString("[x;encase={,},',']")
 	->field('x', [0,1,2,3,4,5]);
 
 tbxTest('{0},{1},{2},{3},{4},{5}');
+
+
+
+
+$tbx->loadString("[x;encase=|]")
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('|0|1|2|3|4|5|');
+
+
+
+
+$tbx->loadString("a[x;encase=|]b")
+	->field('x', []);
+
+tbxTest('ab');
+
+
+
+
+$tbx->loadString("[x;encase={,};implode=',']")
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('{0},{1},{2},{3},{4},{5}');
