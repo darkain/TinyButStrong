@@ -201,24 +201,6 @@ class tbx {
 
 		$CurrVal = $Value; // Unlink
 
-		if (isset($Loc->PrmLst['onformat'])) {
-			if ($Loc->FirstMerge) {
-				$Loc->OnFrmInfo = $Loc->PrmLst['onformat'];
-				$Loc->OnFrmArg = array($Loc->FullName,'',&$Loc->PrmLst,&$this);
-			} else {
-				$Loc->OnFrmArg[3] = &$this; // bugs.php.net/51174
-			}
-			$Loc->OnFrmArg[1] = &$CurrVal;
-			if (isset($Loc->PrmLst['subtpl'])) {
-				$this->meth_Misc_ChangeMode(true,$Loc,$CurrVal);
-				call_user_func_array($Loc->OnFrmInfo,$Loc->OnFrmArg);
-				$this->meth_Misc_ChangeMode(false,$Loc,$CurrVal);
-				$Loc->ConvProtect = false;
-				$Loc->ConvStr = false;
-			} else {
-				call_user_func_array($Loc->OnFrmInfo,$Loc->OnFrmArg);
-			}
-		}
 
 		if ($Loc->FirstMerge) {
 			switch (true) {
@@ -1618,23 +1600,6 @@ class tbx {
 
 		// merge other fields (must have subnames)
 		$this->_mergeAuto($this->Source, $Name);
-	}
-
-
-
-
-	function meth_Misc_ChangeMode($Init, &$Loc, &$CurrVal) {
-		if ($Init) {
-			// Save contents configuration
-			$Loc->SaveSrc	= &$this->Source;
-			$Loc->SaveMode	= $this->_Mode;
-			unset($this->Source); $this->Source = '';
-			$this->_Mode++; // Mode>0 means subtemplate mode
-		} else {
-			$CurrVal		= $this->Source;
-			$this->Source	= &$Loc->SaveSrc;
-			$this->_Mode	= $Loc->SaveMode;
-		}
 	}
 
 
