@@ -192,6 +192,21 @@ class tbx {
 				}
 				$Value = implode($Loc->PrmLst['implode'], $Value);
 
+			} else if (isset($Loc->PrmLst['encase'])  &&  empty($Value)) {
+				$Value = '';
+
+			} else if (isset($Loc->PrmLst['encase'])) {
+				$encase = str_getcsv($Loc->PrmLst['encase'], ',', "'");
+				if (count($encase) === 2) $encase[] = '';
+				if (count($encase) !== 3) {
+					throw new tbxLocException($Loc, $Value,
+						'wrong number of parts for encase'
+					);
+				}
+
+				$seperator = $encase[1] . $encase[2] . $encase[0];
+				$Value = $encase[0] . implode($seperator, $Value) . $encase[1];
+
 			} else {
 				throw new tbxLocException($Loc, $Value,
 					'no processing instructions'
