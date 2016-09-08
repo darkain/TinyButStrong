@@ -141,3 +141,67 @@ $tbx->loadString("a[x.item;implode=';']b")
 	->field('x', ['item' => [0,1,2,3,4,5]]);
 
 tbxTest('a0;1;2;3;4;5b');
+
+
+
+
+$tbx->loadString('a[x;implode]b')
+	->field('x', [3]);
+
+tbxTest('a3b');
+
+
+
+
+$tbx->loadString('a[x;implode]b')
+	->field('x', [0]);
+
+tbxTest('a0b');
+
+
+
+
+$tbx->loadString('a[x;implode]b')
+	->field('x', [0,1]);
+
+tbxTest('a01b');
+
+
+
+
+$tbx->loadString('a[x;implode=]b')
+	->field('x', [0,1]);
+
+tbxTest('a01b');
+
+
+
+
+$tbx->loadString('a[x;implode=,]b')
+	->field('x', [0,1]);
+
+tbxTest('a0,1b');
+
+
+
+
+$tbx->loadString('{[x;implode=},{]}')
+	->field('x', [0]);
+
+tbxTest('{0}');
+
+
+
+
+$tbx->loadString('{[x;implode=},{]}')
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('{0},{1},{2},{3},{4},{5}');
+
+
+
+
+$tbx->loadString("{[x;implode='},{']}")
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('{0},{1},{2},{3},{4},{5}');

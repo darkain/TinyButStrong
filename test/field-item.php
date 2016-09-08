@@ -125,28 +125,3 @@ $tbx->loadString('a[x]b')
 	->field('x', false);
 
 tbxTest('ab');
-
-
-
-
-//TODO: ADD CONVERTER FOR ARRAYS
-$tbx->loadString('a[x]b')
-	->field('x', [1]);
-
-tbxTest('aArrayb');
-
-
-
-
-$tbx->loadString('a[x]b')
-	->field('x', [0]);
-
-tbxTest('aArrayb');
-
-
-
-
-$tbx->loadString('a[x]b')
-	->field('x', [0,1]);
-
-tbxTest('aArrayb');

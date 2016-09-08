@@ -71,6 +71,26 @@ try {
 
 
 try {
+	$tbx->loadString('[x]')
+		->field('x', [0]);
+} catch (tbxException $error) {
+	tbxError($error, "[x] no processing instructions: Array\n(\n    [0] => 0\n)");
+}
+
+
+
+
+try {
+	$tbx->loadString('<elem>[x.item;block=elem]</elem>')
+		->block('x', [['item' => [0]]]);
+} catch (tbxException $error) {
+	tbxError($error, "[x.item] no processing instructions: Array\n(\n    [0] => 0\n)");
+}
+
+
+
+
+try {
 	$tbx->loadString('<elem>[x.item;block=elem]</elem>')
 		->block('x', [[]]);
 } catch (tbxException $error) {

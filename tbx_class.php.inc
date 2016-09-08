@@ -182,21 +182,23 @@ class tbx {
 					break;
 				}
 			}
+		}
 
-			if (tbx_array($Value)) {
-				if (isset($Loc->PrmLst['implode'])) {
-					if ($Loc->PrmLst['implode'] === true) {
-						$Loc->PrmLst['implode'] = '';
-					}
-					$Value = implode($Loc->PrmLst['implode'], $Value);
 
-				} else {
-					throw new tbxLocException($Loc, $Value,
-						'no processing instructions'
-					);
+		if (tbx_array($Value)) {
+			if (isset($Loc->PrmLst['implode'])) {
+				if ($Loc->PrmLst['implode'] === true) {
+					$Loc->PrmLst['implode'] = '';
 				}
+				$Value = implode($Loc->PrmLst['implode'], $Value);
+
+			} else {
+				throw new tbxLocException($Loc, $Value,
+					'no processing instructions'
+				);
 			}
 		}
+
 
 		$CurrVal = $Value; // Unlink
 

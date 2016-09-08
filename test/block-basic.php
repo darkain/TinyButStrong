@@ -82,3 +82,35 @@ $tbx->loadString('<elem param="[x.param;block=elem;noerr;ifempty=\'[x.alternate]
 	]);
 
 tbxTest('<elem param="a">data</elem><elem param="c">data</elem>');
+
+
+
+
+$tbx->loadString('<elem>[x.item;block=elem;implode]</elem>')
+	->block('x', [['item' => [0]]]);
+
+tbxTest('<elem>0</elem>');
+
+
+
+
+$tbx->loadString('<elem>[x.item;block=elem;implode]</elem>')
+	->block('x', [['item' => [0,1,2,3,4,5]]]);
+
+tbxTest('<elem>012345</elem>');
+
+
+
+
+$tbx->loadString('<elem>[x.item;block=elem;implode=]</elem>')
+	->block('x', [['item' => [0,1,2,3,4,5]]]);
+
+tbxTest('<elem>012345</elem>');
+
+
+
+
+$tbx->loadString('<elem>[x.item;block=elem;implode=,]</elem>')
+	->block('x', [['item' => [0,1,2,3,4,5]]]);
+
+tbxTest('<elem>0,1,2,3,4,5</elem>');
