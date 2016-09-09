@@ -47,6 +47,20 @@ function tbx_array($item) {
 }
 
 
+//SUPPORT FOR NAN AND INF, TREAT BOTH AS "EMPTY" VALUES
+function tbx_empty($item) {
+	if (is_float($item)) {
+		if (is_nan($item)) return true;
+		if (is_infinite($item)) return true;
+	}
+	if (is_string($item)) {
+		if (!strcasecmp($item, 'false')) return true;
+		if (!strcasecmp($item, 'null')) return true;
+	}
+	return empty($item);
+}
+
+
 //PHP 5.x COMPATIBILITY
 if (!defined('PHP_INT_MIN')) {
 	define('PHP_INT_MIN', ~PHP_INT_MAX);

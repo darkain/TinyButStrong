@@ -457,15 +457,15 @@ class tbx {
 			break;
 
 			case TBX_CONVERT_SELECTED:
-				$CurrVal = trim($Loc->PrmLst['selected']) === $this->_trim($CurrVal) ? 'selected' : '';
+				$CurrVal = $this->_property($Loc, $CurrVal, 'selected');
 			break;
 
 			case TBX_CONVERT_CHECKED:
-				$CurrVal = trim($Loc->PrmLst['checked']) === $this->_trim($CurrVal) ? 'checked' : '';
+				$CurrVal = $this->_property($Loc, $CurrVal, 'checked');
 			break;
 
 			case TBX_CONVERT_DISABLED:
-				$CurrVal = trim($Loc->PrmLst['disabled']) === $this->_trim($CurrVal) ? 'disabled' : '';
+				$CurrVal = $this->_property($Loc, $CurrVal, 'disabled');
 			break;
 
 			case TBX_CONVERT_FUNCTION:
@@ -1762,6 +1762,35 @@ class tbx {
 
 		throw new tbxException('Unable to load template file: '.$file);
 		return false;
+	}
+
+
+
+
+	protected function _property($locator, $value, $type) {
+		$property = $locator->PrmLst[$type];
+
+		switch (true) {
+			case $property === true  &&  tbx_empty($value):
+			break;
+
+			case $property === true:
+
+			case $value === true						&& !tbx_empty($this->_trim($property)):
+			case $value === false						&&  tbx_empty($this->_trim($property)):
+			case $value === null						&&  tbx_empty($this->_trim($property)):
+
+			case $this->_trim($property) === 'true'		&& !tbx_empty($this->_trim($value)):
+			case $this->_trim($property) === 'false'	&&  tbx_empty($this->_trim($value)):
+			case $this->_trim($property) === 'null'		&&  tbx_empty($this->_trim($value)):
+
+			case $this->_trim($value) === $this->_trim($property):
+
+
+			return $type;
+		}
+
+		return '';
 	}
 
 
