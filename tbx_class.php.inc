@@ -236,6 +236,11 @@ class tbx {
 					$Loc->ConvProtect	= false;
 				break;
 
+				case isset($Loc->PrmLst['disabled']):
+					$Loc->mode			= TBX_CONVERT_DISABLED;
+					$Loc->ConvProtect	= false;
+				break;
+
 				default:
 					// Analyze parameter 'strconv'
 					if (isset($Loc->PrmLst['strconv'])) {
@@ -457,6 +462,10 @@ class tbx {
 
 			case TBX_CONVERT_CHECKED:
 				$CurrVal = trim($Loc->PrmLst['checked']) === $this->_trim($CurrVal) ? 'checked' : '';
+			break;
+
+			case TBX_CONVERT_DISABLED:
+				$CurrVal = trim($Loc->PrmLst['disabled']) === $this->_trim($CurrVal) ? 'disabled' : '';
 			break;
 
 			case TBX_CONVERT_FUNCTION:
