@@ -83,16 +83,32 @@ trait tbx_api {
 		if (empty($data)) return $this;
 
 		foreach ($data as $key => $value) {
-			if (is_object($value)) {
-				throw new tbxException('merge does not support Object data type for key: ' . $key);
-			} else if (is_string($value)  ||  is_int($value)  ||  is_float($value)) {
-				$this->field($key, $value);
-			} else if ($value === false) {
-				$this->field($key, []);
-			} else if (isset($value[0])  ||  empty($value)) {
-				$this->block($key, $value);
-			} else {
-				$this->field($key, $value);
+			switch (true) {
+				case is_object($value)  &&  !tbx_array($value):
+					throw new tbxException(
+						'merge does not support Object data type for key: ' . $key
+					);
+				break;
+
+				case is_int($value):
+				case is_null($value):
+				case is_float($value):
+				case is_string($value):
+					$this->field($key, $value);
+				break;
+
+				case $value === false:
+					$this->block($key, []);
+				break;
+
+				case isset($value[0]):
+				case empty($value):
+					$this->block($key, $value);
+				break;
+
+				default:
+					$this->field($key, $value);
+				break;
 			}
 		}
 
