@@ -199,6 +199,23 @@ trait tbx_api {
 	//INHERIT THIS FUNCTION TO WRITE YOUR OWN ARRAY PARSER
 	//REMEMBER TO CALL UP TO THIS CLASS TO HANDLE DEFAULT PROCESSING TOO
 	protected function tbxArray($locator, $value) {
+		if (isset($locator->PrmLst['empty'])) {
+			return false;
+		}
+
+
+		if (isset($locator->PrmLst['first'])) {
+			while (is_array($value)) $value = reset($value);
+			return $value;
+		}
+
+
+		if (isset($locator->PrmLst['last'])) {
+			while (is_array($value)) $value = end($value);
+			return $value;
+		}
+
+
 		if (isset($locator->PrmLst['implode'])  &&
 			!isset($locator->PrmLst['encase'])) {
 			if ($locator->PrmLst['implode'] === true) {
