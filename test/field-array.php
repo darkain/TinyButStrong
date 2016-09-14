@@ -261,3 +261,35 @@ $tbx->loadString("[x;encase={,};implode=',']")
 	->field('x', [0,1,2,3,4,5]);
 
 tbxTest('{0},{1},{2},{3},{4},{5}');
+
+
+
+
+$tbx->loadString("[x;first]")
+	->field('x', [1,2,3,4,5]);
+
+tbxTest('1');
+
+
+
+
+$tbx->loadString("[x;last]")
+	->field('x', [1,2,3,4,5]);
+
+tbxTest('5');
+
+
+
+
+$tbx->loadString("[x;json]")
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('[0,1,2,3,4,5]');
+
+
+
+
+$tbx->loadString("[x;serialize]")
+	->field('x', [0,1,2,3,4,5]);
+
+tbxTest('a:6:{i:0;i:0;i:1;i:1;i:2;i:2;i:3;i:3;i:4;i:4;i:5;i:5;}');

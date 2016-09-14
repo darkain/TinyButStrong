@@ -204,6 +204,17 @@ trait tbx_api {
 		}
 
 
+		if (isset($locator->PrmLst['json'])) {
+			$locator->ConvProtect = false;
+			return json_encode($value);
+		}
+
+
+		if (isset($locator->PrmLst['serialize'])) {
+			return serialize($value);
+		}
+
+
 		if (isset($locator->PrmLst['first'])) {
 			while (is_array($value)) $value = reset($value);
 			return $value;
