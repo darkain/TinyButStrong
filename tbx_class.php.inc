@@ -23,8 +23,8 @@ class tbx {
 	use tbx_xml;
 
 
-	// Undocumented (can change at any version)
-	public	$filepath		= '';
+	// Array storing currently loaded TPL files
+	public	$filepath		= [];
 
 	// Private
 	public	$_Mode			= 0;
@@ -1748,17 +1748,20 @@ class tbx {
 
 
 
-	protected function _file(&$data, &$file) {
-		$data = @file_get_contents($file, true);
-
-		if ($data !== false) {
-			$this->filepath = $file;
-		} else {
-			$this->filepath = dirname($this->filepath) . '/' . $file;
-			$data = @file_get_contents($this->filepath, true);
+	protected function _file(&$data, $file) {
+		if (!empty($this->filepath)) {
+			$path = dirname(reset($this->filepath)).DIRECTORY_SEPARATOR.$file;
 		}
 
-		if ($data !== false) return true;
+		if (empty($path)  ||  !file_exists($path)) {
+			$path = stream_resolve_include_path($file);
+		}
+
+		if (!empty($path)) {
+			$this->filepath[] = $path;
+			$data = @file_get_contents($path);
+			if ($data !== false) return true;
+		}
 
 		throw new tbxException('Unable to load template file: '.$file);
 		return false;

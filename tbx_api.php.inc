@@ -42,6 +42,17 @@ trait tbx_api {
 
 
 
+	public function reset() {
+		$this->Source		= '';
+		$this->filepath		= [];
+		$this->_Mode		= 0;
+		$this->_CurrBlock	= '';
+		$this->_P1			= false;
+	}
+
+
+
+
 	public function field($names, $value) {
 		return $this($names, $value);
 	}
@@ -127,8 +138,9 @@ trait tbx_api {
 
 
 	public function load($file) {
+		$this->reset();
 		if (empty($file)) return $this;
-		$this->_file($this->Source, $file);
+		$this->_file($this->Source, $file, true);
 		return $this('var,onload');
 	}
 
@@ -136,6 +148,7 @@ trait tbx_api {
 
 
 	public function loadString($template) {
+		$this->reset();
 		$this->Source = $template;
 		$this('var,onload');
 		return $this;
