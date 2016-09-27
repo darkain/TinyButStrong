@@ -1754,8 +1754,8 @@ class tbx {
 		if ($data !== false) {
 			$this->filepath = $file;
 		} else {
-			$path = dirname($this->filepath) . '/';
-			$data = @file_get_contents($path.$file, true);
+			$this->filepath = dirname($this->filepath) . '/' . $file;
+			$data = @file_get_contents($this->filepath, true);
 		}
 
 		if ($data !== false) return true;
