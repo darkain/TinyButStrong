@@ -48,6 +48,7 @@ trait tbx_api {
 		$this->_Mode		= 0;
 		$this->_CurrBlock	= '';
 		$this->_P1			= false;
+		return $this;
 	}
 
 
