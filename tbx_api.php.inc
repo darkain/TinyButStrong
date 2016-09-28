@@ -219,8 +219,12 @@ trait tbx_api {
 
 
 		if (isset($locator->PrmLst['json'])) {
-			$locator->ConvProtect = false;
-			return json_encode($value);
+			$locator->mode			= TBX_CONVERT_SPECIAL;
+			$locator->ConvJS		= false;
+			$locator->ConvJson		= true;
+			$locator->ConvUrl		= false;
+			$locator->ConvProtect	= false;
+			return $value;
 		}
 
 

@@ -482,7 +482,10 @@ class tbx {
 
 			case TBX_CONVERT_SPECIAL:
 				if ($Loc->ConvJson) {
-					$CurrVal = json_encode(is_object($Src) ? $Src->SrcId : $CurrVal);
+					$CurrVal = json_encode(
+						is_object($Src) ? $Src->SrcId : $CurrVal,
+						JSON_UNESCAPED_SLASHES
+					);
 					break;
 				}
 
