@@ -6,7 +6,7 @@ trait tbx_api {
 	// Public properties
 	public	$Source		= '';
 	public	$ErrCount	= 0;
-	public	$Version	= '10.0.4';
+	public	$Version	= '10.0.5';
 
 
 
