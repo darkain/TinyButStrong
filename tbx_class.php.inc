@@ -443,7 +443,9 @@ class tbx {
 					!ctype_digit($CurrVal)) {
 					$CurrVal = strtotime($CurrVal);
 				}
-				$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
+				if ($CurrVal !== false) {
+					$CurrVal = date($Loc->PrmLst['date'], (int)$CurrVal);
+				}
 			break;
 
 			case TBX_CONVERT_FORMAT:
