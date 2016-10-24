@@ -159,7 +159,7 @@ class tbx {
 					} else {
 						if (!$Loc->noerr()) {
 							throw new tbxLocException($Loc, $Value,
-								'property not found'
+								'"' . $x . '" property not found in object'
 							);
 						}
 						unset($Value);
