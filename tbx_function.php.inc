@@ -61,13 +61,13 @@ trait tbx_function {
 
 
 			case 'htmlentities':
-				$value = htmlentities($value);
+				$value = htmlentities($value, TBX_SPECIAL_CHARS);
 			break;
 
 
 			case 'htmlspecialchars':
 			case 'html':
-				$value = htmlspecialchars($value);
+				$value = htmlspecialchars($value, TBX_SPECIAL_CHARS);
 			break;
 
 

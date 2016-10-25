@@ -105,7 +105,7 @@ trait tbx_safe {
 
 	// Escape HTML special characters
 	function _htmlsafe(&$value, $break=true) {
-		$value = htmlspecialchars($value, ENT_QUOTES);
+		$value = htmlspecialchars($value, TBX_SPECIAL_CHARS);
 		if ($break) $value			= nl2br($value);
 	}
 
