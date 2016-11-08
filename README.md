@@ -1,5 +1,7 @@
 TinyButStrong
 =============
+[![Build Status](https://travis-ci.org/darkain/TinyButXtreme.svg?branch=master)](https://travis-ci.org/darkain/TinyButXtreme)
+
 
 This is a fork of the TinyButStrong library in order to fix
 some issues with it, as well as optimize key areas of the library.
@@ -14,7 +16,7 @@ Example:
 20142000 - will read as 1970y, 08m, 22d @ 03:00:00
 
 This inconsistancy is because the first is read as a ISO date
-format and the latter read as a Unix Timestamp. 
+format and the latter read as a Unix Timestamp.
 
 In this fork, the "guessing" to translate numbers to dates/times
 has been removed. All numerical values for dates are now assumed
