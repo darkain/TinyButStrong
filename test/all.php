@@ -25,7 +25,7 @@ function tbxTest($expected) {
 		echo "EXPECTED:\n'" . htmlspecialchars(is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
 		echo "TEMPLATE:\n'" . htmlspecialchars((string)$tbx) . "'\n\n";
 	}
-	exit;
+	exit(1);
 }
 
 
@@ -39,7 +39,7 @@ function tbxError($exception, $expected) {
 	echo "'" . $expected . "'\n\n";
 	echo "ERROR:\n";
 	echo "'" . $exception->getMessage() . "'\n\n";
-	exit;
+	exit(1);
 }
 
 
