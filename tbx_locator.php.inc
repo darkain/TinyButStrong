@@ -33,7 +33,8 @@ class tbxLocator {
 
 	public function noerr() {
 		return  isset($this->PrmLst['noerr'])
-			||  isset($this->PrmLst['ifempty']);
+			||  isset($this->PrmLst['ifempty'])
+			||  isset($this->PrmLst['magnet']);
 	}
 
 
