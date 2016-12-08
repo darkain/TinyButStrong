@@ -26,9 +26,9 @@ trait tbx_api {
 			$name = trim($name);
 			switch ($name) {
 				case '':		continue;
-				case 'onload':	$this->_mergeOn($this->Source, 'onload');	continue;
-				case 'onshow':	$this->_mergeOn($this->Source, 'onshow');	continue;
-				case 'var':		$this->_mergeAuto($this->Source);			continue;
+				case 'onload':	$this->_mergeOn('onload');			continue;
+				case 'onshow':	$this->_mergeOn('onshow');			continue;
+				case 'var':		$this->_mergeAuto($this->Source);	continue;
 			}
 			$begin = 0;
 			while ($part = $this->_find($this->Source, $name, $begin, '.')) {
@@ -96,12 +96,6 @@ trait tbx_api {
 
 		foreach ($data as $key => $value) {
 			switch (true) {
-				case is_object($value)  &&  !tbx_array($value):
-					throw new tbxException(
-						'merge does not support Object data type for key: ' . $key
-					);
-				break;
-
 				case is_int($value):
 				case is_null($value):
 				case is_float($value):
@@ -138,21 +132,20 @@ trait tbx_api {
 
 
 
-	public function load($file) {
+	public function load($file, $onload=true) {
 		$this->reset();
 		if (empty($file)) return $this;
 		$this->_file($this->Source, $file, true);
-		return $this('var,onload');
+		return $onload ? $this('var,onload') : $this;
 	}
 
 
 
 
-	public function loadString($template) {
+	public function loadString($template, $onload=true) {
 		$this->reset();
 		$this->Source = $template;
-		$this('var,onload');
-		return $this;
+		return $onload ? $this('var,onload') : $this;
 	}
 
 

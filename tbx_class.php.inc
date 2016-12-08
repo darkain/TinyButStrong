@@ -1288,8 +1288,8 @@ class tbx {
 	// Merge automatic fields
 
 		// Then we scann all fields in the model
-		$x = '';
-		$Pos = 0;
+		$x		= '';
+		$Pos	= 0;
 		while ($Loc = $this->_find($Txt, $variable, $Pos, '.')) {
 			if ($Loc->SubNbr==0) $Loc->SubLst[0]=''; // In order to force error message
 
@@ -1535,8 +1535,9 @@ class tbx {
 
 
 	// Merge [onload] or [onshow] fields and blocks
-	function _mergeOn(&$Txt, $Name) {
+	function _mergeOn($Name) {
 
+		$Txt			= &$this->Source;
 		$GrpDisplayed	= [];
 		$GrpExclusive	= [];
 		$P1				= false;
