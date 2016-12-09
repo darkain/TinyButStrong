@@ -18,21 +18,25 @@ trait tbx_api {
 
 
 
-	public function __invoke($names, $value=false) {
+	public function __invoke($names, $value=false, &$source=false) {
 		$start	= 0;
 		$names	= explode(',', $names);
+
+		if ($source === false) {
+			$source = &$this->Source;
+		}
 
 		foreach ($names as $name) {
 			$name = trim($name);
 			switch ($name) {
 				case '':		continue;
-				case 'onload':	$this->_mergeOn('onload');			continue;
-				case 'onshow':	$this->_mergeOn('onshow');			continue;
-				case 'var':		$this->_mergeAuto($this->Source);	continue;
+				case 'onload':	$this->_mergeOn('onload', $source);	continue;
+				case 'onshow':	$this->_mergeOn('onshow', $source);	continue;
+				case 'var':		$this->_mergeAuto($source);			continue;
 			}
 			$begin = 0;
-			while ($part = $this->_find($this->Source, $name, $begin, '.')) {
-				$begin = $this->_replace($this->Source, $part, $value, $start);
+			while ($part = $this->_find($source, $name, $begin, '.')) {
+				$begin = $this->_replace($source, $part, $value, $start);
 			}
 		}
 
@@ -71,18 +75,20 @@ trait tbx_api {
 
 
 
-	public function block($list, $source, $Query='', $QryPrms=false) {
+	public function block($list, $data) {
+		$Query='';		//	deprecated
+		$QryPrms=false;	//	deprecated
 		if (is_string($list)) $list = explode(',',$list);
-		$this->meth_Merge_Block($this->Source, $list, $source, $Query, false, 0, $QryPrms);
+		$this->meth_Merge_Block($this->Source, $list, $data, $Query, false, 0, $QryPrms);
 		return $this;
 	}
 
 
 
 
-	public function repeat($list, $source, $Query='', $QryPrms=false) {
+	public function repeat($list, $data) {
 		$this->_P1 = true;
-		$this->block($list, $source, $Query, $QryPrms);
+		$this->block($list, $data);
 		$this->_P1 = false;
 		return $this;
 	}
@@ -91,8 +97,10 @@ trait tbx_api {
 
 
 	//Custom merger - both field and block supported!
-	public function merge($data) {
+	public function merge($data, $source=false) {
 		if (empty($data)) return $this;
+
+		if ($source === false) $source = $this->Source;
 
 		foreach ($data as $key => $value) {
 			switch (true) {
@@ -131,21 +139,26 @@ trait tbx_api {
 
 
 
+	public function onload(&$source) {
+		return $this('var,onload', false, $source);
+	}
 
-	public function load($file, $onload=true) {
+
+
+	public function load($file) {
 		$this->reset();
 		if (empty($file)) return $this;
 		$this->_file($this->Source, $file, true);
-		return $onload ? $this('var,onload') : $this;
+		return $this->onload($this->Source);
 	}
 
 
 
 
-	public function loadString($template, $onload=true) {
+	public function loadString($template) {
 		$this->reset();
 		$this->Source = $template;
-		return $onload ? $this('var,onload') : $this;
+		return $this->onload($this->Source);
 	}
 
 

@@ -548,11 +548,11 @@ class tbx {
 				if (!empty($Loc->PrmLst['when'])) {
 					if ($this->f_Misc_CheckCondition($Loc->PrmLst['when'])) {
 						$this->_file($CurrVal, $x);
-						$this->_mergeAuto($CurrVal);
+						$this->onload($CurrVal);
 					}
 				} else {
 					$this->_file($CurrVal, $x);
-					$this->_mergeAuto($CurrVal);
+					$this->onload($CurrVal);
 				}
 				$ConvProtect = false;
 			}
@@ -1535,9 +1535,7 @@ class tbx {
 
 
 	// Merge [onload] or [onshow] fields and blocks
-	function _mergeOn($Name) {
-
-		$Txt			= &$this->Source;
+	function _mergeOn($Name, &$Txt) {
 		$GrpDisplayed	= [];
 		$GrpExclusive	= [];
 		$P1				= false;
@@ -1614,7 +1612,7 @@ class tbx {
 		}
 
 		// merge other fields (must have subnames)
-		$this->_mergeAuto($this->Source, $Name);
+		$this->_mergeAuto($Txt, $Name);
 	}
 
 
