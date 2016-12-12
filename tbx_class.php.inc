@@ -1284,38 +1284,38 @@ class tbx {
 
 
 
-	function _mergeAuto(&$Txt, $variable='var') {
+	function _mergeAuto(&$text, $name) {
 	// Merge automatic fields
 
-		// Then we scann all fields in the model
-		$x		= '';
-		$Pos	= 0;
-		while ($Loc = $this->_find($Txt, $variable, $Pos, '.')) {
-			if ($Loc->SubNbr==0) $Loc->SubLst[0]=''; // In order to force error message
+		// Then we scan all fields in the model
+		$value		= '';
+		$position	= 0;
+		while ($locator = $this->_find($text, $name, $position, '.')) {
+			if ($locator->SubNbr==0) $locator->SubLst[0]=''; // In order to force error message
 
-			if ($Loc->SubLst[0]==='') {
-				$Pos = $this->_mergeSpecial($Txt,$Loc);
+			if ($locator->SubLst[0]==='') {
+				$position = $this->_mergeSpecial($text, $locator);
 
-			} elseif ($Loc->SubLst[0][0]==='~') {
-				if ($Loc->noerr()) {
-					$Pos = $this->_replace($Txt,$Loc,$x);
+			} elseif ($locator->SubLst[0][0]==='~') {
+				if ($locator->noerr()) {
+					$position = $this->_replace($text, $locator, $value);
 				} else {
-					throw new tbxLocException($Loc,
+					throw new tbxLocException($locator,
 						'property is neither an object nor an array'
 					);
-					$Pos = $Loc->PosEnd + 1;
+					$position = $locator->PosEnd + 1;
 				}
 
-			} elseif (isset($GLOBALS[$Loc->SubLst[0]])) {
-				$Pos = $this->_replace($Txt, $Loc, $GLOBALS[$Loc->SubLst[0]], 1);
+			} elseif (isset($GLOBALS[$locator->SubLst[0]])) {
+				$position = $this->_replace($text, $locator, $GLOBALS[$locator->SubLst[0]], 1);
 
 			} else {
-				if ($Loc->noerr()) {
-					$Pos = $this->_replace($Txt, $Loc, $x);
+				if ($locator->noerr()) {
+					$position = $this->_replace($text, $locator, $value);
 				} else {
-					$Pos = $Loc->PosEnd + 1;
-					throw new tbxLocException($Loc,
-						"the key '" . $Loc->SubLst[0] . "' does not exist"
+					$position = $locator->PosEnd + 1;
+					throw new tbxLocException($locator,
+						"the key '" . $locator->SubLst[0] . "' does not exist"
 					);
 				}
 			}

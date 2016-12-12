@@ -32,7 +32,6 @@ trait tbx_api {
 				case '':		continue;
 				case 'onload':	$this->_mergeOn('onload', $source);	continue;
 				case 'onshow':	$this->_mergeOn('onshow', $source);	continue;
-				case 'var':		$this->_mergeAuto($source);			continue;
 			}
 			$begin = 0;
 			while ($part = $this->_find($source, $name, $begin, '.')) {
@@ -140,7 +139,7 @@ trait tbx_api {
 
 
 	public function onload(&$source) {
-		return $this('var,onload', false, $source);
+		return $this('onload', false, $source);
 	}
 
 
