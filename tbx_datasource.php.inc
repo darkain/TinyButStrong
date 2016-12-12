@@ -164,12 +164,12 @@ class tbxDatasource {
 							$i = $this->DataAlert('invalid query \''.$Query.'\' because property ObjectRef is not set.');
 						}
 					} else {
-						if (isset($GLOBAL[$Item0])) {
-							$Var = &$GLOBAL[$Item0];
-							$i = 1;
-						} else {
+//						if (isset($GLOBAL[$Item0])) {
+//							$Var = &$GLOBAL[$Item0];
+//							$i = 1;
+//						} else {
 							$i = $this->DataAlert('invalid query \''.$Query.'\' because VarRef item \''.$Item0.'\' is not found.');
-						}
+//						}
 					}
 					// Check sub-items
 					$Empty = false;

@@ -1306,8 +1306,8 @@ class tbx {
 					$position = $locator->PosEnd + 1;
 				}
 
-			} elseif (isset($GLOBALS[$locator->SubLst[0]])) {
-				$position = $this->_replace($text, $locator, $GLOBALS[$locator->SubLst[0]], 1);
+//			} elseif (isset($GLOBALS[$locator->SubLst[0]])) {
+//				$position = $this->_replace($text, $locator, $GLOBALS[$locator->SubLst[0]], 1);
 
 			} else {
 				if ($locator->noerr()) {
