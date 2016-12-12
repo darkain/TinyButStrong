@@ -1327,7 +1327,7 @@ class tbx {
 
 
 
-	// Merge Special Var Fields ([var..*])
+	// Merge Special Fields ([onshow..*])
 	protected function _mergeSpecial(&$Txt,&$Loc) {
 		if (!isset($Loc->SubLst[1])) {
 			$error = 'missing subname.';
