@@ -440,6 +440,7 @@ class tbx {
 				if (!tbx_array($CurrVal)	&&
 					!is_int($CurrVal)		&&
 					!is_float($CurrVal)		&&
+					!is_null($CurrVal)		&&
 					!ctype_digit($CurrVal)) {
 					$CurrVal = strtotime($CurrVal);
 				}
