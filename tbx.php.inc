@@ -15,8 +15,8 @@
 *	TinyButXtreme - Heavily modified fork of TinyButStrong                     *
 *	This TBX library is --NOT-- backwards compatible with the original TBS     *
 *	------------------------                                                   *
-*	Version		: 10.0.5 for PHP 5.4+ and HHVM 3.6+                            *
-*	Date		: 2016-08-19                                                   *
+*	Version		: 10.0.7 for PHP 5.4+ and HHVM 3.6+                            *
+*	Date		: 2017-02-23                                                   *
 *	GitHub		: https://github.com/darkain/TinyButXtreme                     *
 *	Author		: Darkain Multimedia                                           *
 \******************************************************************************/
