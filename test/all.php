@@ -55,3 +55,4 @@ require('magnet.php');
 require('altaform.php');
 require('errors.php');
 require('property.php');
+require('plugin.php');

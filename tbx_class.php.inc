@@ -1,9 +1,12 @@
 <?php
 
 
+//DATA TYPES AND OBJECTS
 require_once('tbx_constants.php.inc');
 require_once('tbx_datasource.php.inc');
 require_once('tbx_locator.php.inc');
+require_once('tbx_plugin.php.inc');
+
 
 //TRAITS (separated out to help organize code)
 require_once('tbx_api.php.inc');
@@ -155,6 +158,10 @@ class tbx {
 
 					} elseif (is_a($Value, 'af_object_array')  &&  $Value->offsetExists($x, false)) {
 						$x = &$Value->$x;
+
+					} elseif (is_a($Value, 'tbx_plugin')) {
+						$x = $Value->tbx_render( array_slice($Loc->SubLst, $i) );
+						$i = $Loc->SubNbr;
 
 					} else {
 						if (!$Loc->noerr()) {
