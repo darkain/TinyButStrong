@@ -7,6 +7,12 @@ trait tbx_safe {
 		$part->ConvStr				= false;
 
 		switch (trim(strtolower($safe))) {
+			case 'javascript':
+				$this->_safe_default($part);
+				$part->ConvProtect	= false;
+			break;
+
+
 			case 'js':
 				$this->_safe_default($part);
 				$part->ConvJS		= true;
