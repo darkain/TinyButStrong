@@ -45,6 +45,13 @@ trait tbx_api {
 
 
 
+	public static function html($html) {
+		return htmlspecialchars($html, TBX_SPECIAL_CHARS);
+	}
+
+
+
+
 	public function reset() {
 		$this->Source		= '';
 		$this->filepath		= [];
