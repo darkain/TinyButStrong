@@ -547,8 +547,19 @@ class tbx {
 			}
 		}
 
-		if (isset($Loc->PrmLst['file'])) {
-			$x = $Loc->PrmLst['file'];
+
+		if (isset($Loc->PrmLst['file']) ||
+			isset($Loc->PrmLst['html']) ||
+			isset($Loc->PrmLst['svg'])) {
+
+			if (isset($Loc->PrmLst['file'])) {
+				$x = $Loc->PrmLst['file'];
+			} else if (isset($Loc->PrmLst['html'])) {
+				$x = $Loc->PrmLst['html'];
+			} else {
+				$x = $Loc->PrmLst['svg'];
+			}
+
 			if ($x===true) $x = $CurrVal;
 			$x = trim(str_replace('[val]', $CurrVal, $x));
 			$CurrVal = '';
@@ -556,15 +567,21 @@ class tbx {
 				if (!empty($Loc->PrmLst['when'])) {
 					if ($this->f_Misc_CheckCondition($Loc->PrmLst['when'])) {
 						$this->_file($CurrVal, $x);
-						$this->onload($CurrVal);
+						if (isset($Loc->PrmLst['file'])) {
+							$this->onload($CurrVal);
+						}
 					}
 				} else {
 					$this->_file($CurrVal, $x);
-					$this->onload($CurrVal);
+					if (isset($Loc->PrmLst['file'])) {
+						$this->onload($CurrVal);
+					}
 				}
 				$ConvProtect = false;
 			}
+
 		}
+
 
 		if (isset($Loc->PrmLst['att'])) {
 			$this->f_Xml_AttFind($Txt, $Loc, true, false);
