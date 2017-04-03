@@ -1779,11 +1779,11 @@ class tbx {
 			$path = dirname(reset($this->filepath)).DIRECTORY_SEPARATOR.$file;
 		}
 
-		if (empty($path)  ||  !file_exists($path)) {
+		if (empty($path)  ||  !is_file($path)) {
 			$path = stream_resolve_include_path($file);
 		}
 
-		if (!empty($path)) {
+		if (!empty($path)  &&  is_file($path)) {
 			$this->filepath[] = $path;
 			$data = @file_get_contents($path);
 			if ($data !== false) return true;
