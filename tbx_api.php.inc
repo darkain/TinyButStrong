@@ -153,10 +153,28 @@ trait tbx_api {
 
 
 	public function load($file) {
+		if (tbx_array($file)) {
+			return $this->loadArray($file);
+		}
+
 		$this->reset();
 		if (empty($file)) return $this;
 		$this->_file($this->Source, $file, true);
 		return $this->onload($this->Source);
+	}
+
+
+
+
+	public function loadArray($list) {
+		if (!is_array($list)) $list = [$list];
+		$template = '';
+		foreach ($file as $item) {
+			$this->load($item);
+			$template .= (string) $this;
+		}
+		$this->Source = $template;
+		return $this;
 	}
 
 
