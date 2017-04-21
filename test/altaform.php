@@ -3,11 +3,11 @@
 //NOTE:	THIS TEST IS ONLY AVAILABLE WHEN CALLED THROUGH ALTAFORM ITSELF
 //		FOR MORE INFO, SEE: https://github.com/darkain/altaform-core
 
-if (!class_exists('af_object_array')) return;
+if (!class_exists('pudlObject')) return;
 
 
 //INITIALIZE OBJECT
-$tbxtest = new af_object_array;
+$tbxtest = new pudlObject;
 
 $tbxtest->_clone([
 	'a'	=> 1,

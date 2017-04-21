@@ -156,7 +156,7 @@ class tbx {
 					} elseif (isset($Value->$x)) {
 						$x = $Value->$x; // useful for overloaded property
 
-					} elseif (is_a($Value, 'af_object_array')  &&  $Value->offsetExists($x, false)) {
+					} elseif (is_a($Value, 'pudlObject')  &&  $Value->offsetExists($x, false)) {
 						$x = &$Value->$x;
 
 					} elseif (is_a($Value, 'tbx_plugin')) {
