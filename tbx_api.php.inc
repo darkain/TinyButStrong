@@ -122,6 +122,7 @@ trait tbx_api {
 				break;
 
 				case is_a($value, 'pudlResult'):
+				case is_a($value, 'pudlCollection'):
 				case !is_object($value)  &&  isset($value[0]):
 				case empty($value):
 					$this->block($key, $value);

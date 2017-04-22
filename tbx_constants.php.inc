@@ -47,6 +47,7 @@ define('TBX_SPECIAL_CHARS',		ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE);
 //SUPPORT FOR ARRAYACCESS INTERFACE
 function tbx_array($item) {
 	if (is_array($item)) return true;
+	if ($item instanceof pudlCollection) return false;
 	return ($item instanceof ArrayAccess);
 }
 
