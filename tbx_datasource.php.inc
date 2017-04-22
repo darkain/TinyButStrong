@@ -343,20 +343,6 @@ class tbxDatasource {
 				}
 			break;
 
-			case TBX_DS_FUNCTION:
-				$FctFetch = $this->FctFetch;
-				$this->CurrRec = $FctFetch($this->RecSet,$this->RecNum+1);
-			break;
-
-			case TBX_DS_OBJECTREF:
-				$this->FctPrm[0] = &$this->RecSet; $this->FctPrm[1] = $this->RecNum+1;
-				$this->CurrRec = call_user_func_array($this->FctFetch,$this->FctPrm);
-			break;
-
-			case TBX_DS_OBJECT:
-				$this->CurrRec = $this->SrcId->tbxdb_fetch($this->RecSet,$this->RecNum+1);
-			break;
-
 			case TBX_DS_ITERATOR:
 				if ($this->RecSet->valid()) {
 					$this->CurrRec	= $this->RecSet->current();
@@ -386,11 +372,8 @@ class tbxDatasource {
 		$this->OnDataPrm	= false;
 		if ($this->RecSaved) return;
 
-		switch ($this->Type) {
-			case TBX_DS_PUDL:		$this->RecSet->free(); break;
-			case TBX_DS_FUNCTION:	$FctClose=$this->FctClose; $FctClose($this->RecSet); break;
-			case TBX_DS_OBJECTREF:	call_user_func_array($this->FctClose, [&$this->RecSet]); break;
-			case TBX_DS_OBJECT:		$this->SrcId->tbxdb_close($this->RecSet); break;
+		if ($this->Type === TBX_DS_PUDL) {
+			$this->RecSet->free();
 		}
 
 		if ($this->RecSaving) {
