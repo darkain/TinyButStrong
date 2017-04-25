@@ -170,7 +170,7 @@ trait tbx_api {
 	public function loadArray($list) {
 		if (!is_array($list)) $list = [$list];
 		$template = '';
-		foreach ($file as $item) {
+		foreach ($list as $item) {
 			$this->load($item);
 			$template .= (string) $this;
 		}
