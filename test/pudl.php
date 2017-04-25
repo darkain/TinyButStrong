@@ -3,13 +3,18 @@
 //NOTE:	THIS TEST IS ONLY AVAILABLE WHEN CALLED THROUGH ALTAFORM ITSELF
 //		FOR MORE INFO, SEE: https://github.com/darkain/altaform-core
 
+
+if (file_exists('../../_pudl/pudlObject.php')) {
+	require_once('../../_pudl/pudlObject.php');
+}
 if (!class_exists('pudlObject')) return;
+
 
 
 //INITIALIZE OBJECT
 $tbxtest = new pudlObject;
 
-$tbxtest->_clone([
+$tbxtest->copy([
 	'a'	=> 1,
 	'b'	=> 2.5,
 	'c'	=> INF,
