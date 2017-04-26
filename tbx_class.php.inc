@@ -163,6 +163,9 @@ class tbx {
 						$x = $Value->tbx_render( array_slice($Loc->SubLst, $i) );
 						$i = $Loc->SubNbr;
 
+					} elseif (defined(get_class($Value).'::'.$x)) {
+						$x = (constant(get_class($Value).'::'.$x));
+
 					} else {
 						if (!$Loc->noerr()) {
 							throw new tbxLocException($Loc, $Value,
