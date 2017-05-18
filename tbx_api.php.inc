@@ -7,6 +7,7 @@ trait tbx_api {
 	public	$Source		= '';
 	public	$ErrCount	= 0;
 	public	$Version	= '10.0.8';
+	private	$_cache		= '';
 
 
 
@@ -15,9 +16,6 @@ trait tbx_api {
 		return $this->Source;
 	}
 
-//TODO:	ADD A CACHE($X) FUNCTION
-//		TRUE === STORE CURRENT $SOURCE AS CACHE
-//		NOTHING === LOAD CACHE INTO CURRENT $SOURCE
 
 
 	public function __invoke($names, $value=false, &$source=false) {
@@ -195,7 +193,7 @@ trait tbx_api {
 	public function render($filename=false) {
 		if ($filename) $this->load($filename);
 		$this('onshow');
-		if (!$this->_Mode) echo $this->Source;
+		if (!$this->_Mode) echo $this;
 		return $this;
 	}
 
@@ -239,6 +237,21 @@ trait tbx_api {
 
 	public function fileToString($filename) {
 		return $this->load($filename)->renderToString();
+	}
+
+
+
+
+	public function cache($store=false) {
+		if ($store) {
+			$this->_cache = $this->Source;
+
+		} else {
+			$this->reset();
+			$this->Source = $this->_cache;
+		}
+
+		return $this;
 	}
 
 
