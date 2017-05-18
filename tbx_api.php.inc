@@ -15,7 +15,9 @@ trait tbx_api {
 		return $this->Source;
 	}
 
-
+//TODO:	ADD A CACHE($X) FUNCTION
+//		TRUE === STORE CURRENT $SOURCE AS CACHE
+//		NOTHING === LOAD CACHE INTO CURRENT $SOURCE
 
 
 	public function __invoke($names, $value=false, &$source=false) {
