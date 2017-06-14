@@ -289,6 +289,13 @@ class tbxDatasource {
 						reset($this->RecSet);
 						$this->RecKey = key($this->RecSet);
 						$this->CurrRec = &$this->RecSet[$this->RecKey];
+					} else if ($this->RecSet instanceof ArrayAccess) {
+						$this->CurrRec = $this->RecKey = NULL;
+						foreach ($this->RecSet as $key => $val) {
+							$this->RecKey	= $key;
+							$this->CurrRec	= $val;
+							break;
+						}
 					} else {
 						$this->CurrRec = reset($this->RecSet);
 						$this->RecKey = key($this->RecSet);
@@ -299,6 +306,14 @@ class tbxDatasource {
 						next($this->RecSet);
 						$this->RecKey = key($this->RecSet);
 						$this->CurrRec = &$this->RecSet[$this->RecKey];
+					} else if ($this->RecSet instanceof ArrayAccess) {
+						$this->CurrRec = $this->RecKey = NULL;
+						$loop = 0;
+						foreach ($this->RecSet as $key => $val) {
+							$this->RecKey	= $key;
+							$this->CurrRec	= $val;
+							if ($loop++ === $this->RecNum) break;
+						}
 					} else {
 						$this->CurrRec = next($this->RecSet);
 						$this->RecKey = key($this->RecSet);
