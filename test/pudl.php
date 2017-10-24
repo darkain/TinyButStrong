@@ -14,7 +14,7 @@ if (!class_exists('pudlObject')) return;
 //INITIALIZE OBJECT
 $tbxtest = new pudlObject;
 
-$tbxtest->copy([
+$tbxtest->merge([
 	'a'	=> 1,
 	'b'	=> 2.5,
 	'c'	=> INF,
