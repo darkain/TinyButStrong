@@ -156,10 +156,10 @@ class tbx {
 					} elseif (isset($Value->$x)) {
 						$x = $Value->$x; // useful for overloaded property
 
-					} elseif (is_a($Value, 'pudlObject')  &&  $Value->offsetExists($x, false)) {
+					} elseif ($Value instanceof pudlObject  &&  $Value->offsetExists($x, false)) {
 						$x = &$Value->$x;
 
-					} elseif (is_a($Value, 'tbx_plugin')) {
+					} elseif ($Value instanceof tbx_plugin) {
 						$x = $Value->tbx_render( array_slice($Loc->SubLst, $i) );
 						$i = $Loc->SubNbr;
 

@@ -67,7 +67,7 @@ class tbxDatasource {
 				default:		$FctInfo = $SrcId; $FctCat = 'k';
 			}
 
-		} else if (is_a($SrcId, 'pudlResult')) {
+		} else if ($SrcId instanceof pudlResult) {
 			$this->Type		= TBX_DS_PUDL;
 
 		} elseif ($SrcId instanceof Iterator) {

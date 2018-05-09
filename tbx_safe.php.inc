@@ -120,7 +120,7 @@ trait tbx_safe {
 
 	// Convert a value to a string
 	static function _string($value) {
-		if (is_a($value, 'DateTime')) return $value->format('c');
+		if ($value instanceof DateTime) return $value->format('c');
 		return @(string)$value;
 	}
 
