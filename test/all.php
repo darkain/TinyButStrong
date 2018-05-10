@@ -45,14 +45,14 @@ function tbxError($exception, $expected) {
 
 
 
-require('field-item.php');
-require('field-array.php');
-require('block-basic.php');
-require('date.php');
-require('format.php');
-require('convert.php');
-require('magnet.php');
-require('pudl.php');
-require('errors.php');
-require('property.php');
-require('plugin.php');
+require(__DIR__ . '/field-item.php');
+require(__DIR__ . '/field-array.php');
+require(__DIR__ . '/block-basic.php');
+require(__DIR__ . '/date.php');
+require(__DIR__ . '/format.php');
+require(__DIR__ . '/convert.php');
+require(__DIR__ . '/magnet.php');
+require(__DIR__ . '/pudl.php');
+require(__DIR__ . '/errors.php');
+require(__DIR__ . '/property.php');
+require(__DIR__ . '/plugin.php');
