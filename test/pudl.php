@@ -4,8 +4,8 @@
 //		FOR MORE INFO, SEE: https://github.com/darkain/altaform-core
 
 
-if (file_exists('../../_pudl/pudlObject.php')) {
-	require_once('../../_pudl/pudlObject.php');
+if (file_exists(__DIR__.'/../../_pudl/pudlObject.php')) {
+	require_once(__DIR__.'/../../_pudl/pudlObject.php');
 }
 if (!class_exists('pudlObject')) return;
 
