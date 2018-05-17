@@ -314,13 +314,11 @@ trait tbx_xml {
 				if ($p===false) return false;
 				if (substr($Txt,$p,$xl)!==$x) continue; // For PHP 4 only
 				$z = substr($Txt,$p+$xl,1);
-			} while ( ($z!==' ') && ($z!=="\r") && ($z!=="\n") && ($z!=='>') && ($z!=='/') && ($Tag!=='/') && ($Tag!=='') );
+			} while (!in_array($z, TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
 		} else {
 			do {
-				if ($Forward) $p = stripos($Txt,$x,$p+1);  else $p = strripos(substr($Txt,0,$p+1),$x);
-				if ($p===false) return false;
 				$z = substr($Txt,$p+$xl,1);
-			} while ( ($z!==' ') && ($z!=="\r") && ($z!=="\n") && ($z!=='>') && ($z!=='/') && ($Tag!=='/') && ($Tag!=='') );
+			} while (!in_array($z, TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
 		}
 
 		return $p;
@@ -388,7 +386,7 @@ trait tbx_xml {
 				if ($TagOk) {
 					// Check the next char
 					$x = $Txt[$PosX];
-					if (($x===' ') || ($x==="\r") || ($x==="\n") || ($x==='>') || ($x==='/') || ($Tag==='/') || ($Tag==='')) {
+					if (in_array($x, TBX_TAG_NAME_END, true) || in_array($Tag, ['/',''], true)) {
 						// Check the encapsulation count
 						if ($LevelStop===false) { // No encapsulation check
 							if ($TagIsOpening!==$Opening) $TagOk = false;

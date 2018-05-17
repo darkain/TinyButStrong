@@ -512,8 +512,8 @@ class tbx {
 
 				if ($Loc->ConvJS) {
 					$CurrVal = str_replace(
-						["\n","\r","\t"],
-						['\n','\r','\t'],
+						["\t", "\n", "\f", "\r"],
+						['\t', '\n', '\f', '\r'],
 						addslashes($CurrVal)
 					);
 				}

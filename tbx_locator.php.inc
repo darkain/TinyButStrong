@@ -78,7 +78,7 @@ class tbxLocator {
 
 					// Analyzing parameters
 					$CheckChr = false;
-					if (($Chr===' ') || ($Chr==="\r") || ($Chr==="\n")) {
+					if (in_array($Chr, TBX_WHITE_SPACE, true)) {
 						if ($Status===1) {
 							if ($SubName && ($XmlTag===false)) {
 								// Accept spaces in TBX subname.
