@@ -42,8 +42,8 @@ define('TBX_MAGNET_NBSP',		9);
 
 //CHARACTERS FOR (X)HTML TAGS
 //Reference: https://infra.spec.whatwg.org/#ascii-whitespace
-define('TBX_WHITE_SPACE',		["\t", "\n", "\f", "\r", ' ']);
-define('TBX_TAG_NAME_END',		["\t", "\n", "\f", "\r", ' ', '>']);
+$TBX_WHITE_SPACE				=	["\t", "\n", "\f", "\r", ' '];
+$TBX_TAG_NAME_END				=	["\t", "\n", "\f", "\r", ' ', '>'];
 
 
 //HTML SPECIAL CHARS CONVERSION

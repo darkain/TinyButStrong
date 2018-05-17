@@ -301,6 +301,8 @@ trait tbx_xml {
 	 * Encapsulation levels are not featured yet.
 	 */
 	function f_Xml_FindTagStart(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $Case=true) {
+		global $TBX_TAG_NAME_END;
+
 		if ($Txt==='') return false;
 
 		$x = '<'.(($Opening) ? '' : '/').$Tag;
@@ -314,11 +316,11 @@ trait tbx_xml {
 				if ($p===false) return false;
 				if (substr($Txt,$p,$xl)!==$x) continue; // For PHP 4 only
 				$z = substr($Txt,$p+$xl,1);
-			} while (!in_array($z, TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
+			} while (!in_array($z, $TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
 		} else {
 			do {
 				$z = substr($Txt,$p+$xl,1);
-			} while (!in_array($z, TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
+			} while (!in_array($z, $TBX_TAG_NAME_END, true) && !in_array($Tag, ['/',''], true));
 		}
 
 		return $p;
@@ -336,6 +338,8 @@ trait tbx_xml {
 	 * $Opening is used only when $LevelStop=false.
 	 */
 	function f_Xml_FindTag(&$Txt, $Tag, $Opening, $PosBeg, $Forward, $LevelStop, $WithPrm, $WithPos=false) {
+		global $TBX_TAG_NAME_END;
+
 		if ($Tag==='_') { // New line
 			$p = $this->f_Xml_FindNewLine($Txt,$PosBeg,$Forward,($LevelStop!==0));
 			$Loc = new tbxLocator($this);
@@ -386,7 +390,7 @@ trait tbx_xml {
 				if ($TagOk) {
 					// Check the next char
 					$x = $Txt[$PosX];
-					if (in_array($x, TBX_TAG_NAME_END, true) || in_array($Tag, ['/',''], true)) {
+					if (in_array($x, $TBX_TAG_NAME_END, true) || in_array($Tag, ['/',''], true)) {
 						// Check the encapsulation count
 						if ($LevelStop===false) { // No encapsulation check
 							if ($TagIsOpening!==$Opening) $TagOk = false;
