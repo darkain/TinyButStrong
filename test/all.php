@@ -56,3 +56,6 @@ require(__DIR__ . '/pudl.php');
 require(__DIR__ . '/errors.php');
 require(__DIR__ . '/property.php');
 require(__DIR__ . '/plugin.php');
+
+//TBS RELATED BUGS FIXED IN TBX
+require(__DIR__ . '/tbs-10.php');
