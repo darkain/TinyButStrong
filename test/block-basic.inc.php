@@ -58,7 +58,7 @@ $tbx->loadString('<elem>[x.data;block=elem]</elem>')
 		['data'=>PHP_INT_MIN],
 	]);
 
-tbxTest('<elem>0</elem><elem>1</elem><elem>2</elem><elem>3</elem><elem>-1</elem><elem>-2</elem><elem>-3</elem><elem>9223372036854775807</elem><elem>-9223372036854775808</elem>');
+tbxTest('<elem>0</elem><elem>1</elem><elem>2</elem><elem>3</elem><elem>-1</elem><elem>-2</elem><elem>-3</elem><elem>'.PHP_INT_MAX.'</elem><elem>'.PHP_INT_MIN.'</elem>');
 
 
 

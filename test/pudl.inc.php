@@ -86,10 +86,10 @@ tbxTest('');
 
 
 $tbx->loadString('[x.j]')->field('x', $tbxtest);
-tbxTest('9223372036854775807');
+tbxTest( (string) PHP_INT_MAX );
 
 
 
 
 $tbx->loadString('[x.k]')->field('x', $tbxtest);
-tbxTest('-9223372036854775808');
+tbxTest( (string) PHP_INT_MIN );

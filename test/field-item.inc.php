@@ -1,26 +1,26 @@
 <?php
 
 
-$tbx->loadString('[x]')
+$tbx->loadString('-[x]+')
 	->field('x', false);
 
-tbxTest('');
+tbxTest('-+');
 
 
 
 
-$tbx->loadString('[x]')
+$tbx->loadString('+[x]-')
 	->field('x', null);
 
-tbxTest('');
+tbxTest('+-');
 
 
 
 
-$tbx->loadString('[x]')
+$tbx->loadString('/[x]*')
 	->field('x', '');
 
-tbxTest('');
+tbxTest('/*');
 
 
 
@@ -60,7 +60,7 @@ tbxTest('a-1b');
 $tbx->loadString('a[x]b')
 	->field('x', PHP_INT_MAX);
 
-tbxTest('a9223372036854775807b');
+tbxTest('a'.PHP_INT_MAX.'b');
 
 
 
@@ -68,7 +68,7 @@ tbxTest('a9223372036854775807b');
 $tbx->loadString('a[x]b')
 	->field('x', PHP_INT_MIN);
 
-tbxTest('a-9223372036854775808b');
+tbxTest('a'.PHP_INT_MIN.'b');
 
 
 

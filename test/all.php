@@ -45,17 +45,9 @@ function tbxError($exception, $expected) {
 
 
 
-require(__DIR__ . '/field-item.php');
-require(__DIR__ . '/field-array.php');
-require(__DIR__ . '/block-basic.php');
-require(__DIR__ . '/date.php');
-require(__DIR__ . '/format.php');
-require(__DIR__ . '/convert.php');
-require(__DIR__ . '/magnet.php');
-require(__DIR__ . '/pudl.php');
-require(__DIR__ . '/errors.php');
-require(__DIR__ . '/property.php');
-require(__DIR__ . '/plugin.php');
-
-//TBS RELATED BUGS FIXED IN TBX
-require(__DIR__ . '/tbs-10.php');
+//RUN ALL UNIT TESTS
+$list = scandir(__DIR__);
+foreach ($list as $item) {
+	if (strtolower(substr($item, -8)) !== '.inc.php') continue;
+	require_once(__DIR__ . '/' . $item);
+}
