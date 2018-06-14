@@ -21,7 +21,7 @@ date of 2014-04-16, whereas the Unix Timestamp of 20142000 will be read as
 1970-08-22 @ 03:00:00. Within TBX, both of these are handled as the latter case,
 as no assumptions are made about intended usage of strictly numerical values.
 From there, development continued to simplify the API, add performance
-optimizations, remove unused code features, and organizing the code base.
+optimizations, remove unused code features, and organize the code base.
 
 
 
@@ -29,7 +29,7 @@ optimizations, remove unused code features, and organizing the code base.
 ## Features Removed
 
 * PHP 5.4 is now the minimum version. All support for previous PHP versions
-removed.
+removed. PHP 7.x and HHVM are fully supported.
 * Plugin support entirely removed.
 * Microsoft Office support entirely removed.
 * Most Data Sources removed.
