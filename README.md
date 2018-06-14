@@ -5,7 +5,7 @@ TinyButXtreme
 
 
 
-TinyButXtreme (TBX) us a fork of
+TinyButXtreme (TBX) is a fork of
 [TinyButStrong](https://github.com/Skrol29/tinybutstrong) (TBS) with countless
 changes which make it incompatible with the original library. Documented below
 are the major changes that have been made, but know that this is not a complete
