@@ -603,7 +603,7 @@ class tbx {
 			if ($Loc->PrmLst['placeholder'] === true) {
 				if (empty($CurrVal)) {
 					$CurrVal = '';
-				} else if (is_numeric($CurrVal)  &&  ((float)$CurrVal) === 0) {
+				} else if (is_numeric($CurrVal)  &&  ((float)$CurrVal) === 0.0) {
 					$CurrVal = '';
 				}
 

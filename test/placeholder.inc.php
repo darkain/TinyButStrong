@@ -77,3 +77,11 @@ $tbx->loadString("a[x.item;placeholder='1']b")
 	->field('x', ['item' => (float)1.0]);
 
 tbxTest('ab');
+
+
+
+
+$tbx->loadString("a[x.item;sprintf=%0.2f;placeholder]b")
+	->field('x', ['item' => 0]);
+
+tbxTest('ab');
