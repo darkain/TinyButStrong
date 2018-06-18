@@ -251,6 +251,10 @@ class tbx {
 					$Loc->ConvProtect	= false;
 				break;
 
+				case isset($Loc->PrmLst['placeholder']):
+					$Loc->placeholder	= false;
+				break;
+
 				default:
 					// Analyze parameter 'strconv'
 					if (isset($Loc->PrmLst['strconv'])) {
@@ -593,6 +597,21 @@ class tbx {
 				$Loc->PrmLst['magnet'] = '#';
 			}
 		}
+
+
+		if (isset($Loc->PrmLst['placeholder'])) {
+			if ($Loc->PrmLst['placeholder'] === true) {
+				if (empty($CurrVal)) {
+					$CurrVal = '';
+				} else if (is_numeric($CurrVal)  &&  ((float)$CurrVal) === 0) {
+					$CurrVal = '';
+				}
+
+			} else if ($Loc->PrmLst['placeholder'] === $CurrVal) {
+				$CurrVal = '';
+			}
+		}
+
 
 		// Case when it's an empty string
 		if ($CurrVal === ''  ||  $CurrVal === false  ||  is_null($CurrVal)) {
