@@ -257,6 +257,16 @@ trait tbx_api {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// GET THE LOCAL PATH OF THE TBX LIBRARY
+	////////////////////////////////////////////////////////////////////////////
+	public static function dir() {
+		return __DIR__;
+	}
+
+
+
+
 	//INHERIT THIS FUNCTION TO WRITE YOUR OWN ARRAY PARSER
 	//REMEMBER TO CALL UP TO THIS CLASS TO HANDLE DEFAULT PROCESSING TOO
 	protected function tbxArray($locator, $value) {
