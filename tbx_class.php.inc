@@ -2,18 +2,18 @@
 
 
 //DATA TYPES AND OBJECTS
-require_once(__DIR__.'/tbx_constants.php.inc');
-require_once(__DIR__.'/tbx_datasource.php.inc');
-require_once(__DIR__.'/tbx_locator.php.inc');
-require_once(__DIR__.'/tbx_plugin.php.inc');
+require_once(tbx_file_owner(__DIR__.'/tbx_constants.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_datasource.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_locator.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_plugin.php.inc'));
 
 
 //TRAITS (separated out to help organize code)
-require_once(__DIR__.'/tbx_api.php.inc');
-require_once(__DIR__.'/tbx_function.php.inc');
-require_once(__DIR__.'/tbx_interface.php.inc');
-require_once(__DIR__.'/tbx_safe.php.inc');
-require_once(__DIR__.'/tbx_xml.php.inc');
+require_once(tbx_file_owner(__DIR__.'/tbx_api.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_function.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_interface.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_safe.php.inc'));
+require_once(tbx_file_owner(__DIR__.'/tbx_xml.php.inc'));
 
 
 
