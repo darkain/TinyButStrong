@@ -169,7 +169,7 @@ class myAwesomeClass extends tbx {
 ```
 
 Complete list of supported functions:
-https://github.com/darkain/TinyButXtreme/blob/master/tbx_function.php.inc
+https://github.com/darkain/TinyButXtreme/blob/master/tbx_function.inc.php
 
 PHP functions supported
 * [addslashes](http://php.net/manual/en/function.addslashes.php)

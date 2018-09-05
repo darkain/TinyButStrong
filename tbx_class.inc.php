@@ -2,18 +2,18 @@
 
 
 //DATA TYPES AND OBJECTS
-require_once(is_owner(__DIR__.'/tbx_constants.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_datasource.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_locator.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_plugin.php.inc'));
+require_once(is_owner(__DIR__.'/tbx_constants.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_datasource.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_locator.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_plugin.inc.php'));
 
 
 //TRAITS (separated out to help organize code)
-require_once(is_owner(__DIR__.'/tbx_api.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_function.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_interface.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_safe.php.inc'));
-require_once(is_owner(__DIR__.'/tbx_xml.php.inc'));
+require_once(is_owner(__DIR__.'/tbx_api.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_function.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_interface.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_safe.inc.php'));
+require_once(is_owner(__DIR__.'/tbx_xml.inc.php'));
 
 
 
@@ -51,7 +51,7 @@ class tbx {
 		do {
 			// Search for the opening char
 			if ($Pos>$PosMax) return false;
-			$Pos		= strpos($Txt, $Start, $Pos);
+			$Pos		= strpos($Txt, $Start, (int)$Pos);
 
 			// If found => next chars are analyzed
 			if ($Pos===false) return false;
@@ -710,7 +710,7 @@ class tbx {
 
 				case TBX_MAGNET_ATTADD:
 					$Loc->Enlarged	= true;
-					if (substr($Txt,$Loc->PosBeg-1,1)==' ') $Loc->PosBeg--;
+					if (substr($Txt,$Loc->PosBeg-1,1)===' ') $Loc->PosBeg--;
 				break;
 			}
 			$NewEnd = $Loc->PosBeg; // Useful when mtype='m+m'
@@ -826,7 +826,7 @@ class tbx {
 
 
 
-	function meth_Locator_FindBlockLst(&$Txt,$BlockName,$Pos,$SpePrm) {
+	function meth_Locator_FindBlockLst(&$Txt, $BlockName, $Pos=0) {
 	// Return a locator object covering all block definitions, even if there is no block definition found.
 
 		$LocR = new tbxLocator($this);
@@ -856,7 +856,17 @@ class tbx {
 			if ($BlockName==='') {
 				$Loc = false;
 			} else {
-				$Loc = $this->meth_Locator_FindBlockNext($Txt,$BlockName,$Pos,'.',2,$LocR->P1,$LocR->FieldOutside);
+				$Loc = $this->meth_Locator_FindBlockNext(
+					$Txt,
+					$BlockName,
+					$Pos,
+					'.'
+					,
+					2
+					,
+					$LocR->P1
+					,$LocR->FieldOutside
+				);
 			}
 
 			if ($Loc===false) {
@@ -865,13 +875,22 @@ class tbx {
 					$Parent = &$ParentLst[$Pid];
 					$Src = $Txt;
 					$Txt = &$Parent->Txt;
+
 					if ($LocR->BlockFound) {
 						// Redefine the Header block
-						$Parent->Src = substr($Src,0,$LocR->PosBeg);
+						$Parent->Src = substr($Src, 0, (int)$LocR->PosBeg);
+
 						// Add a Footer block
-						$BDef = &$LocR->SectionNewBDef($BlockName, substr($Src,$LocR->PosEnd+1), $Parent->Prm, true);
+						$BDef = &$LocR->SectionNewBDef(
+							$BlockName,
+							substr($Src, $LocR->PosEnd+1),
+							$Parent->Prm,
+							true
+						);
+
 						$LocR->SectionAddGrp($BlockName, $BDef, 'F', $Parent->Fld, 'parentgrp');
 					}
+
 					// Now go down to previous level
 					$Pos = $Parent->Pos;
 					$LocR->PosBeg = $Parent->Beg;
@@ -898,7 +917,9 @@ class tbx {
 				}
 
 				// Merge block parameters
-				if (count($Loc->PrmLst)>0) $LocR->PrmLst = array_merge($LocR->PrmLst,$Loc->PrmLst);
+				if (count($Loc->PrmLst)>0) {
+					$LocR->PrmLst = array_merge($LocR->PrmLst,$Loc->PrmLst);
+				}
 
 				// Force dynamic parameter to be cachable
 				if ($Loc->PosDefBeg>=0) {
@@ -909,11 +930,18 @@ class tbx {
 							$n++;
 							if ($n==1) {
 								$len = $Loc->PosDefEnd - $Loc->PosDefBeg + 1;
-								$x = substr($Loc->BlockSrc,$Loc->PosDefBeg,$len);
+								$x = substr($Loc->BlockSrc, $Loc->PosDefBeg, $len);
 							}
 							$x = str_replace($Loc->PrmLst[$dp],'',$x);
 						}
-						if ($n>0) $Loc->BlockSrc = substr_replace($Loc->BlockSrc,$x,$Loc->PosDefBeg,$len);
+						if ($n > 0) {
+							$Loc->BlockSrc = substr_replace(
+								$Loc->BlockSrc,
+								$x,
+								$Loc->PosDefBeg,
+								$len
+							);
+						}
 					}
 				}
 				// Save the block and cache its tags
@@ -923,8 +951,6 @@ class tbx {
 				// Add the text in the list of blocks
 				if (isset($Loc->PrmLst['nodata'])) { // Nodata section
 					$LocR->NoData = &$BDef;
-				} elseif (($SpePrm!==false) && isset($Loc->PrmLst[$SpePrm])) { // Special section (used for navigation bar)
-					$LocR->Special = &$BDef;
 				} elseif (isset($Loc->PrmLst['when'])) {
 					if ($LocR->WhenFound===false) {
 						$LocR->WhenFound = true;
@@ -1028,7 +1054,7 @@ class tbx {
 
 
 
-	function meth_Merge_Block(&$Txt,$BlockLst,&$SrcId,&$Query,$SpePrm,$SpeRecNum,$QryPrms=false) {
+	function meth_Merge_Block(&$Txt, $BlockLst, &$SrcId) {
 
 		$BlockSave = $this->_CurrBlock;
 		$this->_CurrBlock = $BlockLst;
@@ -1060,7 +1086,7 @@ class tbx {
 			}
 
 			// Search the block
-			$LocR = $this->meth_Locator_FindBlockLst($Txt,$this->_CurrBlock,0,$SpePrm);
+			$LocR = $this->meth_Locator_FindBlockLst($Txt, $this->_CurrBlock);
 
 			if ($LocR->BlockFound) {
 
@@ -1107,13 +1133,13 @@ class tbx {
 					// Special case: return data without any block to merge
 					$QueryOk = false;
 					if ($ReturnData && (!$Src->RecSaved)) {
-						if ($Src->DataOpen($QueryZ,$QryPrms)) {
+						if ($Src->DataOpen($QueryZ)) {
 							do {$Src->DataFetch();} while ($Src->CurrRec!==false);
 							$Src->DataClose();
 						}
 					}
 				}	else {
-					$QueryOk = $Src->DataOpen($QueryZ,$QryPrms);
+					$QueryOk = $Src->DataOpen($QueryZ);
 					if (!$QueryOk) {
 						if ($WasP1) {	$WasP1 = false;} else {$LocR->FieldOutside = false;} // prevent from infinit loop
 					}
@@ -1538,7 +1564,7 @@ class tbx {
 				} elseif (is_null($data) || ($data===false)) {
 					$data = [];
 				}
-				$this->meth_Merge_Block($Txt, $name, $data, $query, false, 0, false);
+				$this->meth_Merge_Block($Txt, $name, $data, $query);
 			}
 		}
 

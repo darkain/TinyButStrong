@@ -23,11 +23,12 @@
 
 
 if (!function_exists('is_owner')) {
+	/** @suppress PhanRedefineFunction */
 	function is_owner($path) { return $path; }
 }
 
 
-require_once(is_owner(__DIR__.'/tbx_exception.php.inc'));
+require_once(is_owner(__DIR__.'/tbx_exception.inc.php'));
 
 
 
@@ -40,4 +41,4 @@ if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
 
 
 
-require_once(is_owner(__DIR__.'/tbx_class.php.inc'));
+require_once(is_owner(__DIR__.'/tbx_class.inc.php'));

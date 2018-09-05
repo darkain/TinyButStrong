@@ -82,10 +82,8 @@ trait tbx_api {
 
 
 	public function block($list, $data) {
-		$Query='';		//	deprecated
-		$QryPrms=false;	//	deprecated
 		if (is_string($list)) $list = explode(',',$list);
-		$this->meth_Merge_Block($this->Source, $list, $data, $Query, false, 0, $QryPrms);
+		$this->meth_Merge_Block($this->Source, $list, $data);
 		return $this;
 	}
 
