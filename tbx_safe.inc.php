@@ -64,12 +64,6 @@ trait tbx_safe {
 			break;
 
 
-			//THIS IS DEPRECATED
-			case 'phone':
-				$part->ConvPhone	= true;
-			break;
-
-
 			//HANDLED BY DEFAULT OPTION ABOVE
 			case 'no':
 			case 'none':

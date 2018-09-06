@@ -89,18 +89,21 @@ trait tbx_xml {
 			}
 		}
 
-		if ($MoveLocLst) return $this->f_Xml_AttMove($Txt,$Loc,$AttDelim,$MoveLocLst);
-
-		return true;
+		return ($MoveLocLst)
+			? $this->f_Xml_AttMove($Txt, $Loc, $AttDelim)
+			: true;
 	}
 
 
 
 
-	function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim=false, &$MoveLocLst) {
+	function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim) {
 
 		if ($AttDelim===false) $AttDelim = $Loc->AttDelimChr;
 		if ($AttDelim===false) $AttDelim = '"';
+
+		$Ins1 = '';
+		$Ins2 = '';
 
 		$DelPos = $Loc->PosBeg;
 		$DelLen = $Loc->PosEnd - $Loc->PosBeg + 1;
@@ -159,16 +162,6 @@ trait tbx_xml {
 		$Loc->PosBeg = $PosBeg;
 		$Loc->PosEnd = $PosEnd;
 		$Loc->AttBegM = ($Txt[$Loc->AttBeg-1]===' ') ? $Loc->AttBeg-1 : $Loc->AttBeg; // for magnet=#
-
-		// for CacheField
-		if (tbx_array($MoveLocLst)) {
-			$Loc->InsPos = $InsPos;
-			$Loc->InsLen = $InsLen;
-			$Loc->DelPos = $DelPos;
-			if ($Loc->InsPos < $Loc->DelPos) $Loc->DelPos += $InsLen;
-			$Loc->DelLen = $DelLen;
-			$Loc->Moving($MoveLocLst);
-		}
 
 		return true;
 	}

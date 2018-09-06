@@ -1,27 +1,41 @@
 <?php
 
 class tbxLocator {
-	private $tbx;
-	public $PosBeg		= false;
-	public $PosEnd		= false;
-	public $Enlarged	= false;
-	public $FullName	= false;
-	public $SubName		= '';
-	public $SubOk		= false;
-	public $SubLst		= [];
-	public $SubNbr		= 0;
-	public $PrmLst		= [];
-	public $PrmIfNbr	= false;
-	public $MagnetId	= TBX_MAGNET_NONE;
-	public $BlockFound	= false;
-	public $FirstMerge	= true;
-	public $ConvProtect	= true;
-	public $ConvStr		= true;
-	public $ConvHex		= false;
-	public $ConvPhone	= false;		//THIS IS DEPRECATED
-	public $placeholder	= false;
-	public $mode		= TBX_CONVERT_DEFAULT;
-	public $break		= true;
+
+	/** @var tbx */				private $tbx;
+	/** @var int|false */		public $PosBeg			= false;
+	/** @var int|false */		public $PosEnd			= false;
+	/** @var int|false */		public $PosBeg0			= false;
+	/** @var int|false */		public $PosEnd0			= false;
+	/** @var bool */			public $Enlarged		= false;
+	/** @var string|false */	public $FullName		= false;
+	/** @var string */			public $SubName			= '';
+	/** @var bool */			public $SubOk			= false;
+	/** @var array */			public $SubLst			= [];
+	/** @var int */				public $SubNbr			= 0;
+	/** @var array */			public $PrmLst			= [];
+	/** @var bool */			public $PrmIfNbr		= false;
+	/** @var int */				public $MagnetId		= TBX_MAGNET_NONE;
+	/** @var bool */			public $BlockFound		= false;
+	/** @var bool */			public $FirstMerge		= true;
+	/** @var bool */			public $ConvProtect		= true;
+	/** @var bool */			public $ConvStr			= true;
+	/** @var bool */			public $ConvHex			= false;
+	/** @var bool */			public $placeholder		= false;
+	/** @var int */				public $mode			= TBX_CONVERT_DEFAULT;
+	/** @var bool */			public $break			= true;
+	/** @var int */				public $RightLevel		= 0;
+	/** @var bool */			public $HeaderFound		= false;
+	/** @var bool */			public $FooterFound		= false;
+	/** @var array */			public $PrmPos			= [];
+	/** @var array */			public $PrmIf			= [];
+	/** @var array */			public $PrmThen			= [];
+	/** @var int */				public $HeaderNbr		= 0;
+	/** @var array */			public $HeaderDef		= [];
+	/** @var int */				public $FooterNbr		= 0;
+	/** @var array */			public $FooterDef		= [];
+	/** @var bool */			public $IsRecInfo		= false;
+	/** @var string */			public $RecInfo			= '';
 
 
 
@@ -185,9 +199,9 @@ class tbxLocator {
 			$SubName = false;
 		} else {
 			if ($Status===1) {
-				$x = substr($Txt,$PosName,$Pos-$PosName);
+				$x = substr($Txt, $PosName, $Pos-$PosName);
 			} else {
-				$x = substr($Txt,$PosName,$PosNend-$PosName);
+				$x = substr($Txt, $PosName, $PosNend-$PosName);
 			}
 			if ($XmlTag) $x = strtolower($x);
 			if ($SubName) {
@@ -234,28 +248,23 @@ class tbxLocator {
 
 
 
-	public function PrmIfThen($IsIf,$Val) {
+	public function PrmIfThen($IsIf, $Val) {
 		$nbr = &$this->PrmIfNbr;
 
 		if ($nbr === false) {
 			$nbr = 0;
 			$this->PrmIf = [];
-			$this->PrmIfVar = [];
 			$this->PrmThen = [];
-			$this->PrmThenVar = [];
-			$this->PrmElseVar = true;
 		}
 
 		if ($IsIf) {
 			$nbr++;
 			$this->PrmIf[$nbr] = $Val;
-			$this->PrmIfVar[$nbr] = true;
 
 		} else {
 			$nbr2 = $nbr;
 			if ($nbr2 === false) $nbr2 = 1; // Only the first 'then' can be placed before its 'if'. This is for compatibility.
 			$this->PrmThen[$nbr2] = $Val;
-			$this->PrmThenVar[$nbr2] = true;
 		}
 	}
 
@@ -432,24 +441,6 @@ class tbxLocator {
 
 
 
-	// Affects the positions of a list of locators regarding to a specific moving locator.
-	public function Moving(&$list) {
-		foreach ($list as &$part) {
-			if ($part === $this) continue;
-			if ($part->PosBeg >= $this->InsPos) {
-				$part->PosBeg += $this->InsLen;
-				$part->PosEnd += $this->InsLen;
-			}
-			if ($part->PosBeg > $this->DelPos) {
-				$part->PosBeg -= $this->DelLen;
-				$part->PosEnd -= $this->DelLen;
-			}
-		}
-	}
-
-
-
-
 	public function SectionAddGrp($BlockName, &$BDef, $Type, $Field, $Prm) {
 
 		$BDef->PrevValue = false;
@@ -542,10 +533,6 @@ class tbxLocator {
 							if (isset($Loc->PrmLst['atttrue'])) {
 								$li->PrmLst['magnet'] = '#';
 								$li->PrmLst['ope'] = (isset($li->PrmLst['ope'])) ? $li->PrmLst['ope'].',attbool' : 'attbool';
-							}
-							if ($i==$LocNbr) {
-								$Pos = $Loc->DelPos;
-								$PosEndPrec = -1;
 							}
 						} else {
 							throw new tbxException(

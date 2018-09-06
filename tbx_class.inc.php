@@ -11,7 +11,6 @@ require_once(is_owner(__DIR__.'/tbx_plugin.inc.php'));
 //TRAITS (separated out to help organize code)
 require_once(is_owner(__DIR__.'/tbx_api.inc.php'));
 require_once(is_owner(__DIR__.'/tbx_function.inc.php'));
-require_once(is_owner(__DIR__.'/tbx_interface.inc.php'));
 require_once(is_owner(__DIR__.'/tbx_safe.inc.php'));
 require_once(is_owner(__DIR__.'/tbx_xml.inc.php'));
 
@@ -21,7 +20,6 @@ require_once(is_owner(__DIR__.'/tbx_xml.inc.php'));
 class tbx {
 	use tbx_api;
 	use tbx_function;
-	use tbx_interface;
 	use tbx_safe;
 	use tbx_xml;
 
@@ -445,7 +443,6 @@ class tbx {
 					$CurrVal = bin2hex($CurrVal);
 				} else {
 					$CurrVal = $this->_string($CurrVal);
-					if ($Loc->ConvPhone) $CurrVal = $this->tbxPhone($CurrVal);
 					if ($Loc->ConvStr) $this->_htmlsafe($CurrVal,$Loc->break);
 				}
 			break;
@@ -528,24 +525,25 @@ class tbx {
 		if ($Loc->PrmIfNbr) {
 			$z = false;
 			$i = 1;
-			while ($i!==false) {
-				$x = str_replace('[val]',$CurrVal,$Loc->PrmIf[$i]);
+
+			while (1) {
+				$x = str_replace('[val]', $CurrVal, $Loc->PrmIf[$i]);
 				if ($this->f_Misc_CheckCondition($x)) {
 					if (isset($Loc->PrmThen[$i])) {
 						$z = $Loc->PrmThen[$i];
 					}
-					$i = false;
-				} else {
-					$i++;
-					if ($i>$Loc->PrmIfNbr) {
-						if (isset($Loc->PrmLst['else'])) {
-							$z = $Loc->PrmLst['else'];
-						}
-						$i = false;
+					break;
+				}
+
+				if (++$i > $Loc->PrmIfNbr) {
+					if (isset($Loc->PrmLst['else'])) {
+						$z = $Loc->PrmLst['else'];
 					}
+					break;
 				}
 			}
-			if ($z!==false) {
+
+			if ($z !== false) {
 				if ($ConvProtect) {
 					$CurrVal = $this->_protect($CurrVal);
 					$ConvProtect = false;
@@ -1071,10 +1069,9 @@ class tbx {
 		$BlockId = 0;
 		$WasP1 = false;
 		$NbrRecTot = 0;
-		$QueryZ = &$Query;
 		$ReturnData = false;
 
-		while ($BlockId<$BlockNbr) {
+		while ($BlockId < $BlockNbr) {
 
 			$RecSpe = 0;  // Row with a special block's definition (used for the navigation bar)
 			$QueryOk = true;
@@ -1091,57 +1088,36 @@ class tbx {
 			if ($LocR->BlockFound) {
 
 				if ($LocR->Special!==false) $RecSpe = $SpeRecNum;
-				// OnData
-				if ($Src->OnDataPrm = isset($LocR->PrmLst['ondata'])) {
-					$Src->OnDataPrmRef = $LocR->PrmLst['ondata'];
-					$Src->OnDataPrm = false;
-					if (!isset($Src->OnDataPrmDone[$Src->OnDataPrmRef])) {
-						$LocR->FullName = $this->_CurrBlock;
-						throw new tbxLocException($LocR, 'parameter ondata error');
-					}
-				}
+
 				// Dynamic query
 				if ($LocR->P1) {
-					if ( ($LocR->PrmLst['p1']===true) && ((!is_string($Query)) || (strpos($Query,'%p1%')===false)) ) { // p1 with no value is a trick to perform new block with same name
+					if ($LocR->PrmLst['p1']===true) {
+						// p1 with no value is a trick to perform new block with same name
 						if ($Src->RecSaved===false) $Src->RecSaving = true;
-					} elseif (is_string($Query)) {
-						$Src->RecSaved = false;
-						unset($QueryZ); $QueryZ = ''.$Query;
-						$i = 1;
-						do {
-							$x = 'p'.$i;
-							if (isset($LocR->PrmLst[$x])) {
-								$QueryZ = str_replace('%p'.$i.'%',$LocR->PrmLst[$x],$QueryZ);
-								$i++;
-							} else {
-								$i = false;
-							}
-						} while ($i!==false);
 					}
-					$WasP1 = true;
+					$WasP1			= true;
 				} elseif (($Src->RecSaved===false) && ($BlockNbr-$BlockId>1)) {
-					$Src->RecSaving = true;
+					$Src->RecSaving	= true;
 				}
 			} elseif ($WasP1) {
-				$QueryOk = false;
-				$WasP1 = false;
+				$QueryOk			= false;
+				$WasP1				= false;
 			}
 
 			// Open the recordset
 			if ($QueryOk) {
 				if ((!$LocR->BlockFound) && (!$LocR->FieldOutside)) {
 					// Special case: return data without any block to merge
-					$QueryOk = false;
-					if ($ReturnData && (!$Src->RecSaved)) {
-						if ($Src->DataOpen($QueryZ)) {
-							do {$Src->DataFetch();} while ($Src->CurrRec!==false);
-							$Src->DataClose();
-						}
-					}
+					$QueryOk		= false;
+
 				}	else {
-					$QueryOk = $Src->DataOpen($QueryZ);
+					$QueryOk		= $Src->DataOpen($tmp);
 					if (!$QueryOk) {
-						if ($WasP1) {	$WasP1 = false;} else {$LocR->FieldOutside = false;} // prevent from infinit loop
+						if ($WasP1) {
+							$WasP1	= false;
+						} else {
+							$LocR->FieldOutside = false;
+						} // prevent from infinit loop
 					}
 				}
 			}
@@ -1152,12 +1128,12 @@ class tbx {
 					if ($LocR->BlockFound) {
 						$Txt = substr_replace($Txt,$Src->RecSet,$LocR->PosBeg,$LocR->PosEnd-$LocR->PosBeg+1);
 						$Src->DataFetch(); // store data, may be needed for multiple blocks
-						$Src->RecNum = 1;
-						$Src->CurrRec = false;
+						$Src->RecNum	= 1;
+						$Src->CurrRec	= false;
 					} else {
 						$Src->DataAlert('can\'t merge the block with a text value because the block definition is not found');
 					}
-				} elseif ($LocR->BlockFound===false) {
+				} elseif ($LocR->BlockFound === false) {
 					$Src->DataFetch(); // Merge first record only
 				} else {
 					$this->meth_Merge_BlockSections($Txt,$LocR,$Src,$RecSpe);
@@ -1241,7 +1217,7 @@ class tbx {
 				}
 				if ($LocR->HeaderFound) {
 					$brk = ($Src->RecNum===1);
-					for ($i=1;$i<=$LocR->HeaderNbr;$i++) {
+					for ($i=1; $i<=$LocR->HeaderNbr; $i++) {
 						$GrpDef = &$LocR->HeaderDef[$i];
 						$x = $this->meth_Merge_SectionNormal($GrpDef->FDef,$Src);
 						if (!$brk) $brk = !($GrpDef->PrevValue===$x);
@@ -1564,7 +1540,7 @@ class tbx {
 				} elseif (is_null($data) || ($data===false)) {
 					$data = [];
 				}
-				$this->meth_Merge_Block($Txt, $name, $data, $query);
+				$this->meth_Merge_Block($Txt, $name, $data);
 			}
 		}
 
@@ -1735,11 +1711,12 @@ class tbx {
 		$p = strpos($Str,'\'');
 		if ($Esc=($p!==false)) {
 			$In = true;
-			for ($p=$p+1;$p<=$Max;$p++) {
-				if ($StrZ[$p]==='\'') {
+			for ($p=$p+1; $p<=$Max; $p++) {
+				if (substr($StrZ, $p, 1) === "'") {
 					$In = !$In;
+
 				} elseif ($In) {
-					$StrZ[$p] = 'z';
+					$StrZ = substr_replace($StrZ, 'z', $p, 1);
 				}
 			}
 		}
@@ -1748,60 +1725,81 @@ class tbx {
 		$Ope = '=';
 		$Len = 1;
 		$p = strpos($StrZ,$Ope);
-		if ($p===false) {
+
+		if ($p === false) {
 			$Ope = '+';
-			$p = strpos($StrZ,$Ope);
+			$p = strpos($StrZ, $Ope);
 			if ($p===false) return false;
-			if (($p>0) && ($StrZ[$p-1]==='-')) {
-				$Ope = '-+'; $p--; $Len=2;
-			} elseif (($p<$Max) && ($StrZ[$p+1]==='-')) {
-				$Ope = '+-'; $Len=2;
+			if (($p>0) && (substr($StrZ, $p-1, 1) === '-')) {
+				$Ope = '-+';
+				$p--;
+				$Len=2;
+
+			} elseif (($p<$Max) && (substr($StrZ, $p+1, 1) === '-')) {
+				$Ope = '+-';
+				$Len=2;
+
 			} else {
 				return false;
 			}
+
 		} else {
 			if ($p>0) {
-				$x = $StrZ[$p-1];
+				$x = substr($StrZ, $p-1, 1);
+
 				if ($x==='!') {
-					$Ope = '!='; $p--; $Len=2;
+					$Ope = '!=';
+					$p--;
+					$Len=2;
+
 				} elseif ($x==='~') {
-					$Ope = '~='; $p--; $Len=2;
+					$Ope = '~=';
+					$p--;
+					$Len=2;
+
 				} elseif ($p<$Max) {
-					$y = $StrZ[$p+1];
+					$y = substr($StrZ, $p+1, 1);
+
 					if ($y==='=') {
 						$Len=2;
+
 					} elseif (($x==='+') && ($y==='-')) {
-						$Ope = '+=-'; $p--; $Len=3;
+						$Ope = '+=-';
+						$p--;
+						$Len=3;
+
 					} elseif (($x==='-') && ($y==='+')) {
-						$Ope = '-=+'; $p--; $Len=3;
+						$Ope = '-=+';
+						$p--;
+						$Len=3;
 					}
-				} else {
 				}
 			}
 		}
 
 		// Read values
-		$Val1  = trim(substr($Str,0,$p));
-		$Val2  = trim(substr($Str,$p+$Len));
+		$Val1		= trim(substr($Str,0,$p));
+		$Val2		= trim(substr($Str,$p+$Len));
 		if ($Esc) {
-			$Nude1 = self::f_Misc_DelDelimiter($Val1,'\'');
-			$Nude2 = self::f_Misc_DelDelimiter($Val2,'\'');
+			$Nude1	= self::f_Misc_DelDelimiter($Val1,'\'');
+			$Nude2	= self::f_Misc_DelDelimiter($Val2,'\'');
 		} else {
-			$Nude1 = $Nude2 = false;
+			$Nude1	= $Nude2 = false;
 		}
 
 		// Compare values
-		if ($Ope==='=')		return (strcasecmp($Val1, $Val2)==0);
-		if ($Ope==='!=')	return (strcasecmp($Val1, $Val2)!=0);
-		if ($Ope==='~=')	return (preg_match($Val2, $Val1) >0);
+		if ($Ope === '=')	return (strcasecmp($Val1, $Val2)==0);
+		if ($Ope === '!=')	return (strcasecmp($Val1, $Val2)!=0);
+		if ($Ope === '~=')	return (preg_match($Val2, $Val1) >0);
 
 		if ($Nude1) $Val1='0'+$Val1;
 		if ($Nude2) $Val2='0'+$Val2;
 
-		if ($Ope==='+-')	return ($Val1  > $Val2);
-		if ($Ope==='-+')	return ($Val1  < $Val2);
-		if ($Ope==='+=-')	return ($Val1 >= $Val2);
-		if ($Ope==='-=+')	return ($Val1 <= $Val2);
+		if ($Ope === '+-')	return ($Val1  > $Val2);
+		if ($Ope === '-+')	return ($Val1  < $Val2);
+		if ($Ope === '+=-')	return ($Val1 >= $Val2);
+		if ($Ope === '-=+')	return ($Val1 <= $Val2);
+
 		return false;
 	}
 

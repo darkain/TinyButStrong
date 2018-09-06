@@ -3,7 +3,19 @@
 
 trait tbx_function {
 
-	function tbxfunction($value, $function) {
+
+	////////////////////////////////////////////////////////////////////////////
+	// APPLICATIONS CAN INHERIT THIS TO IMPLEMENT THEIR OWN CUSTOM FORMATTERS
+	////////////////////////////////////////////////////////////////////////////
+	protected function _customFormat(&$text, $style) {}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// PROCESS FORMATTING INFORMATION
+	////////////////////////////////////////////////////////////////////////////
+	protected function tbxfunction($value, $function) {
 		$list = explode(',', strtolower($function));
 
 		foreach ($list as $item) switch (trim($item)) {
@@ -274,8 +286,10 @@ trait tbx_function {
 
 
 
-	// Clean up a phone number
-	static function tbxPhone($value) {
+	////////////////////////////////////////////////////////////////////////////
+	// CLEAN UP A PHONE NUMBER
+	////////////////////////////////////////////////////////////////////////////
+	protected static function tbxPhone($value) {
 		$phone		=	preg_replace('/[^\d]/', '', $value);
 
 		//USA/CANADA
@@ -311,4 +325,6 @@ trait tbx_function {
 
 		return $value;
 	}
+
+
 }

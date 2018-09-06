@@ -4,21 +4,20 @@
 
 class tbxDatasource {
 
-	public $Type			= false;
-	public $SubType			= TBX_DS_SUB0;
-	public $SrcId			= false;
-	public $RecSet			= false;
-	public $RecKey			= '';
-	public $RecNum			= 0;
-	public $RecNumInit		= 0;
-	public $RecSaving		= false;
-	public $RecSaved		= false;
-	public $RecBuffer		= false;
-	public $CurrRec			= false;
-	public $TBX				= false;
-	public $OnDataOk		= false;
-	public $OnDataPrm		= false;
-	public $OnDataPrmDone	= [];
+	/** @var tbx */				public $TBX;
+	/** @var int|false */		public $Type			= false;
+	/** @var int */				public $SubType			= TBX_DS_SUB0;
+	/** @var mixed */			public $SrcId			= false;
+	/** @var mixed */			public $RecSet			= false;
+	/** @var int|string */		public $RecKey			= '';
+	/** @var int */				public $RecNbr			= 0;
+	/** @var int */				public $RecNum			= 0;
+	/** @var int */				public $RecNumInit		= 0;
+	/** @var bool */			public $RecSaving		= false; //TODO: SEE IF THIS IS USED
+	/** @var bool */			public $RecSaved		= false; //TODO: SEE IF THIS IS USED
+	/** @var array|false */		public $RecBuffer		= false;
+	/** @var mixed */			public $CurrRec			= false;
+	/** @var bool */			public $FirstRec		= true;
 
 
 
@@ -111,25 +110,25 @@ class tbxDatasource {
 	public function DataOpen(&$Query) {
 
 		// Init values
-		unset($this->CurrRec); $this->CurrRec = true;
+		unset($this->CurrRec);
+		$this->CurrRec = true;
+
 		if ($this->RecSaved) {
 			$this->FirstRec = true;
-			unset($this->RecKey); $this->RecKey = '';
+
+			unset($this->RecKey);
+			$this->RecKey = '';
+
 			$this->RecNum = $this->RecNumInit;
-			if ($this->OnDataOk) $this->OnDataArgs[1] = &$this->CurrRec;
+
 			return true;
 		}
-		unset($this->RecSet); $this->RecSet = false;
+
+		unset($this->RecSet);
+		$this->RecSet = false;
+
 		$this->RecNumInit = 0;
 		$this->RecNum = 0;
-
-		if ($this->OnDataOk) {
-			$this->OnDataArgs = array();
-			$this->OnDataArgs[0] = &$this->TBX->_CurrBlock;
-			$this->OnDataArgs[1] = &$this->CurrRec;
-			$this->OnDataArgs[2] = &$this->RecNum;
-			$this->OnDataArgs[3] = &$this->TBX;
-		}
 
 		switch ($this->Type) {
 			case TBX_DS_ARRAY:
@@ -177,11 +176,7 @@ class tbxDatasource {
 								$Empty = true;
 							}
 						} elseif (is_object($Var)) {
-							$ArgLst = $this->TBX->f_Misc_CheckArgLst($x);
-							if (method_exists($Var,$x)) {
-								$f = array(&$Var,$x); unset($Var);
-								$Var = call_user_func_array($f,$ArgLst);
-							} elseif (property_exists(get_class($Var),$x)) {
+							if (property_exists(get_class($Var), $x)) {
 								if (isset($Var->$x)) $Var = &$Var->$x;
 							} elseif (isset($Var->$x)) {
 								$Var = $Var->$x; // useful for overloaded property
@@ -189,7 +184,12 @@ class tbxDatasource {
 								$Empty = true;
 							}
 						} else {
-							$i = $this->DataAlert('invalid query \''.$Query.'\' because item \''.$ItemLst[$i].'\' is neither an Array nor an Object. Its type is \''.gettype($Var).'\'.');
+							$i = $this->DataAlert(
+								'invalid query "' . $Query .
+								'" because item "' . $ItemLst[$i] .
+								'" is neither an Array nor an Object. Its type is "' .
+								gettype($Var) . '".'
+							);
 						}
 						if ($i!==false) $i++;
 					}
@@ -247,11 +247,7 @@ class tbxDatasource {
 
 
 			case TBX_DS_TEXT:
-				if (is_string($Query)) {
-					$this->RecSet = &$Query;
-				} else {
-					$this->RecSet = $this->TBX->meth_Misc_ToStr($Query);
-				}
+				$this->RecSet = &$Query;
 			break;
 
 
@@ -266,10 +262,12 @@ class tbxDatasource {
 		}
 
 		if (($this->Type===TBX_DS_ARRAY) || ($this->Type===TBX_DS_ITERATOR)) {
-			unset($this->RecKey); $this->RecKey = '';
+			unset($this->RecKey); //IN CASE IT IS POINTER
+			$this->RecKey = '';
 		} else {
 			if ($this->RecSaving) {
-				unset($this->RecBuffer); $this->RecBuffer = array();
+				unset($this->RecBuffer);
+				$this->RecBuffer = [];
 			}
 			$this->RecKey = &$this->RecNum; // Not array: RecKey = RecNum
 		}
@@ -283,51 +281,65 @@ class tbxDatasource {
 	public function DataFetch() {
 
 		if ($this->RecSaved) {
-			if ($this->RecNum<$this->RecNbr) {
+			if ($this->RecNum < $this->RecNbr) {
 				if ($this->FirstRec) {
-					if ($this->SubType===TBX_DS_SUB2) { // From string
+					if ($this->SubType === TBX_DS_SUB2) { // From string
 						reset($this->RecSet);
-						$this->RecKey = key($this->RecSet);
-						$this->CurrRec = &$this->RecSet[$this->RecKey];
+						$this->RecKey		= key($this->RecSet);
+						$this->CurrRec		= &$this->RecSet[$this->RecKey];
+
 					} else if ($this->RecSet instanceof ArrayAccess) {
-						$this->CurrRec = $this->RecKey = NULL;
+						unset($this->CurrRec);
+						$this->RecKey		= '';
+						$this->CurrRec		= false;
 						foreach ($this->RecSet as $key => $val) {
 							$this->RecKey	= $key;
 							$this->CurrRec	= $val;
 							break;
 						}
+
 					} else {
-						$this->CurrRec = reset($this->RecSet);
-						$this->RecKey = key($this->RecSet);
+						$this->CurrRec		= reset($this->RecSet);
+						$this->RecKey		= key($this->RecSet);
 					}
+
 					$this->FirstRec = false;
+
 				} else {
-					if ($this->SubType===TBX_DS_SUB2) { // From string
+					if ($this->SubType === TBX_DS_SUB2) { // From string
 						next($this->RecSet);
-						$this->RecKey = key($this->RecSet);
-						$this->CurrRec = &$this->RecSet[$this->RecKey];
+						$this->RecKey		= key($this->RecSet);
+						$this->CurrRec		= &$this->RecSet[$this->RecKey];
+
 					} else if ($this->RecSet instanceof ArrayAccess) {
-						$this->CurrRec = $this->RecKey = NULL;
+						unset($this->CurrRec);
+						$this->RecKey		= '';
+						$this->CurrRec		= false;
 						$loop = 0;
 						foreach ($this->RecSet as $key => $val) {
 							$this->RecKey	= $key;
 							$this->CurrRec	= $val;
 							if ($loop++ === $this->RecNum) break;
 						}
+
 					} else {
-						$this->CurrRec = next($this->RecSet);
-						$this->RecKey = key($this->RecSet);
+						$this->CurrRec		= next($this->RecSet);
+						$this->RecKey		= key($this->RecSet);
 					}
 				}
-				if ((!is_array($this->CurrRec)) && (!is_object($this->CurrRec))) $this->CurrRec = array('key'=>$this->RecKey, 'val'=>$this->CurrRec);
-				$this->RecNum++;
-				if ($this->OnDataOk) {
-					$this->OnDataArgs[1] = &$this->CurrRec; // Reference has changed if ($this->SubType===TBX_DS_SUB2)
-					if ($this->OnDataPrm) call_user_func_array($this->OnDataPrmRef,$this->OnDataArgs);
-					if ($this->SubType!==TBX_DS_SUB2) $this->RecSet[$this->RecKey] = $this->CurrRec; // save modifications because array reading is done without reference :(
+
+				if (!tbx_array($this->CurrRec)) {
+					$this->CurrRec = [
+						'key' => $this->RecKey,
+						'val' => $this->CurrRec
+					];
 				}
+
+				$this->RecNum++;
+
 			} else {
-				unset($this->CurrRec); $this->CurrRec = false;
+				unset($this->CurrRec);
+				$this->CurrRec = false;
 			}
 			return;
 		}
@@ -372,10 +384,9 @@ class tbxDatasource {
 		// Set the row count
 		if ($this->CurrRec!==false) {
 			$this->RecNum++;
-			if ($this->OnDataOk) {
-				if ($this->OnDataPrm) call_user_func_array($this->OnDataPrmRef,$this->OnDataArgs);
+			if ($this->RecSaving) {
+				$this->RecBuffer[$this->RecKey] = $this->CurrRec;
 			}
-			if ($this->RecSaving) $this->RecBuffer[$this->RecKey] = $this->CurrRec;
 		}
 	}
 
@@ -383,8 +394,6 @@ class tbxDatasource {
 
 
 	public function DataClose() {
-		$this->OnDataOk		= false;
-		$this->OnDataPrm	= false;
 		if ($this->RecSaved) return;
 
 		if ($this->Type === TBX_DS_PUDL) {
