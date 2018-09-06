@@ -177,7 +177,7 @@ class tbxDatasource {
 							}
 						} elseif (is_object($Var)) {
 							if (property_exists(get_class($Var), $x)) {
-								if (isset($Var->$x)) $Var = &$Var->$x;
+								$Var = &$Var->$x;
 							} elseif (isset($Var->$x)) {
 								$Var = $Var->$x; // useful for overloaded property
 							} else {
@@ -328,7 +328,7 @@ class tbxDatasource {
 					}
 				}
 
-				if (!tbx_array($this->CurrRec)) {
+				if (!is_array($this->CurrRec) && (!is_object($this->CurrRec))) {
 					$this->CurrRec = [
 						'key' => $this->RecKey,
 						'val' => $this->CurrRec

@@ -193,7 +193,31 @@ tbxTest('a<elem prop="0"/>b');
 
 
 
-$tbx->loadString('<elem prop="[x.prop;magnet=#;noerr]" attr="[x.attr;block=elem]">test</elem>')
+$tbx->loadString('<elem prop="[x.prop;magnet=#]" attr="[x.attr;block=elem;magnet=#]">test</elem>')
 	->block('x', [['attr'=>1], ['attr'=>2]]);
 
 tbxTest('<elem attr="1">test</elem><elem attr="2">test</elem>');
+
+
+
+
+$tbx->loadString('<elem prop="[x.prop;magnet=#]" attr="[x.attr;block=elem;magnet=#]">test</elem>')
+	->block('x', [['prop'=>1], ['prop'=>2]]);
+
+tbxTest('<elem prop="1">test</elem><elem prop="2">test</elem>');
+
+
+
+
+$tbx->loadString('<elem prop="[x.prop;magnet=#]" attr="[x.attr;block=elem;magnet=#]">test</elem>')
+	->block('x', [['attr'=>1], ['prop'=>2]]);
+
+tbxTest('<elem attr="1">test</elem><elem prop="2">test</elem>');
+
+
+
+
+$tbx->loadString('<elem prop="[x.prop;magnet=#]" attr="[x.attr;block=elem;magnet=#]">test</elem>')
+	->block('x', [['prop'=>1], ['attr'=>2]]);
+
+tbxTest('<elem prop="1">test</elem><elem attr="2">test</elem>');

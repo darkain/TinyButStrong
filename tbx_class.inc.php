@@ -290,10 +290,6 @@ class tbx {
 							$Loc->MSave = $Loc->MagnetId;
 						continue;
 
-						case 'attbool': // this operation key is set when a loc is cached with paremeter atttrue
-							$Loc->OpeAct[$i] = 14;
-						continue;
-
 						case 'upper':	$Loc->OpeAct[$i] = 15;	continue;
 						case 'lower':	$Loc->OpeAct[$i] = 16;	continue;
 						case 'upper1':	$Loc->OpeAct[$i] = 17;	continue;
@@ -408,7 +404,6 @@ class tbx {
 						break;
 					case 12: if ($this->_string($CurrVal)===$Loc->OpePrm[$i]) $CurrVal = ''; break;
 					case 13: $CurrVal = str_replace('*',$CurrVal,$Loc->OpePrm[$i]); break;
-					case 14: $CurrVal = tbxLocator::AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName); break;
 					case 15: $CurrVal = strtoupper($CurrVal); break;
 					case 16: $CurrVal = strtolower($CurrVal); break;
 					case 17: $CurrVal = ucfirst($CurrVal); break;
@@ -430,8 +425,8 @@ class tbx {
 					case 54: $CurrVal = $Loc->OpePrm[$i] * ('0'+$CurrVal); break;
 					case 55: $CurrVal = $Loc->OpePrm[$i] / ('0'+$CurrVal); break;
 
-					case 60: $CurrVal = $Loc->OpePrm[$i] == $CurrVal ? 'checked' : ''; break;
-					case 61: $CurrVal = $Loc->OpePrm[$i] == $CurrVal ? 'selected' : ''; break;
+					case 60: $CurrVal = ($Loc->OpePrm[$i] == $CurrVal) ? 'checked' : ''; break;
+					case 61: $CurrVal = ($Loc->OpePrm[$i] == $CurrVal) ? 'selected' : ''; break;
 				}
 			}
 		}
@@ -1110,14 +1105,23 @@ class tbx {
 					// Special case: return data without any block to merge
 					$QueryOk		= false;
 
+					if ($ReturnData && (!$Src->RecSaved)) {
+						unset($tmp);
+						if ($Src->DataOpen($tmp)) {
+							do {
+								$Src->DataFetch();
+							} while ($Src->CurrRec !== false);
+							$Src->DataClose();
+						}
+					}
+
 				}	else {
+					unset($tmp);
 					$QueryOk		= $Src->DataOpen($tmp);
 					if (!$QueryOk) {
-						if ($WasP1) {
-							$WasP1	= false;
-						} else {
-							$LocR->FieldOutside = false;
-						} // prevent from infinit loop
+						// prevent from infinit loop
+						if (!$WasP1) $LocR->FieldOutside = false;
+						$WasP1		= false;
 					}
 				}
 			}
@@ -1511,7 +1515,7 @@ class tbx {
 
 		// Automatic sub-blocks
 		if (isset($BDef->AutoSub)) {
-			for ($i=1;$i<=$BDef->AutoSub;$i++) {
+			for ($i=1; $i<=$BDef->AutoSub; $i++) {
 				$name = $BDef->Name.'_sub'.$i;
 				$query = '';
 				$col = $BDef->Prm['sub'.$i];
