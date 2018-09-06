@@ -208,13 +208,13 @@ class tbxLocator {
 				$this->SubName = trim($x);
 				$SubName = false;
 			} else {
-				if ($Status===4) {
+				if ($Status === 4) {
 					$v = trim(substr($Txt,$PosVal,$Pos-$PosVal));
-					if ($DelimCnt===1) { // Delete quotes inside the value
-						if ($v[0]===$DelimChr) {
+					if ($DelimCnt === 1) { // Delete quotes inside the value
+						if ($v[0] === $DelimChr) {
 							$len = strlen($v);
-							if ($v[$len-1]===$DelimChr) {
-								$v = substr($v,1,$len-2);
+							if ($v[$len-1] === $DelimChr) {
+								$v = substr($v, 1, $len-2);
 								$v = str_replace($DelimChr.$DelimChr,$DelimChr,$v);
 							}
 						}
@@ -224,9 +224,11 @@ class tbxLocator {
 				}
 
 				if ($x === 'if') {
-					$this->PrmIfThen(true,$v);
+					$this->PrmIfThen(true, $v);
+
 				} elseif ($x === 'then') {
-					$this->PrmIfThen(false,$v);
+					$this->PrmIfThen(false, $v);
+
 				} else {
 					$this->PrmLst[$x] = $v;
 					if ($WithPos) {
@@ -342,23 +344,23 @@ class tbxLocator {
 			$p = strpos($t, '*');
 			if ($p!==false) {
 				$n = intval(substr($t, 0, $p));
-				$t = substr($t, $p + 1);
+				$t = substr($t, $p+1);
 				$n = max($n ,1); // prevent for error: minimum value is 1
 				$TagStr = str_repeat($t . '+', $n-1) . $TagStr;
 			}
 
 			// Reference
-			if (($t==='.') && ($Ref===0)) $Ref = $i;
+			if (($t === '.') && ($Ref === 0)) $Ref = $i;
 			// Take off the (!) prefix
 			$b = '';
-			if (($t!=='') && ($t[0]==='!')) {
+			if (($t !== '') && ($t[0] === '!')) {
 				$t = substr($t, 1);
 				$b = '!';
 			}
 
-			if ($t!==false) {
+			if ($t !== false) {
 				$TagLst[$i] = $t; // with prefix ! if specified
-				$TagBnd[$i] = ($b==='');
+				$TagBnd[$i] = ($b === '');
 				$i++;
 			}
 		}
@@ -366,7 +368,7 @@ class tbxLocator {
 		$TagMax = $i-1;
 
 		// Find tags that embeds the locator
-		if ($LevelStop===0) $LevelStop = 1;
+		if ($LevelStop === 0) $LevelStop = 1;
 
 		// First tag of reference
 		if ($TagLst[$Ref] === '.') {
@@ -399,18 +401,26 @@ class tbxLocator {
 		if ($RetInnerSrc) {
 			$RetVal = '';
 			if ($this->PosBeg>$TagO->PosEnd) {
-				$RetVal .= substr($Txt,$TagO->PosEnd+1,min($this->PosBeg,$InnerLim)-$TagO->PosEnd-1);
+				$RetVal .= substr(
+					$Txt,
+					$TagO->PosEnd+1,
+					min($this->PosBeg, $InnerLim) - $TagO->PosEnd - 1
+				);
 			}
 			if ($this->PosEnd<$InnerLim) {
-				$RetVal .= substr($Txt,max($this->PosEnd,$TagO->PosEnd)+1,$InnerLim-max($this->PosEnd,$TagO->PosEnd)-1);
+				$RetVal .= substr(
+					$Txt,
+					max($this->PosEnd, $TagO->PosEnd) + 1,
+					$InnerLim-max($this->PosEnd,$TagO->PosEnd) - 1
+				);
 			}
 		}
 
 		// Other tags forward
 		$TagC = true;
-		for ($i=$Ref+1;$i<=$TagMax;$i++) {
+		for ($i=$Ref+1; $i<=$TagMax; $i++) {
 			$x = $TagLst[$i];
-			if (($x!=='') && ($TagC!==false)) {
+			if (($x !== '') && ($TagC !== false)) {
 				$level = ($TagBnd[$i]) ? 0 : 1;
 				$TagC = $this->Enlarge_Find($Txt,$x,$PosEnd+1,true,$level);
 				if ($TagC!==false) {
@@ -457,7 +467,7 @@ class tbxLocator {
 			);
 		}
 
-		if ($Type==='H') {
+		if ($Type === 'H') {
 			if ($this->HeaderFound===false) {
 				$this->HeaderFound = true;
 				$this->HeaderNbr = 0;

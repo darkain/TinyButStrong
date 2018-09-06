@@ -1706,10 +1706,11 @@ class tbx {
 	static function f_Misc_CheckCondition($Str) {
 	// Check if an expression like "exrp1=expr2" is true or false.
 
-		$StrZ = $Str; // same string but without protected data
-		$Max = strlen($Str)-1;
-		$p = strpos($Str,'\'');
-		if ($Esc=($p!==false)) {
+		$StrZ	= $Str; // same string but without protected data
+		$Max	= strlen($Str)-1;
+		$p		= strpos($Str, "'");
+
+		if ($Esc = ($p !== false)) {
 			$In = true;
 			for ($p=$p+1; $p<=$Max; $p++) {
 				if (substr($StrZ, $p, 1) === "'") {
@@ -1722,78 +1723,72 @@ class tbx {
 		}
 
 		// Find operator and position
-		$Ope = '=';
-		$Len = 1;
-		$p = strpos($StrZ,$Ope);
+		$Ope			= '=';
+		$p				= strpos($StrZ, $Ope);
 
 		if ($p === false) {
-			$Ope = '+';
-			$p = strpos($StrZ, $Ope);
-			if ($p===false) return false;
-			if (($p>0) && (substr($StrZ, $p-1, 1) === '-')) {
-				$Ope = '-+';
+			$Ope		= '+';
+			$p			= strpos($StrZ, $Ope);
+			if ($p === false) return false;
+
+			if (($p > 0) && (substr($StrZ, $p-1, 1) === '-')) {
+				$Ope	= '-+';
 				$p--;
-				$Len=2;
 
 			} elseif (($p<$Max) && (substr($StrZ, $p+1, 1) === '-')) {
-				$Ope = '+-';
-				$Len=2;
+				$Ope	= '+-';
 
 			} else {
 				return false;
 			}
 
-		} else {
-			if ($p>0) {
-				$x = substr($StrZ, $p-1, 1);
+		} else if ($p > 0) {
+			$x		= substr($StrZ, $p-1, 1);
 
-				if ($x==='!') {
-					$Ope = '!=';
+			if ($x === '!') {
+				$Ope = '!=';
+				$p--;
+
+			} elseif ($x === '~') {
+				$Ope = '~=';
+				$p--;
+
+			} elseif ($p<$Max) {
+				$y = substr($StrZ, $p+1, 1);
+
+				if ($y === '=') {
+					$Ope = '==';
+
+				} elseif (($x === '+') && ($y === '-')) {
+					$Ope = '+=-';
 					$p--;
-					$Len=2;
 
-				} elseif ($x==='~') {
-					$Ope = '~=';
+				} elseif (($x === '-') && ($y === '+')) {
+					$Ope = '-=+';
 					$p--;
-					$Len=2;
-
-				} elseif ($p<$Max) {
-					$y = substr($StrZ, $p+1, 1);
-
-					if ($y==='=') {
-						$Len=2;
-
-					} elseif (($x==='+') && ($y==='-')) {
-						$Ope = '+=-';
-						$p--;
-						$Len=3;
-
-					} elseif (($x==='-') && ($y==='+')) {
-						$Ope = '-=+';
-						$p--;
-						$Len=3;
-					}
 				}
 			}
 		}
 
 		// Read values
 		$Val1		= trim(substr($Str,0,$p));
-		$Val2		= trim(substr($Str,$p+$Len));
+		$Val2		= trim(substr($Str,$p + strlen($Ope)));
+
 		if ($Esc) {
-			$Nude1	= self::f_Misc_DelDelimiter($Val1,'\'');
-			$Nude2	= self::f_Misc_DelDelimiter($Val2,'\'');
+			$Nude1	= self::f_Misc_DelDelimiter($Val1, "'");
+			$Nude2	= self::f_Misc_DelDelimiter($Val2, "'");
 		} else {
 			$Nude1	= $Nude2 = false;
 		}
 
 		// Compare values
 		if ($Ope === '=')	return (strcasecmp($Val1, $Val2)==0);
+		if ($Ope === '==')	return (strcasecmp($Val1, $Val2)==0);
 		if ($Ope === '!=')	return (strcasecmp($Val1, $Val2)!=0);
 		if ($Ope === '~=')	return (preg_match($Val2, $Val1) >0);
 
-		if ($Nude1) $Val1='0'+$Val1;
-		if ($Nude2) $Val2='0'+$Val2;
+		if ($Nude1) $Val1 = '0' + $Val1;
+		if ($Nude2) $Val2 = '0' + $Val2;
 
 		if ($Ope === '+-')	return ($Val1  > $Val2);
 		if ($Ope === '-+')	return ($Val1  < $Val2);
