@@ -1,10 +1,10 @@
 <?php
 
 $tbx->loadString(
-	"<elem value=\"[item.prop;block=elem;p1]\">" .
-	"[item.prop;selected='[parent1.prop]'][item.prop]</elem>" .
-	"<elem value=\"[item.prop;block=elem;p1]\">" .
-	"[item.prop;selected='[parent2.prop]'][item.prop]</elem>"
+	"<el v=\"[item.prop;block=el;p1]\">" .
+	"[item.prop;selected='[parent1.prop]'][item.prop]</el>" .
+	"<ex v=\"[item.prop;block=ex;p1]\">" .
+	"[item.prop;selected='[parent2.prop]'][item.prop]</ex>"
 );
 
 $tbx->field('parent1', ['prop' => '2']);
@@ -14,12 +14,12 @@ $tbx->block('item', [
 	['prop' => '2'],
 	['prop' => '3'],
 	['prop' => '4'],
-	['prop' => '4'],
 	['prop' => '5'],
+	['prop' => '6'],
 ]);
 
 
-tbxTest('<elem>1</elem><elem selected>2</elem><elem>3</elem><elem>4</elem>');
+tbxTest('<el v="1">1</el><el v="2" selected>2</el><el v="3">3</el><el v="4">4</el><el v="5">5</el><el v="6">6</el><ex v="1">1</ex><ex v="2">2</ex><ex v="3">3</ex><ex v="4" selected>4</ex><ex v="5">5</ex><ex v="6">6</ex>');
 
 
 
