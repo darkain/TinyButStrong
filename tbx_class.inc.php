@@ -119,7 +119,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	// ???
 	////////////////////////////////////////////////////////////////////////////
-	function _replace(&$Txt, &$Loc, &$Value, $SubStart=false, $Src=false) {
+	function _replace(&$Txt, &$Loc, &$Value, $SubStart=false, $Src=false, $locatorList=true) {
 	// This function enables to merge a locator with a text and returns the position just after the replaced block
 	// This position can be useful because we don't know in advance how $Value will be replaced.
 
@@ -506,39 +506,39 @@ class tbx {
 			break;
 
 			case TBX_CONVERT_SELECTED:
-				$this->property($Txt, $Loc, $CurrVal, 'selected');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'selected');
 			break;
 
 			case TBX_CONVERT_CHECKED:
-				$this->property($Txt, $Loc, $CurrVal, 'checked');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'checked');
 			break;
 
 			case TBX_CONVERT_DISABLED:
-				$this->property($Txt, $Loc, $CurrVal, 'disabled');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'disabled');
 			break;
 
 			case TBX_CONVERT_AUTOFOCUS:
-				$this->property($Txt, $Loc, $CurrVal, 'autofocus');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'autofocus');
 			break;
 
 			case TBX_CONVERT_EDITABLE:
-				$this->property($Txt, $Loc, $CurrVal, 'editable', 'contenteditable');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'editable', 'contenteditable');
 			break;
 
 			case TBX_CONVERT_HIDDEN:
-				$this->property($Txt, $Loc, $CurrVal, 'hidden');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'hidden');
 			break;
 
 			case TBX_CONVERT_REVERSED:
-				$this->property($Txt, $Loc, $CurrVal, 'reversed');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'reversed');
 			break;
 
 			case TBX_CONVERT_REQUIRED:
-				$this->property($Txt, $Loc, $CurrVal, 'required');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'required');
 			break;
 
 			case TBX_CONVERT_SCOPED:
-				$this->property($Txt, $Loc, $CurrVal, 'scoped');
+				$this->property($Txt, $Loc, $CurrVal, $locatorList, 'scoped');
 			break;
 
 			case TBX_CONVERT_FUNCTION:
@@ -790,7 +790,13 @@ class tbx {
 
 		}
 
-		$Txt = substr_replace($Txt,$CurrVal,$Loc->PosBeg,$Loc->PosEnd-$Loc->PosBeg+1);
+		$Txt = substr_replace(
+			$Txt,
+			$CurrVal,
+			$Loc->PosBeg,
+			$Loc->PosEnd-$Loc->PosBeg+1
+		);
+
 		return $NewEnd; // Return the new end position of the field
 
 	}
@@ -1362,20 +1368,26 @@ class tbx {
 				}
 				if ($LocR->WhenFound) { // With conditional blocks
 					$found = false;
-					$continue = true;
 					$i = 1;
-					do {
+
+					while (true) {
 						$WhenBDef = &$LocR->WhenLst[$i];
 						$cond = $this->meth_Merge_SectionNormal($WhenBDef->WhenCond,$Src);
 						if ($this->f_Misc_CheckCondition($cond)) {
-							$x_when = $this->meth_Merge_SectionNormal($WhenBDef,$Src);
-							if ($WhenBDef->WhenBeforeNS) {$SecSrc = $x_when.$SecSrc;} else {$SecSrc = $SecSrc.$x_when;}
-							$found = true;
-							if ($LocR->WhenSeveral===false) $continue = false;
+							$x_when	= $this->meth_Merge_SectionNormal($WhenBDef,$Src);
+
+							$SecSrc	= ($WhenBDef->WhenBeforeNS)
+									? $x_when.$SecSrc
+									: $SecSrc.$x_when;
+
+							$found	= true;
+
+							if ($LocR->WhenSeveral === false) break;
 						}
-						$i++;
-						if ($i>$LocR->WhenNbr) $continue = false;
-					} while ($continue);
+
+						if (++$i > $LocR->WhenNbr) break;
+					}
+
 					if (($found===false) && ($LocR->WhenDefault!==false)) {
 						$x_when = $this->meth_Merge_SectionNormal($LocR->WhenDefault,$Src);
 						if ($LocR->WhenDefaultBeforeNS) {$SecSrc = $x_when.$SecSrc;} else {$SecSrc = $SecSrc.$x_when;}
@@ -1577,13 +1589,13 @@ class tbx {
 
 			// Cached locators
 			for ($i=$BDef->LocNbr; $i>0; $i--) {
-				if ($LocLst[$i]->PosBeg<$PosMax) {
+				if ($LocLst[$i]->PosBeg < $PosMax) {
 					if ($LocLst[$i]->IsRecInfo  &&  $LocLst[$i]->RecInfo==='#') {
 						$this->_replace($Txt, $LocLst[$i], $Src->RecNum);
 					} else if ($LocLst[$i]->IsRecInfo) {
 						$this->_replace($Txt, $LocLst[$i], $Src->RecKey);
 					} else {
-						$this->_replace($Txt, $LocLst[$i], $Src->CurrRec, 0);
+						$this->_replace($Txt, $LocLst[$i], $Src->CurrRec, 0, false, $LocLst);
 					}
 
 					if ($LocLst[$i]->Enlarged) {
@@ -1959,7 +1971,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	// PROCESS A PROPERTY
 	////////////////////////////////////////////////////////////////////////////
-	function property(&$text, &$locator, &$value, $short, $long=false) {
+	function property(&$text, &$locator, &$value, $locatorList, $short, $long=false) {
 		if ($long === false) $long = $short;
 
 		if (!isset($locator->PrmLst[$short])) {
@@ -1968,7 +1980,7 @@ class tbx {
 
 		if ($this->propertyMatch($locator, $value, $short)) {
 			$locator->PrmLst['att'] = $long;
-			$this->f_Xml_AttFind($text, $locator, true, true);
+			$this->f_Xml_AttFind($text, $locator, $locatorList, true);
 		}
 
 		$value = '';

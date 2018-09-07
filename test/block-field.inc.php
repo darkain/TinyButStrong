@@ -43,10 +43,10 @@ $tbx->loadString('<elem>[x.val;selected=1][x.val;block=elem]</elem>')
 tbxTest('<elem selected>1</elem>');
 
 
-/*
+
 //TODO: THIS IS CURRENTLY BROKEN
 $tbx->loadString('<elem>[x.val;block=elem][x.val;selected=1]</elem>')
 	->block('x', [['val' => 1]]);
 
 tbxTest('<elem selected>1</elem>');
-*/
+

@@ -451,6 +451,28 @@ class tbxLocator {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// Affects the positions of a list of locators regarding to a specific moving locator.
+	////////////////////////////////////////////////////////////////////////////
+	public function Moving(&$list) {
+		foreach ($list as &$part) {
+			if ($part === $this) continue;
+
+			if ($part->PosBeg >= $this->InsPos) {
+				$part->PosBeg += $this->InsLen;
+				$part->PosEnd += $this->InsLen;
+			}
+
+			if ($part->PosBeg  > $this->DelPos) {
+				$part->PosBeg -= $this->DelLen;
+				$part->PosEnd -= $this->DelLen;
+			}
+		} unset($part);
+	}
+
+
+
+
 	public function SectionAddGrp($BlockName, &$BDef, $Type, $Field, $Prm) {
 
 		$BDef->PrevValue = false;

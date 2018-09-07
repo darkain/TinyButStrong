@@ -8,7 +8,7 @@ trait tbx_xml {
 	 * Prepare all informations to move a locator according to parameter "att".
 	 * @param mixed $MoveLocLst true to simple move the loc
 	 */
-	function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $property=false) {
+	function f_Xml_AttFind(&$Txt, &$Loc, $locatorList=false, $property=false) {
 	// att=div#class ; att=((div))#class ; att=+((div))#class
 
 		$Att = $Loc->PrmLst['att'];
@@ -88,15 +88,15 @@ trait tbx_xml {
 			}
 		}
 
-		return ($MoveLocLst)
-			? $this->f_Xml_AttMove($Txt, $Loc, $property)
+		return ($locatorList)
+			? $this->f_Xml_AttMove($Txt, $Loc, $property, $locatorList)
 			: true;
 	}
 
 
 
 
-	function f_Xml_AttMove(&$Txt, &$Loc, $property=false) {
+	function f_Xml_AttMove(&$Txt, &$Loc, $property=false, $locatorList=false) {
 
 		if (!$property) {
 			$AttDelim = ($Loc->AttDelimChr !== false)
@@ -180,6 +180,20 @@ trait tbx_xml {
 		$Loc->AttBegM		= ($Txt[$Loc->AttBeg-1] === ' ')
 							? ($Loc->AttBeg - 1)
 							: ($Loc->AttBeg); // for magnet=#
+
+		// for CacheField
+		if (tbx_array($locatorList)) {
+			$Loc->InsPos = $InsPos;
+			$Loc->InsLen = $InsLen;
+			$Loc->DelPos = $DelPos;
+			if ($property) $Loc->InsLen -= 2;
+			if ($Loc->InsPos < $Loc->DelPos) $Loc->DelPos += $InsLen;
+			$Loc->DelLen = $DelLen;
+
+
+			$Loc->Moving($locatorList);
+		}
+
 
 		return true;
 	}
