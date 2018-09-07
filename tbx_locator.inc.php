@@ -562,7 +562,7 @@ class tbxLocator {
 		}
 
 		// Create the object
-		$o = (object) null;
+		$o = new stdClass;
 		$o->Prm = $PrmLst;
 		$o->LocLst = $LocLst;
 		$o->LocNbr = $LocNbr;

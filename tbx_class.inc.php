@@ -1269,7 +1269,9 @@ class tbx {
 		$GrpFound = false;
 		if ($LocR->HeaderFound || $LocR->FooterFound) {
 			$GrpFound = true;
-			if ($LocR->FooterFound) $Src->PrevRec = (object) null;
+			if ($LocR->FooterFound) {
+				$Src->PrevRec = new stdClass;
+			}
 		}
 
 		// Main loop
