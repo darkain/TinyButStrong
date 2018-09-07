@@ -1,5 +1,29 @@
 <?php
 
+$tbx->loadString(
+	"<elem value=\"[item.prop;block=elem;p1]\">" .
+	"[item.prop;selected='[parent1.prop]'][item.prop]</elem>" .
+	"<elem value=\"[item.prop;block=elem;p1]\">" .
+	"[item.prop;selected='[parent2.prop]'][item.prop]</elem>"
+);
+
+$tbx->field('parent1', ['prop' => '2']);
+$tbx->field('parent2', ['prop' => '4']);
+$tbx->block('item', [
+	['prop' => '1'],
+	['prop' => '2'],
+	['prop' => '3'],
+	['prop' => '4'],
+	['prop' => '4'],
+	['prop' => '5'],
+]);
+
+
+tbxTest('<elem>1</elem><elem selected>2</elem><elem>3</elem><elem>4</elem>');
+
+
+
+
 
 $tbx->loadString('<elem>[x.val;block=elem][y;selected=[x.val]]</elem>')
 	->block('x', [
