@@ -111,61 +111,75 @@ trait tbx_xml {
 
 		$DelPos = $Loc->PosBeg;
 		$DelLen = $Loc->PosEnd - $Loc->PosBeg + 1;
-		$Txt = substr_replace($Txt,'',$DelPos,$DelLen); // delete the current locator
+		$Txt = substr_replace($Txt, '', $DelPos, $DelLen); // delete the current locator
+
 		if ($Loc->AttForward) {
 			$Loc->AttTagBeg += -$DelLen;
 			$Loc->AttTagEnd += -$DelLen;
-		} elseif ($Loc->PosBeg<$Loc->AttTagEnd) {
+		} elseif ($Loc->PosBeg < $Loc->AttTagEnd) {
 			$Loc->AttTagEnd += -$DelLen;
 		}
 
 		$InsPos = false;
-		if ($Loc->AttBeg===false) {
+		if ($Loc->AttBeg === false) {
 			$InsPos = $Loc->AttTagEnd;
-			if ($Txt[$InsPos-1]==='/') $InsPos--;
-			if ($Txt[$InsPos-1]===' ') $InsPos--;
+			if ($Txt[$InsPos-1] === '/') $InsPos--;
+			if ($Txt[$InsPos-1] === ' ') $InsPos--;
 			$Ins1 = ' ' . $Loc->AttName . ($property ? '' : ('='.$AttDelim));
 			$Ins2 = $AttDelim;
 			$Loc->AttBeg = $InsPos + 1;
 			$Loc->AttValBeg = $InsPos + strlen($Ins1) - 1;
+
+
 		} else {
-			if ($Loc->PosEnd<$Loc->AttBeg) $Loc->AttBeg += -$DelLen;
-			if ($Loc->PosEnd<$Loc->AttEnd) $Loc->AttEnd += -$DelLen;
-			if ($Loc->AttValBeg===false) {
+			if ($Loc->PosEnd < $Loc->AttBeg) $Loc->AttBeg += -$DelLen;
+			if ($Loc->PosEnd < $Loc->AttEnd) $Loc->AttEnd += -$DelLen;
+
+			if ($Loc->AttValBeg === false) {
 				$InsPos = $Loc->AttEnd+1;
 				$Ins1 = ($property) ? ('') : ('=yy'.$AttDelim);
 				$Ins2 = $AttDelim;
 				$Loc->AttValBeg = $InsPos+1;
+
 			} elseif (isset($Loc->PrmLst['attadd'])) {
 				$InsPos = $Loc->AttEnd;
 				$Ins1 = ' ';
 				$Ins2 = '';
+
 			} else {
 				// value already existing
 				if ($Loc->PosEnd<$Loc->AttValBeg) $Loc->AttValBeg += -$DelLen;
+
 				$PosBeg = $Loc->AttValBeg;
 				$PosEnd = $Loc->AttEnd;
-				if ($Loc->AttDelimCnt>0) {$PosBeg++; $PosEnd--;}
+
+				if ($Loc->AttDelimCnt > 0) {
+					$PosBeg++;
+					$PosEnd--;
+				}
 			}
 		}
 
 		if ($InsPos===false) {
 			$InsLen = 0;
+
 		} else {
-			$InsTxt = $Ins1.'[]'.$Ins2;
-			$InsLen = strlen($InsTxt);
-			$PosBeg = $InsPos + strlen($Ins1);
-			$PosEnd = $PosBeg + 1;
-			$Txt = substr_replace($Txt, $InsTxt, $InsPos, 0);
+			$InsTxt	= $Ins1.'[]'.$Ins2;
+			$InsLen	= strlen($InsTxt);
+			$PosBeg	= $InsPos + strlen($Ins1);
+			$PosEnd	= $PosBeg + 1;
+			$Txt	= substr_replace($Txt, $InsTxt, $InsPos, 0);
+
 			$Loc->AttEnd = $InsPos + $InsLen - 1;
 			$Loc->AttTagEnd += $InsLen;
 		}
 
-		$Loc->PrevPosBeg = $Loc->PosBeg;
-		$Loc->PrevPosEnd = $Loc->PosEnd;
-		$Loc->PosBeg = $PosBeg;
-		$Loc->PosEnd = $PosEnd;
-		$Loc->AttBegM = ($Txt[$Loc->AttBeg-1]===' ') ? $Loc->AttBeg-1 : $Loc->AttBeg; // for magnet=#
+		$Loc->PosBeg		= $PosBeg;
+		$Loc->PosEnd		= $PosEnd;
+
+		$Loc->AttBegM		= ($Txt[$Loc->AttBeg-1] === ' ')
+							? ($Loc->AttBeg - 1)
+							: ($Loc->AttBeg); // for magnet=#
 
 		return true;
 	}
