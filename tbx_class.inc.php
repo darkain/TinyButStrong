@@ -1960,17 +1960,14 @@ class tbx {
 	// PROCESS A PROPERTY
 	////////////////////////////////////////////////////////////////////////////
 	function property(&$text, &$locator, &$value, $short, $long=false) {
-		if ($long === false) {
-			$long = $short;
-		} else {
-			if (!isset($locator->PrmLst[$short])) {
-				$locator->PrmLst[$short] = $locator->PrmLst[$long];
-			}
+		if ($long === false) $long = $short;
+
+		if (!isset($locator->PrmLst[$short])) {
+			$locator->PrmLst[$short] = $locator->PrmLst[$long];
 		}
 
-		if (!empty($this->_property($locator, $value, $short))) {
-			$locator->PrmLst['att']		= $long;
-			$locator->PrmLst['atttrue']	= true;
+		if ($this->propertyMatch($locator, $value, $short)) {
+			$locator->PrmLst['att'] = $long;
 			$this->f_Xml_AttFind($text, $locator, true, true);
 		}
 
@@ -1983,7 +1980,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	// ???
 	////////////////////////////////////////////////////////////////////////////
-	protected function _property($locator, $value, $type) {
+	protected function propertyMatch($locator, $value, $type) {
 		$property = $locator->PrmLst[$type];
 
 		switch (true) {
@@ -2003,10 +2000,10 @@ class tbx {
 			case $this->_trim($value) === $this->_trim($property):
 
 
-			return $type;
+			return true;
 		}
 
-		return '';
+		return false;
 	}
 
 
