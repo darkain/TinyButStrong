@@ -19,6 +19,12 @@ class tbxDatasource {
 	/** @var mixed */			public $CurrRec			= false;
 	/** @var bool */			public $FirstRec		= true;
 
+	//TEMPORARY TO SILENCE PHAN ERRORS
+	/** @var mixed */			public $NumVal;
+	/** @var mixed */			public $NumMin;
+	/** @var mixed */			public $NumMax;
+	/** @var mixed */			public $NumStep;
+	/** @var mixed */			public $PrevRec;
 
 
 

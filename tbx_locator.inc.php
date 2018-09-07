@@ -21,6 +21,9 @@ class tbxLocator {
 	/** @var bool */			public $ConvProtect		= true;
 	/** @var bool */			public $ConvStr			= true;
 	/** @var bool */			public $ConvHex			= false;
+	/** @var bool */			public $ConvJson		= false;
+	/** @var bool */			public $ConvJS			= false;
+	/** @var bool */			public $ConvUrl			= false;
 	/** @var bool */			public $placeholder		= false;
 	/** @var int */				public $mode			= TBX_CONVERT_DEFAULT;
 	/** @var bool */			public $break			= true;
@@ -36,6 +39,44 @@ class tbxLocator {
 	/** @var array */			public $FooterDef		= [];
 	/** @var bool */			public $IsRecInfo		= false;
 	/** @var string */			public $RecInfo			= '';
+
+	//TEMPORARY TO SILENCE PHAN ERRORS
+	/** @var mixed */			public $Ope;
+	/** @var mixed */			public $OpeAct;
+	/** @var mixed */			public $OpeArg;
+	/** @var mixed */			public $OpePrm;
+	/** @var mixed */			public $OpeEnd;
+	/** @var mixed */			public $OpeMOK;
+	/** @var mixed */			public $OpeMKO;
+	/** @var mixed */			public $MSave;
+	/** @var mixed */			public $AttName;
+	/** @var mixed */			public $AttBeg;
+	/** @var mixed */			public $AttBegM;
+	/** @var mixed */			public $AttEnd;
+	/** @var mixed */			public $InsPos;
+	/** @var mixed */			public $InsLen;
+	/** @var mixed */			public $DelPos;
+	/** @var mixed */			public $DelLen;
+	/** @var mixed */			public $PosBeg2;
+	/** @var mixed */			public $PosEnd2;
+	/** @var mixed */			public $BlockSrc;
+	/** @var mixed */			public $P1;
+	/** @var mixed */			public $FieldOutside;
+	/** @var mixed */			public $FOStop;
+	/** @var mixed */			public $BDefLst;
+	/** @var mixed */			public $NoData;
+	/** @var mixed */			public $Special;
+	/** @var mixed */			public $SerialEmpty;
+	/** @var mixed */			public $WhenFound;
+	/** @var mixed */			public $WhenDefault;
+	/** @var mixed */			public $WhenSeveral;
+	/** @var mixed */			public $WhenLst;
+	/** @var mixed */			public $WhenNbr;
+	/** @var mixed */			public $SectionNbr;
+	/** @var mixed */			public $SectionLst;
+	/** @var mixed */			public $PosDefBeg;
+	/** @var mixed */			public $PosDefEnd;
+	/** @var mixed */			public $WhenDefaultBeforeNS;
 
 
 

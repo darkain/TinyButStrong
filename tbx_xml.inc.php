@@ -6,7 +6,7 @@ trait tbx_xml {
 
 	/**
 	 * Prepare all informations to move a locator according to parameter "att".
-	 * @param mixed $MoveLocLst true to simple move the loc
+	 * @param bool|object[] $locatorList true to simple move the loc
 	 */
 	function f_Xml_AttFind(&$Txt, &$Loc, $locatorList=false, $property=false) {
 	// att=div#class ; att=((div))#class ; att=+((div))#class

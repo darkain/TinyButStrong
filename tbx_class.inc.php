@@ -1159,7 +1159,6 @@ class tbx {
 
 		while ($BlockId < $BlockNbr) {
 
-			$RecSpe = 0;  // Row with a special block's definition (used for the navigation bar)
 			$QueryOk = true;
 			$this->_CurrBlock = trim($BlockLst[$BlockId]);
 			if ($this->_CurrBlock==='*') {
@@ -1172,8 +1171,6 @@ class tbx {
 			$LocR = $this->meth_Locator_FindBlockLst($Txt, $this->_CurrBlock);
 
 			if ($LocR->BlockFound) {
-
-				if ($LocR->Special!==false) $RecSpe = $SpeRecNum;
 
 				// Dynamic query
 				if ($LocR->P1) {
@@ -1198,6 +1195,7 @@ class tbx {
 
 					if ($ReturnData && (!$Src->RecSaved)) {
 						unset($tmp);
+						$tmp = NULL;
 						if ($Src->DataOpen($tmp)) {
 							do {
 								$Src->DataFetch();
@@ -1208,6 +1206,7 @@ class tbx {
 
 				}	else {
 					unset($tmp);
+					$tmp = NULL;
 					$QueryOk		= $Src->DataOpen($tmp);
 					if (!$QueryOk) {
 						// prevent from infinit loop
@@ -1231,7 +1230,7 @@ class tbx {
 				} elseif ($LocR->BlockFound === false) {
 					$Src->DataFetch(); // Merge first record only
 				} else {
-					$this->meth_Merge_BlockSections($Txt,$LocR,$Src,$RecSpe);
+					$this->meth_Merge_BlockSections($Txt,$LocR,$Src);
 				}
 				$Src->DataClose(); // Close the resource
 			}
@@ -1262,7 +1261,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	// ???
 	////////////////////////////////////////////////////////////////////////////
-	function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
+	function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src) {
 
 		// Initialise
 		$SecId = 0;
@@ -1301,7 +1300,8 @@ class tbx {
 							if ($GrpDef->AddLastGrp) {
 								$brk_i = &$brk;
 							} else {
-								unset($brk_i); $brk_i = false;
+								unset($brk_i);
+								$brk_i = false;
 							}
 							if (!$brk_i) $brk_i = !($GrpDef->PrevValue===$x);
 							if ($brk_i) {
@@ -1361,7 +1361,7 @@ class tbx {
 				}
 			} else { // Classic merge
 				if ($SecOk) {
-					if ($Src->RecNum===$RecSpe) $SecDef = &$LocR->Special;
+					if ($Src->RecNum === 0) $SecDef = &$LocR->Special;
 					$SecSrc = $this->meth_Merge_SectionNormal($SecDef,$Src);
 				} else {
 					$SecSrc = '';
@@ -1632,35 +1632,54 @@ class tbx {
 
 		// Automatic sub-blocks
 		if (isset($BDef->AutoSub)) {
+			$data = [];
+
 			for ($i=1; $i<=$BDef->AutoSub; $i++) {
 				$name = $BDef->Name.'_sub'.$i;
 				$query = '';
 				$col = $BDef->Prm['sub'.$i];
-				if ($col===true) $col = '';
+
+				if ($col === true) $col = '';
+
 				$col_opt = (substr($col,0,1)==='(') && (substr($col,-1,1)===')');
-				if ($col_opt) $col = substr($col,1,strlen($col)-2);
+
+				if ($col_opt) {
+					$col = substr($col,1,strlen($col)-2);
+				}
+
 				if ($col==='') {
 					// $col_opt cannot be used here because values which are not array nore object are reformated by $Src into an array with keys 'key' and 'val'
 					$data = &$Src->CurrRec;
+
 				} elseif (is_object($Src->CurrRec)) {
 					$data = &$Src->CurrRec->$col;
+
 				} else {
+					$data = [];
+
 					if (array_key_exists($col, $Src->CurrRec)) {
 						$data = &$Src->CurrRec[$col];
-					} else {
-						if (!$col_opt) {
-							throw new tbxException(
-								'for merging the automatic sub-block ['.$name.']','key \''.$col.'\' is not found in record #'.$Src->RecNum.' of block ['.$BDef->Name.']. This key can become optional if you designate it with parenthesis in the main block, i.e.: sub'.$i.'=('.$col.')'
-							);
-						}
-						unset($data); $data = [];
+
+					} else if (!$col_opt) {
+						throw new tbxException(
+							'for merging the automatic sub-block [' . $name . ']: ' .
+							'key "' . $col .
+							'" is not found in record #' . $Src->RecNum .
+							' of block [' . $BDef->Name .
+							']. This key can become optional if you designate it ' .
+							'with parenthesis in the main block, i.e.: sub' . $i .
+							'=(' . $col . ')'
+						);
 					}
 				}
+
 				if (is_string($data)) {
-					$data = explode(',',$data);
-				} elseif (is_null($data) || ($data===false)) {
+					$data = explode(',', $data);
+
+				} elseif (is_null($data) || ($data === false)) {
 					$data = [];
 				}
+
 				$this->meth_Merge_Block($Txt, $name, $data);
 			}
 		}

@@ -125,7 +125,7 @@ fixed.
 * `ope=mok:VALUE` unchanged (magnet??)
 * `ope=mko:VALUE` unchanged (magnet??)
 * `ope=nif:VALUE` unchanged (if current == value, set current='')
-* `ope=msk:VALUE` unchanged (replace '*' in current with value)
+* `ope=msk:VALUE` unchanged (replace '\*' in current with value)
 * `ope=sub:VALUE` added (current - value)
 * `ope=mdx:VALUE` added (value % current)
 * `ope=adx:VALUE` added (value + current)
