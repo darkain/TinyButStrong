@@ -1556,8 +1556,12 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	function meth_Merge_SectionNormal(&$BDef,&$Src) {
 		$Txt		= $BDef->Src;
-		$LocLst		= &$BDef->LocLst;
 		$PosMax		= strlen($Txt);
+
+		$LocLst = [];
+		foreach ($BDef->LocLst as $key => $item) {
+			$LocLst[$key] = clone $item;
+		}
 
 		if ($Src===false) { // Erase all fields
 
