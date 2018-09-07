@@ -6,10 +6,9 @@ trait tbx_xml {
 
 	/**
 	 * Prepare all informations to move a locator according to parameter "att".
-	 * @param mixed $MoveLocLst true to simple move the loc, or an array of loc to rearrange the list after the move.
-	 *              Note: rearrange doest not work with PHP4.
+	 * @param mixed $MoveLocLst true to simple move the loc
 	 */
-	function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $AttDelim=false) {
+	function f_Xml_AttFind(&$Txt, &$Loc, $MoveLocLst=false, $property=false) {
 	// att=div#class ; att=((div))#class ; att=+((div))#class
 
 		$Att = $Loc->PrmLst['att'];
@@ -90,17 +89,22 @@ trait tbx_xml {
 		}
 
 		return ($MoveLocLst)
-			? $this->f_Xml_AttMove($Txt, $Loc, $AttDelim)
+			? $this->f_Xml_AttMove($Txt, $Loc, $property)
 			: true;
 	}
 
 
 
 
-	function f_Xml_AttMove(&$Txt, &$Loc, $AttDelim) {
+	function f_Xml_AttMove(&$Txt, &$Loc, $property=false) {
 
-		if ($AttDelim===false) $AttDelim = $Loc->AttDelimChr;
-		if ($AttDelim===false) $AttDelim = '"';
+		if (!$property) {
+			$AttDelim = ($Loc->AttDelimChr !== false)
+				? $Loc->AttDelimChr
+				: '"';
+		} else {
+			$AttDelim = '';
+		}
 
 		$Ins1 = '';
 		$Ins2 = '';
@@ -120,7 +124,7 @@ trait tbx_xml {
 			$InsPos = $Loc->AttTagEnd;
 			if ($Txt[$InsPos-1]==='/') $InsPos--;
 			if ($Txt[$InsPos-1]===' ') $InsPos--;
-			$Ins1 = ' '.$Loc->AttName.'='.$AttDelim;
+			$Ins1 = ' ' . $Loc->AttName . ($property ? '' : ('='.$AttDelim));
 			$Ins2 = $AttDelim;
 			$Loc->AttBeg = $InsPos + 1;
 			$Loc->AttValBeg = $InsPos + strlen($Ins1) - 1;
@@ -129,7 +133,7 @@ trait tbx_xml {
 			if ($Loc->PosEnd<$Loc->AttEnd) $Loc->AttEnd += -$DelLen;
 			if ($Loc->AttValBeg===false) {
 				$InsPos = $Loc->AttEnd+1;
-				$Ins1 = '='.$AttDelim;
+				$Ins1 = ($property) ? ('') : ('=yy'.$AttDelim);
 				$Ins2 = $AttDelim;
 				$Loc->AttValBeg = $InsPos+1;
 			} elseif (isset($Loc->PrmLst['attadd'])) {
@@ -152,7 +156,7 @@ trait tbx_xml {
 			$InsLen = strlen($InsTxt);
 			$PosBeg = $InsPos + strlen($Ins1);
 			$PosEnd = $PosBeg + 1;
-			$Txt = substr_replace($Txt,$InsTxt,$InsPos,0);
+			$Txt = substr_replace($Txt, $InsTxt, $InsPos, 0);
 			$Loc->AttEnd = $InsPos + $InsLen - 1;
 			$Loc->AttTagEnd += $InsLen;
 		}

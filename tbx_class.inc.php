@@ -39,6 +39,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function _find(&$Txt, $Name, $Pos, $ChrSub) {
 	// Find a TBX Locator
 
@@ -113,6 +116,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function _replace(&$Txt, &$Loc, &$Value, $SubStart=false, $Src=false) {
 	// This function enables to merge a locator with a text and returns the position just after the replaced block
 	// This position can be useful because we don't know in advance how $Value will be replaced.
@@ -246,6 +252,41 @@ class tbx {
 
 				case isset($Loc->PrmLst['disabled']):
 					$Loc->mode			= TBX_CONVERT_DISABLED;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['autofocus']):
+					$Loc->mode			= TBX_CONVERT_AUTOFOCUS;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['editable']):
+					$Loc->mode			= TBX_CONVERT_EDITABLE;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['contenteditable']):
+					$Loc->mode			= TBX_CONVERT_EDITABLE;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['hidden']):
+					$Loc->mode			= TBX_CONVERT_HIDDEN;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['reversed']):
+					$Loc->mode			= TBX_CONVERT_REVERSED;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['required']):
+					$Loc->mode			= TBX_CONVERT_REQUIRED;
+					$Loc->ConvProtect	= false;
+				break;
+
+				case isset($Loc->PrmLst['scoped']):
+					$Loc->mode			= TBX_CONVERT_SCOPED;
 					$Loc->ConvProtect	= false;
 				break;
 
@@ -424,9 +465,6 @@ class tbx {
 					case 53: $CurrVal = $Loc->OpePrm[$i] - ('0'+$CurrVal); break;
 					case 54: $CurrVal = $Loc->OpePrm[$i] * ('0'+$CurrVal); break;
 					case 55: $CurrVal = $Loc->OpePrm[$i] / ('0'+$CurrVal); break;
-
-					case 60: $CurrVal = ($Loc->OpePrm[$i] == $CurrVal) ? 'checked' : ''; break;
-					case 61: $CurrVal = ($Loc->OpePrm[$i] == $CurrVal) ? 'selected' : ''; break;
 				}
 			}
 		}
@@ -458,32 +496,70 @@ class tbx {
 			case TBX_CONVERT_FORMAT:
 				if (isset($Loc->PrmLst['format'])) {
 					$CurrVal = sprintf($Loc->PrmLst['format'], $this->_string($CurrVal));
+
 				} else if (isset($Loc->PrmLst['sprintf'])) {
 					$CurrVal = sprintf($Loc->PrmLst['sprintf'], $this->_string($CurrVal));
+
 				} else {
 					throw new tbxLocException($Loc, 'invalid format');
 				}
 			break;
 
 			case TBX_CONVERT_SELECTED:
-				$CurrVal = $this->_property($Loc, $CurrVal, 'selected');
+				$this->property($Txt, $Loc, $CurrVal, 'selected');
 			break;
 
 			case TBX_CONVERT_CHECKED:
-				$CurrVal = $this->_property($Loc, $CurrVal, 'checked');
+				$this->property($Txt, $Loc, $CurrVal, 'checked');
 			break;
 
 			case TBX_CONVERT_DISABLED:
-				$CurrVal = $this->_property($Loc, $CurrVal, 'disabled');
+				$this->property($Txt, $Loc, $CurrVal, 'disabled');
+			break;
+
+			case TBX_CONVERT_AUTOFOCUS:
+				$this->property($Txt, $Loc, $CurrVal, 'autofocus');
+			break;
+
+			case TBX_CONVERT_EDITABLE:
+				$this->property($Txt, $Loc, $CurrVal, 'editable', 'contenteditable');
+			break;
+
+			case TBX_CONVERT_HIDDEN:
+				$this->property($Txt, $Loc, $CurrVal, 'hidden');
+			break;
+
+			case TBX_CONVERT_REVERSED:
+				$this->property($Txt, $Loc, $CurrVal, 'reversed');
+			break;
+
+			case TBX_CONVERT_REQUIRED:
+				$this->property($Txt, $Loc, $CurrVal, 'required');
+			break;
+
+			case TBX_CONVERT_SCOPED:
+				$this->property($Txt, $Loc, $CurrVal, 'scoped');
 			break;
 
 			case TBX_CONVERT_FUNCTION:
 				if (isset($Loc->PrmLst['function'])) {
-					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['function']);
+					$CurrVal = $this->tbxfunction(
+						$this->_string($CurrVal),
+						$Loc->PrmLst['function']
+					);
+
 				} else if (isset($Loc->PrmLst['f'])) {
-					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['f']);
+					$CurrVal = $this->tbxfunction(
+						$this->_string($CurrVal),
+						$Loc->PrmLst['f']
+					);
+
 				} else if (isset($Loc->PrmLst['convert'])) {
-					$CurrVal = $this->tbxfunction($this->_string($CurrVal), $Loc->PrmLst['convert']);
+					$CurrVal = $this->tbxfunction(
+						$this->_string($CurrVal),
+						$Loc->PrmLst['convert']
+					);
+
 				} else {
 					throw new tbxLocException($Loc, 'invalid function');
 				}
@@ -584,7 +660,7 @@ class tbx {
 
 
 		if (isset($Loc->PrmLst['att'])) {
-			$this->f_Xml_AttFind($Txt, $Loc, true, false);
+			$this->f_Xml_AttFind($Txt, $Loc, true);
 			if (isset($Loc->PrmLst['atttrue'])) {
 				$CurrVal = tbxLocator::AttBoolean($CurrVal, $Loc->PrmLst['atttrue'], $Loc->AttName);
 				$Loc->PrmLst['magnet'] = '#';
@@ -625,7 +701,7 @@ class tbx {
 					if ($Loc->PrmLst['magnet'] === '#') {
 						if (!isset($Loc->AttBeg)) {
 							$Loc->PrmLst['att'] = '.';
-							$this->f_Xml_AttFind($Txt, $Loc, true, false);
+							$this->f_Xml_AttFind($Txt, $Loc, true);
 						}
 
 						if (isset($Loc->AttBeg)) {
@@ -656,7 +732,7 @@ class tbx {
 
 			} else if ($Loc->MagnetId === TBX_MAGNET_ATTR) {
 				$Loc->PrmLst['att'] = '.';
-				$this->f_Xml_AttFind($Txt, $Loc, false, true);
+				$this->f_Xml_AttFind($Txt, $Loc, false);
 			}
 
 			switch ($Loc->MagnetId) {
@@ -722,6 +798,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Locator_FindBlockNext(&$Txt,$BlockName,$PosBeg,$ChrSub,$Mode,&$P1,&$FieldBefore) {
 	// Return the first block locator just after the PosBeg position
 	// Mode = 1 : Merge_Auto => doesn't save $Loc->BlockSrc, save the bounds of TBX Def tags instead, return also fields
@@ -819,6 +898,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Locator_FindBlockLst(&$Txt, $BlockName, $Pos=0) {
 	// Return a locator object covering all block definitions, even if there is no block definition found.
 
@@ -1047,6 +1129,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Merge_Block(&$Txt, $BlockLst, &$SrcId) {
 
 		$BlockSave = $this->_CurrBlock;
@@ -1168,6 +1253,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Merge_BlockSections(&$Txt,&$LocR,&$Src,&$RecSpe) {
 
 		// Initialise
@@ -1337,6 +1425,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function _mergeAuto(&$text, $name) {
 	// Merge automatic fields
 
@@ -1377,7 +1468,9 @@ class tbx {
 
 
 
-	// Merge Special Fields ([onshow..*])
+	////////////////////////////////////////////////////////////////////////////
+	// MERGE SPECIAL FIELDS ([ONSHOW..*])
+	////////////////////////////////////////////////////////////////////////////
 	protected function _mergeSpecial(&$Txt,&$Loc) {
 		if (!isset($Loc->SubLst[1])) {
 			$error = 'missing subname.';
@@ -1417,6 +1510,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function _outside(&$Txt, &$Src, $PosMax) {
 		$Pos = 0;
 		$SubStart = ($Src->CurrRec===false) ? false : 0;
@@ -1441,6 +1537,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Merge_SectionNormal(&$BDef,&$Src) {
 		$Txt		= $BDef->Src;
 		$LocLst		= &$BDef->LocLst;
@@ -1555,6 +1654,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	function meth_Merge_SectionSerial(&$BDef,&$SrId,&$LocR) {
 
 		$Txt = $BDef->Src;
@@ -1668,7 +1770,9 @@ class tbx {
 
 
 
-	// Simply update an array
+	////////////////////////////////////////////////////////////////////////////
+	// SIMPLY UPDATE AN ARRAY
+	////////////////////////////////////////////////////////////////////////////
 	static function f_Misc_UpdateArray(&$array, $numerical, $v, $d) {
 		if (!tbx_array($v)) {
 			if (is_null($v)) {
@@ -1707,6 +1811,10 @@ class tbx {
 
 
 
+
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	static function f_Misc_CheckCondition($Str) {
 	// Check if an expression like "exrp1=expr2" is true or false.
 
@@ -1805,8 +1913,10 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// DELETE THE STRING DELIMITERS
+	////////////////////////////////////////////////////////////////////////////
 	static function f_Misc_DelDelimiter(&$Txt,$Delim) {
-	// Delete the string delimiters
 		$len = strlen($Txt);
 		if (($len>1) && ($Txt[0]===$Delim)) {
 			if ($Txt[$len-1]===$Delim) $Txt = substr($Txt,1,$len-2);
@@ -1819,6 +1929,9 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// LOAD A TEMPLATE FILE
+	////////////////////////////////////////////////////////////////////////////
 	protected function _file(&$data, $file) {
 		if (!empty($this->filepath)) {
 			$path = dirname(reset($this->filepath)).DIRECTORY_SEPARATOR.$file;
@@ -1841,6 +1954,33 @@ class tbx {
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// PROCESS A PROPERTY
+	////////////////////////////////////////////////////////////////////////////
+	function property(&$text, &$locator, &$value, $short, $long=false) {
+		if ($long === false) {
+			$long = $short;
+		} else {
+			if (!isset($locator->PrmLst[$short])) {
+				$locator->PrmLst[$short] = $locator->PrmLst[$long];
+			}
+		}
+
+		if (!empty($this->_property($locator, $value, $short))) {
+			$locator->PrmLst['att']		= $long;
+			$locator->PrmLst['atttrue']	= true;
+			$this->f_Xml_AttFind($text, $locator, true, true);
+		}
+
+		$value = '';
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
 	protected function _property($locator, $value, $type) {
 		$property = $locator->PrmLst[$type];
 

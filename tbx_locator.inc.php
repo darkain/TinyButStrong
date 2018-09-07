@@ -539,7 +539,7 @@ class tbxLocator {
 					$li = &$LocLst[$i];
 					if (isset($li->PrmLst['att'])) {
 						$LocSrc = substr($Txt,$li->PosBeg,$li->PosEnd-$li->PosBeg+1); // for error message
-						if ($this->tbx->f_Xml_AttFind($Txt, $li, $LocLst, false)) {
+						if ($this->tbx->f_Xml_AttFind($Txt, $li, $LocLst)) {
 							if (isset($Loc->PrmLst['atttrue'])) {
 								$li->PrmLst['magnet'] = '#';
 								$li->PrmLst['ope'] = (isset($li->PrmLst['ope'])) ? $li->PrmLst['ope'].',attbool' : 'attbool';
@@ -600,19 +600,17 @@ class tbxLocator {
 
 
 
+	// RETURN THE GOOD VALUE FOR A BOOLEAN ATTRIBUTE
 	public static function AttBoolean($CurrVal, $AttTrue, $AttName) {
-	// Return the good value for a boolean attribute
-		if ($AttTrue===true) {
-			if (tbx::_string($CurrVal)==='') {
-				return '';
-			} else {
-				return $AttName;
-			}
-		} elseif (tbx::_string($CurrVal)===$AttTrue) {
-			return $AttName;
-		} else {
-			return '';
+		if ($AttTrue === true) {
+			return (tbx::_string($CurrVal) !== '')
+				? $AttName
+				: '';
 		}
+
+		return (tbx::_string($CurrVal) === $AttTrue)
+			? $AttName
+			: '';
 	}
 
 
