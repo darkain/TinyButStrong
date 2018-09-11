@@ -240,23 +240,42 @@ class tbxLocator {
 			$SubName = false;
 		} else {
 			if ($Status===1) {
-				$x = substr($Txt, $PosName, $Pos-$PosName);
+				$x = substr(
+					(string) $Txt,
+					(int) $PosName,
+					$Pos - $PosName
+				);
 			} else {
-				$x = substr($Txt, $PosName, $PosNend-$PosName);
+				$x = substr(
+					(string) $Txt,
+					(int) $PosName,
+					$PosNend - $PosName
+				);
 			}
+
 			if ($XmlTag) $x = strtolower($x);
+
 			if ($SubName) {
 				$this->SubName = trim($x);
 				$SubName = false;
+
 			} else {
 				if ($Status === 4) {
-					$v = trim(substr($Txt,$PosVal,$Pos-$PosVal));
+					$v = trim(substr(
+						(string) $Txt,
+						(int) $PosVal,
+						$Pos - $PosVal
+					));
+
 					if ($DelimCnt === 1) { // Delete quotes inside the value
 						if ($v[0] === $DelimChr) {
 							$len = strlen($v);
 							if ($v[$len-1] === $DelimChr) {
-								$v = substr($v, 1, $len-2);
-								$v = str_replace($DelimChr.$DelimChr,$DelimChr,$v);
+								$v = str_replace(
+									$DelimChr.$DelimChr,
+									$DelimChr,
+									substr($v, 1, $len-2)
+								);
 							}
 						}
 					}

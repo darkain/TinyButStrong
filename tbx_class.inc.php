@@ -44,6 +44,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	function _find(&$Txt, $Name, $Pos, $ChrSub) {
 	// Find a TBX Locator
+		if (!is_string($Txt)) $Txt = (string) $Txt;
 
 		$PosEnd			= false;
 		$PosMax			= strlen($Txt) -1;
@@ -847,8 +848,8 @@ class tbx {
 			while ($Loc2 = $this->_find($Txt,$BlockName,$PosBeg,$ChrSub)) {
 				if (isset($Loc2->PrmLst['block'])) {
 					switch ($Loc2->PrmLst['block']) {
-					case 'end':   $Opened--; break;
-					case 'begin': $Opened++; break;
+						case 'end':		$Opened--;		break;
+						case 'begin':	$Opened++;		break;
 					}
 					if ($Opened==0) {
 						if ($Mode===1) {
@@ -856,9 +857,17 @@ class tbx {
 							$Loc->PosEnd2 = $Loc2->PosEnd;
 						} else {
 							if ($Mode===2) {
-								$Loc->BlockSrc = substr($Txt,$Loc->PosEnd+1,$Loc2->PosBeg-$Loc->PosEnd-1);
+								$Loc->BlockSrc = substr(
+									(string) $Txt,
+									$Loc->PosEnd + 1,
+									$Loc2->PosBeg - $Loc->PosEnd - 1
+								);
 							} else {
-								$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$Loc2->PosEnd-$Loc->PosBeg+1);
+								$Loc->BlockSrc = substr(
+									(string) $Txt,
+									$Loc->PosBeg,
+									$Loc2->PosEnd - $Loc->PosBeg + 1
+								);
 							}
 							$Loc->PosEnd = $Loc2->PosEnd;
 						}
@@ -887,11 +896,25 @@ class tbx {
 				return;
 			}
 			if ($Loc->SubOk || ($Mode===3)) {
-				$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$Loc->PosEnd-$Loc->PosBeg+1);
+				$Loc->BlockSrc = substr(
+					(string) $Txt,
+					$Loc->PosBeg,
+					$Loc->PosEnd - $Loc->PosBeg + 1
+				);
+
 				$Loc->PosDefBeg = $beg - $Loc->PosBeg;
 				$Loc->PosDefEnd = $end - $Loc->PosBeg;
+
 			} else {
-				$Loc->BlockSrc = substr($Txt,$Loc->PosBeg,$beg-$Loc->PosBeg).substr($Txt,$end+1,$Loc->PosEnd-$end);
+				$Loc->BlockSrc = substr(
+					(string) $Txt,
+					$Loc->PosBeg,
+					$beg - $Loc->PosBeg
+				) . substr(
+					(string) $Txt,
+					$end + 1,
+					$Loc->PosEnd - $end
+				);
 			}
 		}
 
@@ -1189,13 +1212,12 @@ class tbx {
 
 			// Open the recordset
 			if ($QueryOk) {
+				$tmp = NULL;
 				if ((!$LocR->BlockFound) && (!$LocR->FieldOutside)) {
 					// Special case: return data without any block to merge
 					$QueryOk		= false;
 
 					if ($ReturnData && (!$Src->RecSaved)) {
-						unset($tmp);
-						$tmp = NULL;
 						if ($Src->DataOpen($tmp)) {
 							do {
 								$Src->DataFetch();
@@ -1205,8 +1227,6 @@ class tbx {
 					}
 
 				}	else {
-					unset($tmp);
-					$tmp = NULL;
 					$QueryOk		= $Src->DataOpen($tmp);
 					if (!$QueryOk) {
 						// prevent from infinit loop
@@ -1214,6 +1234,7 @@ class tbx {
 						$WasP1		= false;
 					}
 				}
+				unset($tmp);
 			}
 
 			// Merge sections
@@ -1282,6 +1303,7 @@ class tbx {
 		// Main loop
 		$Src->DataFetch();
 
+		$brk_i = false;
 		while($Src->CurrRec!==false) {
 
 			// Headers and Footers
@@ -1855,7 +1877,7 @@ class tbx {
 	static function f_Misc_CheckCondition($Str) {
 	// Check if an expression like "exrp1=expr2" is true or false.
 
-		$StrZ	= $Str; // same string but without protected data
+		$StrZ	= (string) $Str; // same string but without protected data
 		$Max	= strlen($Str)-1;
 		$p		= strpos($Str, "'");
 

@@ -29,22 +29,15 @@ class tbxDatasource {
 
 
 	public function DataAlert($Msg) {
-		if (tbx_array($this->TBX->_CurrBlock)) {
-			throw new tbxException(
-				$Msg .
-				' when merging block "' .
-				implode(',', $this->TBX->_CurrBlock) .
-				'"'
-			);
-		} else {
-			throw new tbxException(
-				$Msg .
-				' when merging block ' .
-				$this->TBX->_ChrOpen .
-				$this->TBX->_CurrBlock .
-				$this->TBX->_ChrClose
-			);
-		}
+		throw new tbxException(
+			$Msg .
+			' when merging block ' .
+			$this->TBX->_ChrOpen .
+			(tbx_array($this->TBX->_CurrBlock)
+				? implode(',', (array)$this->TBX->_CurrBlock)
+				: $this->TBX->_CurrBlock) .
+			$this->TBX->_ChrClose
+		);
 	}
 
 
@@ -96,7 +89,6 @@ class tbxDatasource {
 		} elseif ($SrcId === false) {
 			$SrcId			= [];
 			$this->Type		= TBX_DS_ARRAY;
-			//$this->DataAlert('the specified source is set to FALSE. Maybe your connection has failed.');
 
 		} else {
 			$this->DataAlert('unsupported variable type : \''.gettype($SrcId).'\'.');
@@ -107,7 +99,7 @@ class tbxDatasource {
 			$this->Type		= $this->DataAlert($ErrMsg);
 		}
 
-		return ($this->Type!==false);
+		return ($this->Type !== false);
 	}
 
 
