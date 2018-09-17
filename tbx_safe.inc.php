@@ -4,74 +4,32 @@
 trait tbx_safe {
 
 	function _safe(&$part, $safe) {
-		$part->ConvStr				= false;
+		$this->_safe_default($part);
 
 		switch (trim(strtolower($safe))) {
 			case 'javascript':
-				$this->_safe_default($part);
 				$part->ConvProtect	= false;
 			break;
 
 
 			case 'js':
-				$this->_safe_default($part);
 				$part->ConvJS		= true;
 			break;
 
 
 			case 'json':
-				$this->_safe_default($part);
 				$part->ConvJson		= true;
 				$part->ConvProtect	= false;
 			break;
 
 
-			//THIS IS DEPRECATED
-			case 'url':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 1;
-				$part->ConvProtect	= false;
-			break;
-
-
-			//THIS IS DEPRECATED
-			case 'urlid':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 2;
-				$part->ConvProtect	= false;
-			break;
-
-
-			//THIS IS DEPRECATED
-			case 'raw':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 3;
-				$part->ConvProtect	= false;
-			break;
-
-
-			//THIS IS DEPRECATED
-			case 'rawid':
-				$this->_safe_default($part);
-				$part->ConvUrl		= 4;
-				$part->ConvProtect	= false;
-			break;
-
-
-			//THIS IS DEPRECATED
-			case 'hex':
-				$part->ConvHex		= true;
-			break;
-
-
-			//HANDLED BY DEFAULT OPTION ABOVE
+			//HANDLED BY DEFAULT OPTION IN _safe_default
 			case 'no':
 			case 'none':
-			//	$part->ConvStr		= false;
 			break;
 
 
-			//HANDLED BY DEFAULT CASE BELOW
+			//HANDLED BY 'DEFAULT' CASE BELOW
 			//case 'yes':
 			//	$part->ConvStr		= true;
 			//break;
@@ -79,6 +37,7 @@ trait tbx_safe {
 
 			case 'nobr':
 			case 'pre':
+			case 'css':
 			case 'textarea':
 				$part->break		= false;
 			//Intentionally falling through case
@@ -95,9 +54,9 @@ trait tbx_safe {
 	function _safe_default(&$part) {
 		if ($part->mode === TBX_CONVERT_SPECIAL) return;
 		$part->mode					= TBX_CONVERT_SPECIAL;
+		$part->ConvStr				= false;
 		$part->ConvJS				= false;
 		$part->ConvJson				= false;
-		$part->ConvUrl				= false;
 	}
 
 

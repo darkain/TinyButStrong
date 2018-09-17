@@ -23,7 +23,6 @@ class tbxLocator {
 	/** @var bool */			public $ConvHex			= false;
 	/** @var bool */			public $ConvJson		= false;
 	/** @var bool */			public $ConvJS			= false;
-	/** @var bool */			public $ConvUrl			= false;
 	/** @var bool */			public $placeholder		= false;
 	/** @var int */				public $mode			= TBX_CONVERT_DEFAULT;
 	/** @var bool */			public $break			= true;

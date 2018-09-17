@@ -277,7 +277,6 @@ trait tbx_api {
 			$locator->mode			= TBX_CONVERT_SPECIAL;
 			$locator->ConvJS		= false;
 			$locator->ConvJson		= true;
-			$locator->ConvUrl		= false;
 			$locator->ConvProtect	= false;
 			return $value;
 		}

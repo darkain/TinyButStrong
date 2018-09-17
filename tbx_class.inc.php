@@ -577,11 +577,7 @@ class tbx {
 
 				$CurrVal = $this->_string($CurrVal);
 
-				if ($Loc->ConvStr)			$this->_htmlsafe($CurrVal, $Loc->break);
-				if ($Loc->ConvUrl === 1)	$CurrVal = urlencode($CurrVal);
-				if ($Loc->ConvUrl === 2)	$CurrVal = strtolower(urlencode(rtrim(substr($CurrVal, 0, 20))));
-				if ($Loc->ConvUrl === 3)	$CurrVal = rawurlencode($CurrVal);
-				if ($Loc->ConvUrl === 4)	$CurrVal = strtolower(rawurlencode(rtrim(substr($CurrVal, 0, 20))));
+				if ($Loc->ConvStr) $this->_htmlsafe($CurrVal, $Loc->break);
 
 				if ($Loc->ConvJS) {
 					$CurrVal = str_replace(
