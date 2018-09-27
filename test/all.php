@@ -22,8 +22,8 @@ function tbxTest($expected) {
 		echo "EXPECTED:\n'" . (is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
 		echo "TEMPLATE:\n'" . ((string)$tbx) . "'\n\n";
 	} else {
-		echo "EXPECTED:\n'" . htmlspecialchars(is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
-		echo "TEMPLATE:\n'" . htmlspecialchars((string)$tbx) . "'\n\n";
+		echo "EXPECTED:\n'" . tbx::html(is_bool($expected) ? 'TRUE' : $expected) . "'\n\n";
+		echo "TEMPLATE:\n'" . tbx::html((string)$tbx) . "'\n\n";
 	}
 	exit(1);
 }

@@ -56,18 +56,22 @@ tbxTest("this is a very long string that is about to be broken apart into two di
 
 
 
-$tbx->loadString('[x;convert=crc32]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=crc32]')
+		->field('x', 'hello');
 
-tbxTest('3d653119');
+	tbxTest('3d653119');
+}
 
 
 
 
-$tbx->loadString('[x;convert=crc32b]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=crc32b]')
+		->field('x', 'hello');
 
-tbxTest('3610a686');
+	tbxTest('3610a686');
+}
 
 
 
@@ -128,18 +132,22 @@ tbxTest('text  with  space');
 
 
 
-$tbx->loadString('[x;convert=md2]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=md2]')
+		->field('x', 'hello');
 
-tbxTest('a9046c73e00331af68917d3804f70655');
+	tbxTest('a9046c73e00331af68917d3804f70655');
+}
 
 
 
 
-$tbx->loadString('[x;convert=md4]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=md4]')
+		->field('x', 'hello');
 
-tbxTest('866437cb7a794bce2b727acc0362ee27');
+	tbxTest('866437cb7a794bce2b727acc0362ee27');
+}
 
 
 
@@ -192,26 +200,32 @@ tbxTest('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
 
 
 
-$tbx->loadString('[x;convert=sha256]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=sha256]')
+		->field('x', 'hello');
 
-tbxTest('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
-
-
-
-
-$tbx->loadString('[x;convert=sha384]')
-	->field('x', 'hello');
-
-tbxTest('59e1748777448c69de6b800d7a33bbfb9ff1b463e44354c3553bcdb9c666fa90125a3c79f90397bdf5f6a13de828684f');
+	tbxTest('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+}
 
 
 
 
-$tbx->loadString('[x;convert=sha512]')
-	->field('x', 'hello');
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=sha384]')
+		->field('x', 'hello');
 
-tbxTest('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+	tbxTest('59e1748777448c69de6b800d7a33bbfb9ff1b463e44354c3553bcdb9c666fa90125a3c79f90397bdf5f6a13de828684f');
+}
+
+
+
+
+if (extension_loaded('hash')) {
+	$tbx->loadString('[x;convert=sha512]')
+		->field('x', 'hello');
+
+	tbxTest('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+}
 
 
 

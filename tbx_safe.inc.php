@@ -64,7 +64,7 @@ trait tbx_safe {
 
 	// Escape HTML special characters
 	function _htmlsafe(&$value, $break=true) {
-		$value = htmlspecialchars($value, TBX_SPECIAL_CHARS);
+		$value = static::html($value);
 		if ($break) $value			= nl2br($value);
 	}
 

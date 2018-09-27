@@ -46,7 +46,21 @@ trait tbx_api {
 
 
 	public static function html($html) {
-		return htmlspecialchars($html, TBX_SPECIAL_CHARS);
+		return htmlspecialchars((string)$html, TBX_SPECIAL_CHARS, 'UTF-8', true);
+	}
+
+
+
+
+	public static function entities($html) {
+		return htmlentities((string)$html, TBX_SPECIAL_CHARS, 'UTF-8', true);
+	}
+
+
+
+
+	public static function deentity($html) {
+		return html_entity_decode((string)$html, TBX_SPECIAL_CHARS, 'UTF-8');
 	}
 
 

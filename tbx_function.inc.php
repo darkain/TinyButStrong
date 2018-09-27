@@ -67,19 +67,21 @@ trait tbx_function {
 			break;
 
 
-			case 'html_entity_decode':
-				$value = html_entity_decode($value);
+			case 'htmlspecialchars':
+			case 'html':
+				$value = static::html($value);
 			break;
 
 
 			case 'htmlentities':
-				$value = htmlentities($value, TBX_SPECIAL_CHARS);
+			case 'entities':
+				$value = static::entities($value);
 			break;
 
 
-			case 'htmlspecialchars':
-			case 'html':
-				$value = htmlspecialchars($value, TBX_SPECIAL_CHARS);
+			case 'html_entity_decode':
+			case 'deentity':
+				$value = static::deentity($value);
 			break;
 
 
