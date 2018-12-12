@@ -134,7 +134,7 @@ class tbx {
 					if (isset($Value[$x])) {
 						$Value = &$Value[$x];
 
-					} elseif (array_key_exists($x,$Value)) {
+					} else if (array_key_exists($x,$Value)) {
 						// can happens when value is NULL
 						$Value = &$Value[$x];
 
@@ -149,7 +149,7 @@ class tbx {
 						break;
 					}
 
-				} elseif (is_object($Value)) {
+				} else if (is_object($Value)) {
 					if (property_exists($Value,$x)) {
 						$prop = new ReflectionProperty($Value,$x);
 						if ($prop->isStatic()) {
@@ -158,18 +158,21 @@ class tbx {
 							$x = &$Value->$x;
 						}
 
-					} elseif (isset($Value->$x)) {
+					} else if (isset($Value->$x)) {
 						$x = $Value->$x; // useful for overloaded property
 
-					} elseif ($Value instanceof pudlObject  &&  $Value->offsetExists($x, false)) {
+					} else if ($Value instanceof pudlObject  &&  $Value->offsetExists($x, false)) {
 						$x = &$Value->$x;
 
-					} elseif ($Value instanceof tbx_plugin) {
+					} else if ($Value instanceof tbx_plugin) {
 						$x = $Value->tbx_render( array_slice($Loc->SubLst, $i) );
 						$i = $Loc->SubNbr;
 
-					} elseif (defined(get_class($Value).'::'.$x)) {
+					} else if (defined(get_class($Value).'::'.$x)) {
 						$x = (constant(get_class($Value).'::'.$x));
+
+					} else if ($x === '@') {
+						$x = get_class($Value);
 
 					} else {
 						if (!$Loc->noerr()) {
@@ -306,7 +309,7 @@ class tbx {
 						$x = strtolower($Loc->PrmLst['protect']);
 						if ($x==='no') {
 							$Loc->ConvProtect = false;
-						} elseif ($x==='yes') {
+						} else if ($x==='yes') {
 							$Loc->ConvProtect = true;
 						}
 					}
@@ -687,10 +690,10 @@ class tbx {
 				if (isset($Loc->PrmLst['.'])) {
 					$Loc->MagnetId = TBX_MAGNET_NBSP;
 
-				} elseif (isset($Loc->PrmLst['ifempty'])) {
+				} else if (isset($Loc->PrmLst['ifempty'])) {
 					$Loc->MagnetId = TBX_MAGNET_IFEMPTY;
 
-				} elseif (isset($Loc->PrmLst['magnet'])) {
+				} else if (isset($Loc->PrmLst['magnet'])) {
 					$Loc->MagnetId = TBX_MAGNET_TAG;
 					$Loc->PosBeg0 = $Loc->PosBeg;
 					$Loc->PosEnd0 = $Loc->PosEnd;
@@ -709,7 +712,7 @@ class tbx {
 							);
 						}
 
-					} elseif (isset($Loc->PrmLst['mtype'])) {
+					} else if (isset($Loc->PrmLst['mtype'])) {
 						switch ($Loc->PrmLst['mtype']) {
 							case 'm+m':	$Loc->MagnetId = TBX_MAGNET_PLUS;	break;
 							case 'm*':	$Loc->MagnetId = TBX_MAGNET_SUFFIX;	break;
@@ -717,7 +720,7 @@ class tbx {
 						}
 					}
 
-				} elseif (isset($Loc->PrmLst['attadd'])) {
+				} else if (isset($Loc->PrmLst['attadd'])) {
 					// In order to delete extra space
 					$Loc->PosBeg0 = $Loc->PosBeg;
 					$Loc->PosEnd0 = $Loc->PosEnd;
@@ -821,9 +824,9 @@ class tbx {
 				}
 				$Block = $Loc->PrmLst['block'];
 				$SearchDef = false;
-			} elseif ($Mode===1) {
+			} else if ($Mode===1) {
 				return $Loc;
-			} elseif ($FirstField===false) {
+			} else if ($FirstField===false) {
 				$FirstField = $Loc;
 			}
 			$PosBeg = $Loc->PosEnd;
@@ -1051,7 +1054,7 @@ class tbx {
 				// Add the text in the list of blocks
 				if (isset($Loc->PrmLst['nodata'])) { // Nodata section
 					$LocR->NoData = &$BDef;
-				} elseif (isset($Loc->PrmLst['when'])) {
+				} else if (isset($Loc->PrmLst['when'])) {
 					if ($LocR->WhenFound===false) {
 						$LocR->WhenFound = true;
 						$LocR->WhenSeveral = false;
@@ -1063,16 +1066,16 @@ class tbx {
 					$i = ++$LocR->WhenNbr;
 					$LocR->WhenLst[$i] = &$BDef;
 					if (isset($Loc->PrmLst['several'])) $LocR->WhenSeveral = true;
-				} elseif (isset($Loc->PrmLst['default'])) {
+				} else if (isset($Loc->PrmLst['default'])) {
 					$LocR->WhenDefault = &$BDef;
 					$LocR->WhenDefaultBeforeNS = ($LocR->SectionNbr===0);
-				} elseif (isset($Loc->PrmLst['headergrp'])) {
+				} else if (isset($Loc->PrmLst['headergrp'])) {
 					$LocR->SectionAddGrp($BlockName, $BDef, 'H', $Loc->PrmLst['headergrp'], 'headergrp');
-				} elseif (isset($Loc->PrmLst['footergrp'])) {
+				} else if (isset($Loc->PrmLst['footergrp'])) {
 					$LocR->SectionAddGrp($BlockName, $BDef, 'F', $Loc->PrmLst['footergrp'], 'footergrp');
-				} elseif (isset($Loc->PrmLst['splittergrp'])) {
+				} else if (isset($Loc->PrmLst['splittergrp'])) {
 					$LocR->SectionAddGrp($BlockName, $BDef, 'S', $Loc->PrmLst['splittergrp'], 'splittergrp');
-				} elseif ($IsParentGrp) {
+				} else if ($IsParentGrp) {
 					$LocR->SectionAddGrp($BlockName, $BDef, 'H', $Loc->PrmLst['parentgrp'], 'parentgrp');
 					$BDef->Fld = $Loc->PrmLst['parentgrp'];
 					$BDef->Txt = &$Txt;
@@ -1086,7 +1089,7 @@ class tbx {
 					$LocR->BlockFound = false;
 					$LocR->PosBeg = false;
 					$LocR->PosEnd = false;
-				} elseif (isset($Loc->PrmLst['serial'])) {
+				} else if (isset($Loc->PrmLst['serial'])) {
 					// Section	with serial subsections
 					$SrSrc = &$BDef->Src;
 					// Search the empty item
@@ -1198,10 +1201,10 @@ class tbx {
 						if ($Src->RecSaved===false) $Src->RecSaving = true;
 					}
 					$WasP1			= true;
-				} elseif (($Src->RecSaved===false) && ($BlockNbr-$BlockId>1)) {
+				} else if (($Src->RecSaved===false) && ($BlockNbr-$BlockId>1)) {
 					$Src->RecSaving	= true;
 				}
-			} elseif ($WasP1) {
+			} else if ($WasP1) {
 				$QueryOk			= false;
 				$WasP1				= false;
 			}
@@ -1244,7 +1247,7 @@ class tbx {
 					} else {
 						$Src->DataAlert('can\'t merge the block with a text value because the block definition is not found');
 					}
-				} elseif ($LocR->BlockFound === false) {
+				} else if ($LocR->BlockFound === false) {
 					$Src->DataFetch(); // Merge first record only
 				} else {
 					$this->meth_Merge_BlockSections($Txt,$LocR,$Src);
@@ -1440,7 +1443,7 @@ class tbx {
 		if ($Src->RecNum===0) {
 			if ($LocR->NoData!==false) {
 				$SecSrc = $LocR->NoData->Src;
-			} elseif(isset($LocR->PrmLst['bmagnet'])) {
+			} else if(isset($LocR->PrmLst['bmagnet'])) {
 				$LocR->EnlargeToTag($Txt, $LocR->PrmLst['bmagnet']);
 			}
 		}
@@ -1472,7 +1475,7 @@ class tbx {
 			if ($locator->SubLst[0]==='') {
 				$position = $this->_mergeSpecial($text, $locator);
 
-			} elseif ($locator->SubLst[0][0]==='~') {
+			} else if ($locator->SubLst[0][0]==='~') {
 				if ($locator->noerr()) {
 					$position = $this->_replace($text, $locator, $value);
 				} else {
@@ -1547,7 +1550,7 @@ class tbx {
 	////////////////////////////////////////////////////////////////////////////
 	function _outside(&$Txt, &$Src, $PosMax) {
 		$Pos = 0;
-		$SubStart = ($Src->CurrRec===false) ? false : 0;
+		$SubStart = ($Src->CurrRec === false) ? false : 0;
 		do {
 			$Loc = $this->_find($Txt, $this->_CurrBlock, $Pos, '.');
 			if ($Loc === false) return;
@@ -1669,7 +1672,7 @@ class tbx {
 					// $col_opt cannot be used here because values which are not array nore object are reformated by $Src into an array with keys 'key' and 'val'
 					$data = &$Src->CurrRec;
 
-				} elseif (is_object($Src->CurrRec)) {
+				} else if (is_object($Src->CurrRec)) {
 					$data = &$Src->CurrRec->$col;
 
 				} else {
@@ -1694,7 +1697,7 @@ class tbx {
 				if (is_string($data)) {
 					$data = explode(',', $data);
 
-				} elseif (is_null($data) || ($data === false)) {
+				} else if (is_null($data) || ($data === false)) {
 					$data = [];
 				}
 
@@ -1774,7 +1777,7 @@ class tbx {
 						} else {
 							$DelBlock = true;
 						}
-					} elseif(isset($LocA->PrmLst['default'])) {
+					} else if(isset($LocA->PrmLst['default'])) {
 						if ($Displayed) {
 							$DelBlock = true;
 						} else {
@@ -1855,7 +1858,7 @@ class tbx {
 			} else { // string keys
 				if (is_null($a)) {
 					unset($array[$p]);
-				/*} elseif ($numerical==='frm') {
+				/*} else if ($numerical==='frm') {
 					self::f_Misc_FormatSave($a, $p);*/
 				} else {
 					$array[$p] = $a;
@@ -1883,7 +1886,7 @@ class tbx {
 				if (substr($StrZ, $p, 1) === "'") {
 					$In = !$In;
 
-				} elseif ($In) {
+				} else if ($In) {
 					$StrZ = substr_replace($StrZ, 'z', $p, 1);
 				}
 			}
@@ -1902,7 +1905,7 @@ class tbx {
 				$Ope	= '-+';
 				$p--;
 
-			} elseif (($p<$Max) && (substr($StrZ, $p+1, 1) === '-')) {
+			} else if (($p<$Max) && (substr($StrZ, $p+1, 1) === '-')) {
 				$Ope	= '+-';
 
 			} else {
@@ -1916,21 +1919,21 @@ class tbx {
 				$Ope = '!=';
 				$p--;
 
-			} elseif ($x === '~') {
+			} else if ($x === '~') {
 				$Ope = '~=';
 				$p--;
 
-			} elseif ($p<$Max) {
+			} else if ($p<$Max) {
 				$y = substr($StrZ, $p+1, 1);
 
 				if ($y === '=') {
 					$Ope = '==';
 
-				} elseif (($x === '+') && ($y === '-')) {
+				} else if (($x === '+') && ($y === '-')) {
 					$Ope = '+=-';
 					$p--;
 
-				} elseif (($x === '-') && ($y === '+')) {
+				} else if (($x === '-') && ($y === '+')) {
 					$Ope = '-=+';
 					$p--;
 				}
