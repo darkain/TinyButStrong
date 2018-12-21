@@ -28,11 +28,19 @@ trait tbx_api {
 
 		foreach ($names as $name) {
 			$name = trim($name);
+
 			switch ($name) {
-				case '':		continue;
-				case 'onload':	$this->_mergeOn('onload', $source);	continue;
-				case 'onshow':	$this->_mergeOn('onshow', $source);	continue;
+				case '': continue 2;
+
+				case 'onload':
+					$this->_mergeOn('onload', $source);
+				continue 2;
+
+				case 'onshow':
+					$this->_mergeOn('onshow', $source);
+				continue 2;
 			}
+
 			$begin = 0;
 			while ($part = $this->_find($source, $name, $begin, '.')) {
 				$begin = $this->_replace($source, $part, $value, $start);

@@ -328,18 +328,18 @@ class tbx {
 							if (($Loc->mode === TBX_CONVERT_DEFAULT)  &&  $Loc->ConvStr) {
 								$Loc->mode = TBX_CONVERT_UNKNOWN;
 							}
-						continue;
+						continue 2;
 
 						case 'minv':
 							$Loc->OpeAct[$i] = 11;
 							$Loc->MSave = $Loc->MagnetId;
-						continue;
+						continue 2;
 
-						case 'upper':	$Loc->OpeAct[$i] = 15;	continue;
-						case 'lower':	$Loc->OpeAct[$i] = 16;	continue;
-						case 'upper1':	$Loc->OpeAct[$i] = 17;	continue;
-						case 'upperw':	$Loc->OpeAct[$i] = 18;	continue;
-						case 'upperx':	$Loc->OpeAct[$i] = 19;	continue;
+						case 'upper':	$Loc->OpeAct[$i] = 15;	continue 2;
+						case 'lower':	$Loc->OpeAct[$i] = 16;	continue 2;
+						case 'upper1':	$Loc->OpeAct[$i] = 17;	continue 2;
+						case 'upperw':	$Loc->OpeAct[$i] = 18;	continue 2;
+						case 'upperx':	$Loc->OpeAct[$i] = 19;	continue 2;
 
 						default:
 							switch (substr($ope,0,4)) {
@@ -348,24 +348,90 @@ class tbx {
 									$Loc->OpePrm[$i] = intval(trim(substr($ope,4)));
 									$Loc->OpeEnd = (isset($Loc->PrmLst['maxend'])) ? $Loc->PrmLst['maxend'] : '...';
 									if ($Loc->OpePrm[$i]<=0) $Loc->Ope = false;
-								continue;
+								continue 3;
 
-								case 'mod:':	$Loc->OpeAct[$i]	= 5;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'add:':	$Loc->OpeAct[$i]	= 6;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'sub:':	$Loc->OpeAct[$i]	=50;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'mul:':	$Loc->OpeAct[$i]	= 7;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'div:':	$Loc->OpeAct[$i]	= 8;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'mdx:':	$Loc->OpeAct[$i]	=51;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'adx:':	$Loc->OpeAct[$i]	=52;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'sbx:':	$Loc->OpeAct[$i]	=53;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'mlx:':	$Loc->OpeAct[$i]	=54;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'dvx:':	$Loc->OpeAct[$i]	=55;	$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));	continue;
-								case 'mok:':	$Loc->OpeAct[$i]	= 9;	$Loc->OpeMOK[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
-								case 'mko:':	$Loc->OpeAct[$i]	=10;	$Loc->OpeMKO[]		= trim(substr($ope,4));	$Loc->MSave = $Loc->MagnetId;	continue;
-								case 'nif:':	$Loc->OpeAct[$i]	=12;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
-								case 'msk:':	$Loc->OpeAct[$i]	=13;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
-								case 'chk:':	$Loc->OpeAct[$i]	=60;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
-								case 'sel:':	$Loc->OpeAct[$i]	=61;	$Loc->OpePrm[$i]	= trim(substr($ope,4));	continue;
+								case 'mod:':
+									$Loc->OpeAct[$i]	= 5;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'add:':
+									$Loc->OpeAct[$i]	= 6;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'sub:':
+									$Loc->OpeAct[$i]	=50;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'mul:':
+									$Loc->OpeAct[$i]	= 7;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'div:':
+									$Loc->OpeAct[$i]	= 8;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'mdx:':
+									$Loc->OpeAct[$i]	=51;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'adx:':
+									$Loc->OpeAct[$i]	=52;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'sbx:':
+									$Loc->OpeAct[$i]	=53;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'mlx:':
+									$Loc->OpeAct[$i]	=54;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'dvx:':
+									$Loc->OpeAct[$i]	=55;
+									$Loc->OpePrm[$i]	= '0'+trim(substr($ope,4));
+								continue 3;
+
+								case 'mok:':
+									$Loc->OpeAct[$i]	= 9;
+									$Loc->OpeMOK[]		= trim(substr($ope,4));
+									$Loc->MSave = $Loc->MagnetId;
+								continue 3;
+
+								case 'mko:':
+									$Loc->OpeAct[$i]	=10;
+									$Loc->OpeMKO[]		= trim(substr($ope,4));
+									$Loc->MSave = $Loc->MagnetId;
+								continue 3;
+
+								case 'nif:':
+									$Loc->OpeAct[$i]	=12;
+									$Loc->OpePrm[$i]	= trim(substr($ope,4));
+								continue 3;
+
+								case 'msk:':
+									$Loc->OpeAct[$i]	=13;
+									$Loc->OpePrm[$i]	= trim(substr($ope,4));
+								continue 3;
+
+								case 'chk:':
+									$Loc->OpeAct[$i]	=60;
+									$Loc->OpePrm[$i]	= trim(substr($ope,4));
+								continue 3;
+
+								case 'sel:':
+									$Loc->OpeAct[$i]	=61;
+									$Loc->OpePrm[$i]	= trim(substr($ope,4));
+								continue 3;
+
 
 								default:
 									if (!$Loc->noerr()) {
@@ -373,9 +439,9 @@ class tbx {
 											'ope doesnt support: ' . $ope
 										);
 									}
-								continue;
+								continue 3;
 							}
-						continue;
+						continue 2;
 					}
 				}
 			}
