@@ -1,5 +1,9 @@
 <?php
 
+
+$__tbx_test_total__ = 0;
+
+
 if (empty($tbx)) {
 	if (empty($af)) {
 		date_default_timezone_set('GMT');
@@ -10,8 +14,11 @@ if (empty($tbx)) {
 }
 
 
+
 function tbxTest($expected) {
-	global $tbx;
+	global $tbx, $__tbx_test_total__;
+	$__tbx_test_total__++;
+
 	if (is_string($expected)	&&	$expected === (string)$tbx) return;
 	if (is_bool($expected)		&&	$expected) return;
 	$trace = debug_backtrace()[0];
@@ -30,6 +37,9 @@ function tbxTest($expected) {
 
 
 function tbxError($exception, $expected) {
+	global $__tbx_test_total__;
+	$__tbx_test_total__++;
+
 	if ($exception->getMessage() === $expected) return;
 	$trace = debug_backtrace()[0];
 	echo "ERROR: FAILED!!\n\n";
