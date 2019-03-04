@@ -145,6 +145,7 @@ trait tbx_function {
 			break;
 
 
+			case 'url':
 			case 'rawurlencode':
 				$value = rawurlencode($value);
 			break;
@@ -249,18 +250,17 @@ trait tbx_function {
 
 
 			case 'urlencode':
-			case 'url':
 				$value = urlencode($value);
 			break;
 
 
 			case 'urlid':
-				$value = strtolower(urlencode(rtrim(substr($value, 0, 20))));
+				$value = strtolower(rawurlencode(rtrim(substr($value, 0, 20))));
 			break;
 
 
 			case 'urlname':
-				$value = strtolower(urlencode($value));
+				$value = strtolower(rawurlencode($value));
 			break;
 
 
