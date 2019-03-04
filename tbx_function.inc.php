@@ -135,13 +135,9 @@ trait tbx_function {
 			break;
 
 
-			case 'rawid':
-				$value = strtolower(rawurlencode(rtrim(substr($value, 0, 20))));
-			break;
-
-
-			case 'rawname':
-				$value = strtolower(rawurlencode($value));
+			case 'deurl':
+			case 'rawurldecode':
+				$value = rawurldecode($value);
 			break;
 
 
@@ -246,6 +242,11 @@ trait tbx_function {
 
 			case 'unhex':
 				$value = hex2bin($value);
+			break;
+
+
+			case 'urldecode':
+				$value = urldecode($value);
 			break;
 
 
