@@ -703,6 +703,7 @@ class tbx {
 			}
 
 			if ($x===true) $x = $CurrVal;
+
 			$x = trim(str_replace('[val]', $CurrVal, $x));
 			$CurrVal = '';
 			if ($x!=='') {
@@ -715,6 +716,9 @@ class tbx {
 					}
 				} else {
 					$this->_file($CurrVal, $x);
+
+					$CurrVal = $this->addClass($Loc, $CurrVal);
+
 					if (isset($Loc->PrmLst['file'])) {
 						$this->onload($CurrVal);
 					}
@@ -865,6 +869,43 @@ class tbx {
 
 		return $NewEnd; // Return the new end position of the field
 
+	}
+
+
+
+
+	////////////////////////////////////////////////////////////////////////////
+	// ???
+	////////////////////////////////////////////////////////////////////////////
+	private function addClass($locator, $value) {
+		if (isset($locator->PrmLst['class'])) {
+			$value = preg_replace(
+				'/\s/',
+				' class="' . $locator->PrmLst['class'] . '"',
+				$value,
+				1
+			);
+		}
+
+		if (isset($locator->PrmLst['id'])) {
+			$value = preg_replace(
+				'/\s/',
+				' id="' . $locator->PrmLst['id'] . '"',
+				$value,
+				1
+			);
+		}
+
+		if (isset($locator->PrmLst['data-id'])) {
+			$value = preg_replace(
+				'/\s/',
+				' data-id="' . $locator->PrmLst['data-id'] . '"',
+				$value,
+				1
+			);
+		}
+
+		return $value;
 	}
 
 
