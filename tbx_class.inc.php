@@ -881,7 +881,7 @@ class tbx {
 		if (isset($locator->PrmLst['class'])) {
 			$value = preg_replace(
 				'/\s/',
-				' class="' . $locator->PrmLst['class'] . '"',
+				' class="' . $locator->PrmLst['class'] . '" ',
 				$value,
 				1
 			);
@@ -890,7 +890,7 @@ class tbx {
 		if (isset($locator->PrmLst['id'])) {
 			$value = preg_replace(
 				'/\s/',
-				' id="' . $locator->PrmLst['id'] . '"',
+				' id="' . $locator->PrmLst['id'] . '" ',
 				$value,
 				1
 			);
@@ -899,7 +899,7 @@ class tbx {
 		if (isset($locator->PrmLst['data-id'])) {
 			$value = preg_replace(
 				'/\s/',
-				' data-id="' . $locator->PrmLst['data-id'] . '"',
+				' data-id="' . $locator->PrmLst['data-id'] . '" ',
 				$value,
 				1
 			);
