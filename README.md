@@ -1,6 +1,6 @@
 TinyButXtreme
 =============
-[![Build Status](https://travis-ci.org/darkain/TinyButXtreme.svg?branch=master)](https://travis-ci.org/darkain/TinyButXtreme)
+[![Build Status](https://travis-ci.com/darkain/TinyButXtreme.svg?branch=master)](https://app.travis-ci.com/github/darkain/TinyButXtreme)
 
 
 
