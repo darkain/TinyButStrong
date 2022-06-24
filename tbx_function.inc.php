@@ -56,11 +56,6 @@ trait tbx_function {
 			break;
 
 
-			case 'hebrevc':
-				$value = hebrevc($value);
-			break;
-
-
 			case 'hex2bin':
 			case 'bin':
 				$value = hex2bin($value);

@@ -177,7 +177,6 @@ PHP functions supported
 * [chr](http://php.net/manual/en/function.chr.php)
 * [chunk_split](http://php.net/manual/en/function.chunk-split.php)
 * [hebrev](http://php.net/manual/en/function.hebrev.php)
-* [hebrevc](http://php.net/manual/en/function.hebrevc.php)
 * [hex2bin](http://php.net/manual/en/function.hex2bin.php)
 * [html_entity_decode](http://php.net/manual/en/function.html-entity-decode.php)
 * [htmlentities](http://php.net/manual/en/function.htmlentities.php)
