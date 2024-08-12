@@ -77,6 +77,13 @@ class tbxLocator {
 	/** @var mixed */			public $PosDefEnd;
 	/** @var mixed */			public $WhenDefaultBeforeNS;
 
+	// TEMPORARY FIXES FOR XML PARSER
+	/** @var mixed */			public $AttForward;
+	/** @var mixed */			public $AttTagBeg;
+	/** @var mixed */			public $AttTagEnd;
+	/** @var mixed */ 			public $AttDelimChr;
+	/** @var mixed */			public $AttDelimCnt;
+	/** @var mixed */			public $AttValBeg;
 
 
 
